@@ -1,0 +1,31 @@
+{
+  "name": "conbot",
+  "version": "0.0.1",
+  "description": "construction chatbot",
+  "main": "server.js",
+  "scripts": {
+    "start": "nodemon server.js"
+  },
+  "dependencies": {
+    "botbuilder": "^3.14.0",
+    "cors": "^2.8.4",
+    "express": "^4.13.3",
+    "facebook-bot-messenger": "^1.0.7",
+    "firebase": "^4.9.0",
+    "messenger-bot": "^2.4.0",
+    "mongodb": "^3.0.2",
+    "node-rest-client": "^3.1.0",
+    "nodemon": "^1.14.11",
+    "query-string": "^5.1.0",
+    "restify": "^6.3.4"
+  },
+  "engines": {
+    "node": "8.9.4"
+  },
+  "keywords": [
+    "node",
+    "heroku",
+    "express"
+  ],
+  "author": "Botmore"
+}
