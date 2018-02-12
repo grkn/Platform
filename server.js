@@ -13,18 +13,21 @@ var Carousel = require('./views/carousel');
 const queryString = require('query-string');
 var client = new Client();
 
+var config = {
+    apiKey: "AIzaSyDPv3kb878z2H_zYUHsPoTjp1kPUn3ROYE",
+    authDomain: "platform-7cb54.firebaseapp.com",
+    databaseURL: "https://platform-7cb54.firebaseio.com",
+    projectId: "platform-7cb54",
+    storageBucket: "platform-7cb54.appspot.com",
+    messagingSenderId: "505324727591"
+};
+firebase.initializeApp(config);
 
 
-firebase.initializeApp({
-    databaseURL: 'https://conbot-34186.firebaseio.com',
-    serviceAccount: 'google-services.json',
-});
-
-var url = "mongodb://localhost:27017/conbot";
+var url = "mongodb://localhost:27017/platform";
 let instanceMongoQueries;
 
-let global= {
-}
+let global = { }
 
 mongo.connect(url, function(err, db) {
   if (err) throw err;
@@ -40,9 +43,7 @@ mongo.connect(url, function(err, db) {
       }
       instanceMongoQueries.insertOne("configuration",global,function(resp){});
     }
-
   })
-
 });
 
 
@@ -350,7 +351,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
       res.send({text : text});
     }
   });
-})
+});
 
 
 app.post('/view/create/carousel', cors(), function(req, res){
@@ -570,29 +571,7 @@ app.post('/skype/post', cors(), function (req, res) {
 	res.send({data : "OK"});
 });
 
-// angular project info deploy get
-app.get('/projectinfo/get', cors(), function (req, res) {
-	res.setHeader('content-type', 'application/json');
-	var ref = firebase.database().ref("/projectInfo");
-	ref.once("value", function(snapshot) {
-		res.send(snapshot);
-	}, function (errorObject) {
-	  console.log("Firebase read failed: " + errorObject.code);
-	});
-});
-
-// angular project info deploy post
-app.post('/projectinfo/post', cors(), function (req, res) {
-	console.log(req.body.projectInfo);
-	var ref = firebase.database().ref("/projectInfo").update(req.body.projectInfo);
-	var facebookClass = new FaceBookClass(
-    req.body.projectInfo.projectName,
-    req.body.projectInfo.projectLocation,
-    req.body.projectInfo.projectType);
-	facebookClass.botListen();
-	res.send({data : "OK"});
-});
-
+// angular project info deploy get bunları silsek mi? sileyim ama sildikten sonra 5 dfakka mola :Dok
 app.post('/witai/delete', function(req, res){
   instanceMongoQueries.deleteFromTrainingMessage(req.body.message, function(resp){
     res.send(resp);
