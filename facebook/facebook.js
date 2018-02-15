@@ -2,6 +2,7 @@ const http = require('http')
 const Bot = require('messenger-bot')
 var Client = require('node-rest-client').Client;
 var ListTemplate = require('../views/listTemplate');
+var Carousel = require('../views/carousel');
 
 var client = new Client();
 
@@ -139,6 +140,7 @@ var facebookclass= class FacebookBotClass {
 			var firebase = this.firebase;
 			var bot = this.bot;
 			var listTemplateFunc = this.listtemplate;
+			var carouselTemplateFunc = this.carousel;
 			client.get("https://api.wit.ai/message?q="+encodeURIComponent(payload.message.text),wit,function(response){
 
 				if(response.entities && response.entities.intent && response.entities.intent.length > 0){
@@ -172,6 +174,12 @@ var facebookclass= class FacebookBotClass {
 											bot.sendMessage(payload.sender.id, listTemplateFunc(listTemplate.createListTemplate()), function(resp){
 												console.log(resp);
 											});
+										}else if (total.type == "carousel"){
+												var carousel = new Carousel(total.text);
+												bot.sendMessage(payload.sender.id, carouselTemplateFunc(carousel.createListCarousel()), function(resp){
+													console.log(resp);
+												});
+
 										}else{
 											var text= total.type;
 											reply({text}, function(err){
@@ -421,11 +429,22 @@ var facebookclass= class FacebookBotClass {
 			};
 			var buttons = [];
 			for(var j = 0 ; j < obj.elements[i].buttons.length; j++){
-				buttons.push({
+
+				var button = {
 					"type" : obj.elements[i].buttons[j].type,
-					"title" : obj.elements[i].buttons[j].title,
-					"payload": obj.elements[i].buttons[j].payload
-				});
+				};
+
+				button["title"]  = obj.elements[i].buttons[j].title;
+
+				if(obj.elements[i].buttons[j].type =="web_url"){
+					button["url"] = obj.elements[i].buttons[j].url,
+					button["webview_height_ratio"] = "full",
+					button["messenger_extensions"] =  true,
+					button["fallback_url"] =  obj.elements[i].buttons[j].url;
+				}else{
+					button["payload"] =  obj.elements[i].buttons[j].payload;
+				}
+				buttons.push(button);
 			}
 			mainObject["buttons"] = buttons;
 			elements.push(mainObject);
