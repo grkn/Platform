@@ -3,6 +3,8 @@ const Bot = require('messenger-bot')
 var Client = require('node-rest-client').Client;
 var ListTemplate = require('../views/listTemplate');
 var Carousel = require('../views/carousel');
+var QuickReply = require("../views/quickReply");
+var GenericButtons = require("../views/genericButtons");
 
 var client = new Client();
 
@@ -141,6 +143,8 @@ var facebookclass= class FacebookBotClass {
 			var bot = this.bot;
 			var listTemplateFunc = this.listtemplate;
 			var carouselTemplateFunc = this.carousel;
+			var quickReplyFunc = this.quickReply;
+			var buttonGenericsFunc = this.buttonGenerics;
 			client.get("https://api.wit.ai/message?q="+encodeURIComponent(payload.message.text),wit,function(response){
 
 				if(response.entities && response.entities.intent && response.entities.intent.length > 0){
@@ -177,6 +181,18 @@ var facebookclass= class FacebookBotClass {
 										}else if (total.type == "carousel"){
 												var carousel = new Carousel(total.text);
 												bot.sendMessage(payload.sender.id, carouselTemplateFunc(carousel.createListCarousel()), function(resp){
+													console.log(resp);
+												});
+
+										}else if (total.type == "quickReply"){
+												var quickReply = new QuickReply(total.text);
+												bot.sendMessage(payload.sender.id,quickReplyFunc(quickReply.createListQuickReply()) , function(resp){
+													console.log(resp);
+												});
+
+										}else if (total.type == "genericButtons"){
+												var genericButtons = new GenericButtons(total.text);
+												bot.sendMessage(payload.sender.id,buttonGenericsFunc(genericButtons.createGenericButtons()) , function(resp){
 													console.log(resp);
 												});
 
@@ -393,11 +409,21 @@ var facebookclass= class FacebookBotClass {
 			var mainObject = { title : obj.elements[i].title};
 			var buttons = [];
 			for(var j = 0 ; j < obj.elements[i].buttons.length;j++){
-				buttons.push({
-					"type":obj.elements[i].buttons[j].type,
-					"title":obj.elements[i].buttons[j].title,
-					"payload":obj.elements[i].buttons[j].payload
-				});
+				var button = {
+					"type" : obj.elements[i].buttons[j].type,
+				};
+
+				button["title"]  = obj.elements[i].buttons[j].title;
+
+				if(obj.elements[i].buttons[j].type =="web_url"){
+					button["url"] = obj.elements[i].buttons[j].url,
+					button["webview_height_ratio"] = "full",
+					button["messenger_extensions"] =  true,
+					button["fallback_url"] =  obj.elements[i].buttons[j].url;
+				}else{
+					button["payload"] =  obj.elements[i].buttons[j].payload;
+				}
+				buttons.push(button);
 			}
 			mainObject['buttons'] = buttons;
 			elements.push(mainObject);
