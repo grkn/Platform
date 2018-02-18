@@ -616,7 +616,7 @@ app.get("/add/responseList/:response", function(req, res){
   })
 });
 
-app.delete("/add/responseList/:response", function(req, res){
+app.delete("/delete/responseList/:response", function(req, res){
   instanceMongoQueries.updateOne("configuration", {}, { $pull: {responseList: req.params.response}}, function(err, resp){
     res.send(resp);
   })
