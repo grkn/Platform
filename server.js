@@ -133,11 +133,11 @@ app.delete("/delete/intent", cors(), function(req, res){
           ref.child('/').child(childSnapshot.key).once('value', function(itemSnapshot) {
             if(itemSnapshot.val().key == req.body.value){
               ref.child('/').child(childSnapshot.key).remove();
-              res.send(response);
             }
           });
         });
     });
+    res.send({resp : "OK"});
   });
 });
 
@@ -176,6 +176,7 @@ app.get("/get/witai/entities", function(req, res){
 
 // wit intent ine cümle kaydediyor
 app.post("/post/intent/expressions", function(req, res){
+  console.log(req.body);
   var wit = {
     data : {
   		value : req.body.value,
@@ -257,11 +258,12 @@ app.delete('/delete/meaningful/sentence', cors(), function (req, res) {
       snapshot.forEach(function(childSnapshot) {
         ref.child('/').child(childSnapshot.key).once('value', function(itemSnapshot) {
           if(itemSnapshot.val().key == queryString.parse(req.query()).intent){
-            itemSnapshot.delete();
+            ref.child('/').child(childSnapshot.key).remove();
           }
         });
       });
   });
+  res.send({resp : "OK"});
 });
 
 //** WEB API for dialogflow**//
@@ -391,7 +393,7 @@ app.post('/view/get/carousel', cors(), function(req, res){
 
 app.post('/view/create/quickReply', cors(), function(req, res){
     var ref = firebase.database().ref("/answer");
-    var set = {'key' : req.body.intent, 'value' : req.body.obj, 'type' : 'quickReply'};
+    var set = {'key' : req.body.intent, 'value' : req.body.quickReply, 'type' : 'quickReply'};
     ref.child("/").once("value", function(snapshot) {
       var found = false;
       snapshot.forEach(function(userSnapshot) {
@@ -425,7 +427,7 @@ app.post('/view/get/quickReply', cors(), function(req, res){
 
 app.post('/view/create/listTemplate', cors(), function(req, res){
     var ref = firebase.database().ref("/answer");
-    var set = {'key' : req.body.intent, 'value' : req.body.obj, 'type' : 'listTemplate'};
+    var set = {'key' : req.body.intent, 'value' : req.body.listTemplate, 'type' : 'listTemplate'};
     ref.child("/").once("value", function(snapshot) {
       var found = false;
       snapshot.forEach(function(userSnapshot) {
@@ -459,7 +461,7 @@ app.post('/view/get/listTemplate', cors(), function(req, res){
 
 app.post('/view/create/genericButtons', cors(), function(req, res){
     var ref = firebase.database().ref("/answer");
-    var set = {'key' : req.body.intent, 'value' : req.body.obj, 'type' : 'genericButtons'};
+    var set = {'key' : req.body.intent, 'value' : req.body.genericButtons, 'type' : 'genericButtons'};
     ref.child("/").once("value", function(snapshot) {
       var found = false;
       snapshot.forEach(function(userSnapshot) {
@@ -493,7 +495,7 @@ app.post('/view/get/genericButtons', cors(), function(req, res){
 
 app.post('/view/create/attachment', cors(), function(req, res){
     var ref = firebase.database().ref("/answer");
-    var set = {'key' : req.body.intent, 'value' : req.body.obj, 'type' : 'attachment'};
+    var set = {'key' : req.body.intent, 'value' : req.body.attachments, 'type' : 'attachment'};
     ref.child("/").once("value", function(snapshot) {
       var found = false;
       snapshot.forEach(function(userSnapshot) {
