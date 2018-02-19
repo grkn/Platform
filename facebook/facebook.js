@@ -9,12 +9,10 @@ var GenericButtons = require("../views/genericButtons");
 var client = new Client();
 
 
-
-
 'use strict'
 var facebookclass= class FacebookBotClass {
 
-	constructor(pageId,appId,appSecret,pageToken,verifyToken,globals,firebase) {
+	constructor(pageId,appId,appSecret,pageToken,verifyToken,globals,instanceMongoQueries) {
         this.bot  = new Bot({
 								  token: pageToken,
 								  verify: verifyToken,
@@ -22,7 +20,7 @@ var facebookclass= class FacebookBotClass {
 								});
 			this.token = pageToken;
 			this.global = globals;
-			this.firebase = firebase;
+			this.instanceMongoQueries = instanceMongoQueries;
   }
 
 	botListen(){
@@ -61,73 +59,6 @@ var facebookclass= class FacebookBotClass {
 			});*/
 
 
-
-/*
-		let loc = {title : 'Please send your location'};
-		this.bot.sendMessage(payload.sender.id, this.location(loc), function(resp){
-		console.log(resp);
-	});
-*/
-
-/*
-			let quick_replies = {title : 'Here is a quick reply options',
-				quickReplyButtons : [
-					{contentType : 'text', title : 'AAA', payload : 'payload', image_url : 'http://example.com/img'},
-					{contentType : 'location'},
-					{contentType : 'text', title : 'BBB', payload : 'payload'}
-				]};
-				this.bot.sendMessage(payload.sender.id, this.quickReply(quick_replies), function(resp){
-				console.log(resp);
-			});
-*/
-
-/*
-				let buttonGen = {elements : [
-															{title : 'Please choose',
-															 buttons:[
-															 {type:'postback', title:'AAAA', payload:'aaa'},
-															 {type:'postback', title:'BBBBB', payload:'bbb'},
-														   {type:'phone_number', title:'Telefon', payload:'phonenumber'}
-														 	]}]};
-				this.bot.sendMessage(payload.sender.id, this.buttonGenerics(buttonGen), function(resp){
-					console.log(resp);
-				});
-*/
-
-/*
-			let carousel = { elements : [
-														{	title : 'AAA',
-															image_url : 'https://1ed06b63.eu.ngrok.io',
-															subtitle : 'aa',
-															default_action : {type: 'web_url',url : 'https://1ed06b63.eu.ngrok.io'},
-															buttons : [{type:'phone_number',title:'Telefon',payload:'905370277116'},
-																				 {type:'postback',title:'Button1',payload:'Dev Payload'},
-																				 {type:'postback',title:'Button2',payload:'Dev Payload'}
-																			  ]
-														}
-													 ,{ title : 'BBB',
-													 		image_url : 'https://1ed06b63.eu.ngrok.io',
-															subtitle : 'bbb',
-															default_action : {type: 'web_url',url : 'https://1ed06b63.eu.ngrok.io'},
-															buttons : [{type:'postback',title:'Button',payload:'Dev Payload'},
-																				 {type:'postback',title:'Button',payload:'Dev Payload'}
-																			  ]
-														}
-													 ,{ title : 'CCC',
-													 		image_url : 'https://1ed06b63.eu.ngrok.io',
-															subtitle : 'ccc',
-														  default_action : {type: 'web_url',url : 'https://1ed06b63.eu.ngrok.io'},
-															buttons : [{type:'postback',title:'Button',payload:'Dev Payload'},
-																				 {type:'postback',title:'Button',payload:'Dev Payload'}
-																			  ]
-														}
-											 ]
-			};
-			this.bot.sendMessage(payload.sender.id, this.carousel(carousel), function(resp){
-				console.log(resp);
-			});
-*/
-
 			var wit = {
 				data : {
 					parameters: {}
@@ -138,8 +69,9 @@ var facebookclass= class FacebookBotClass {
 				}
 
 			}
+
+			var instanceMongoQueries = this.instanceMongoQueries;
 			var globals = this.global;
-			var firebase = this.firebase;
 			var bot = this.bot;
 			var listTemplateFunc = this.listtemplate;
 			var carouselTemplateFunc = this.carousel;
@@ -166,48 +98,47 @@ var facebookclass= class FacebookBotClass {
 		        return;
 		      }
 
-					var ref = firebase.database().ref("/answer");
-					ref.once("value", function(snapshot) {
-							snapshot.forEach(function(childSnapshot) {
-								ref.child('/').child(childSnapshot.key).once('value', function(itemSnapshot) {
-									if(itemSnapshot.val().key == maxValue){
-										var total = {text : itemSnapshot.val().value, type : itemSnapshot.val().type, intent : itemSnapshot.val().key};
-										if(total.type =="listTemplate"){
-											var listTemplate = new ListTemplate(total.text);
+					instanceMongoQueries.findByQuery("answers",{ key :  maxValue },function(response){
+						if(response.length > 0){
+							var total = {text : response[0].value, type : response[0].type, intent : response[0].key};
+							if(total.type =="listTemplate"){
+								var listTemplate = new ListTemplate(total.text);
 
-											bot.sendMessage(payload.sender.id, listTemplateFunc(listTemplate.createListTemplate()), function(resp){
-												console.log(resp);
-											});
-										}else if (total.type == "carousel"){
-												var carousel = new Carousel(total.text);
-												bot.sendMessage(payload.sender.id, carouselTemplateFunc(carousel.createListCarousel()), function(resp){
-													console.log(resp);
-												});
-
-										}else if (total.type == "quickReply"){
-												var quickReply = new QuickReply(total.text);
-												bot.sendMessage(payload.sender.id,quickReplyFunc(quickReply.createListQuickReply()) , function(resp){
-													console.log(resp);
-												});
-
-										}else if (total.type == "genericButtons"){
-												var genericButtons = new GenericButtons(total.text);
-												bot.sendMessage(payload.sender.id,buttonGenericsFunc(genericButtons.createGenericButtons()) , function(resp){
-													console.log(resp);
-												});
-
-										}else{
-											var text= total.type;
-											reply({text}, function(err){
-													console.log(err);
-											});
-										}
-
-									}
+								bot.sendMessage(payload.sender.id, listTemplateFunc(listTemplate.createListTemplate()), function(resp){
+									console.log(resp);
 								});
-							});
-					});
+							}else if (total.type == "carousel"){
+									var carousel = new Carousel(total.text);
+									bot.sendMessage(payload.sender.id, carouselTemplateFunc(carousel.createListCarousel()), function(resp){
+										console.log(resp);
+									});
 
+							}else if (total.type == "quickReply"){
+									var quickReply = new QuickReply(total.text);
+									bot.sendMessage(payload.sender.id,quickReplyFunc(quickReply.createListQuickReply()) , function(resp){
+										console.log(resp);
+									});
+
+							}else if (total.type == "genericButtons"){
+									var genericButtons = new GenericButtons(total.text);
+									bot.sendMessage(payload.sender.id,buttonGenericsFunc(genericButtons.createGenericButtons()) , function(resp){
+										console.log(resp);
+									});
+
+							}else{
+								var text= total.type;
+								reply({text}, function(err){
+										console.log(err);
+								});
+							}
+						}else{
+							var random = Math.floor(Math.random() * (globals.responseList.length - 1));
+							var text=globals.responseList[random];
+						  reply({text}, function(err){
+						 		 console.log(err);
+						  });
+						}
+					});
 				}else{
 						var random = Math.floor(Math.random() * (globals.responseList.length - 1));
 						var text=globals.responseList[random];
@@ -216,133 +147,7 @@ var facebookclass= class FacebookBotClass {
 					  });
 					  return;
 				}
-
 			});
-
-
-/*
-		let imagevideo = {url : 'https://1ed06b63.eu.ngrok.io/company_image.png"'};
-		this.bot.sendMessage(payload.sender.id, this.imagevideo(imagevideo), function(resp){
-			console.log(resp);
-		});
-		*/
-
-    //
-		// let webview = { elements : [
-		// 									{
-		// 												"title": "Classic T-Shirt Collection",
-		// 												"subtitle": "See all our colors",
-		// 												"image_url": "https://1ed06b63.eu.ngrok.io/company_image.png",
-		// 												"buttons":[
-		// 													{
-		// 														"type":"postback",
-		// 														"title":"Start Something",
-		// 														"payload":"DEVELOPER_DEFINED_PAYLOAD"
-		// 													}
-		// 												]
-		// 											},
-		// 											{
-		// 														"title": "Classic White T-Shirt",
-		// 														"subtitle": "See all our colors",
-		// 														"default_action": {
-		// 															"type": "web_url",
-		// 															"url": "https://1ed06b63.eu.ngrok.io/view?item=100",
-		// 														}
-		// 											},
-		// 											{
-		// 												"title": "Classic Blue T-Shirt",
-		// 												"subtitle": "100% Cotton, 200% Comfortable",
-		// 												"image_url": "https://1ed06b63.eu.ngrok.io/company_image.png",
-		// 												"buttons":[
-		// 													{
-		// 														"type":"web_url",
-		// 														"url":"https://1ed06b63.eu.ngrok.io",
-		// 														"title":"Web View",
-		// 														"webview_height_ratio": "full",
-		// 														"messenger_extensions": true,
-		// 														"fallback_url": "https://1ed06b63.eu.ngrok.io"
-		// 														}
-		// 												]//yine whitelist e takılacaz ama deneyelim
-		// 											}
-		// 								 ],
-		// 								 buttons : [
-		// 										 {
-		// 											"title": "View More",
-		// 											"type": "postback",
-		// 											"payload": "payload"
-		// 										}
-		// 								 ]
-		// };
-		// this.bot.sendMessage(payload.sender.id, this.listtemplate(webview), function(resp){
-		// 	console.log(resp);
-		// });
-
-
-/*
-			//persistent menu
-			this.bot.setPersistentMenu ([
-
-						{
-							"title":"Pay Bill",
-							"type":"postback",
-							"payload":"PAYBILL_PAYLOAD"
-						},
-						{
-							"type":"web_url",
-							"title":"Latest News",
-							"url":"https://www.messenger.com/",
-							"webview_height_ratio":"full"
-						}
-					]
-			, function(dt){
-				console.log(dt);
-			});
-*/
-
-/*
-// attachments
-{
-		"attachment":{
-			"type":"image",
-			"payload":{
-				"is_reusable": true,
-				"url":"http://www.messenger-rocks.com/image.jpg"
-			}
-		}
-	}
-*/
-
-/*
-// image / video with button
-	{
-	    "attachment": {
-	      "type": "template",
-	      "payload": {
-	         "template_type": "media",
-	         "elements": [
-	            {
-	               "media_type": "<image|video>",
-	               "url": "<FACEBOOK_URL>"
-	            },
-							{
-					       "media_type": "image",
-					       "url": "<MEDIA_URL>",
-					       "buttons": [
-					          {
-					             "type": "web_url",
-					             "url": "<WEB_URL>",
-					             "title": "View Website",
-					          }
-					       ]
-					    }
-	         ]
-	      }
-	    }
-	  }
-*/
-
-
-
 		})
 		http.createServer(this.bot.middleware()).listen(8081);
 	}
@@ -384,7 +189,7 @@ var facebookclass= class FacebookBotClass {
 
 	quickReply(obj){
 		var quickReplyArray = [];
-		for(var i = 0 ; i < obj.quickReplyButtons.length ; i++){
+		for(var i = 0; i < obj.quickReplyButtons.length; i++){
 				var mainObject = { content_type : obj.quickReplyButtons[i].contentType};
 				if(obj.quickReplyButtons[i].title){
 					mainObject['title'] = obj.quickReplyButtons[i].title;
@@ -405,16 +210,14 @@ var facebookclass= class FacebookBotClass {
 
 	buttonGenerics(obj){
 		var elements = [];
-		for(var i = 0 ; i < obj.elements.length ; i++){
+		for(var i = 0; i < obj.elements.length; i++){
 			var mainObject = { title : obj.elements[i].title};
 			var buttons = [];
-			for(var j = 0 ; j < obj.elements[i].buttons.length;j++){
+			for(var j = 0; j < obj.elements[i].buttons.length; j++){
 				var button = {
 					"type" : obj.elements[i].buttons[j].type,
 				};
-
 				button["title"]  = obj.elements[i].buttons[j].title;
-
 				if(obj.elements[i].buttons[j].type =="web_url"){
 					button["url"] = obj.elements[i].buttons[j].url,
 					button["webview_height_ratio"] = "full",
@@ -455,13 +258,8 @@ var facebookclass= class FacebookBotClass {
 			};
 			var buttons = [];
 			for(var j = 0 ; j < obj.elements[i].buttons.length; j++){
-
-				var button = {
-					"type" : obj.elements[i].buttons[j].type,
-				};
-
+				var button = {"type" : obj.elements[i].buttons[j].type};
 				button["title"]  = obj.elements[i].buttons[j].title;
-
 				if(obj.elements[i].buttons[j].type =="web_url"){
 					button["url"] = obj.elements[i].buttons[j].url,
 					button["webview_height_ratio"] = "full",
@@ -489,7 +287,6 @@ var facebookclass= class FacebookBotClass {
 	listtemplate(obj){
 		let elements = [];
 		let mainbutton = [];
-
 		for(var j = 0 ; j < obj.buttons.length; j++){
 			mainbutton.push({
 				"type" : obj.buttons[j].type,
@@ -497,7 +294,6 @@ var facebookclass= class FacebookBotClass {
 				"payload": obj.buttons[j].payload
 			});
 		}
-
 		for(var i = 0; i< obj.elements.length; i++){
 			var mainObject = {
 				"title":obj.elements[i].title,
@@ -515,7 +311,6 @@ var facebookclass= class FacebookBotClass {
 					}
 					mainObject["default_action"] = default_action;
 			}
-
 			if(obj.elements[i].buttons){
 				var buttons = [];
 				for(var j = 0 ; j < obj.elements[i].buttons.length; j++){
@@ -556,5 +351,7 @@ var facebookclass= class FacebookBotClass {
 			}
 		};
 	}
+
 };
+
 module.exports = facebookclass;

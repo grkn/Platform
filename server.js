@@ -1,10 +1,8 @@
 var express = require('express');
 var app = express();
 var cors = require('cors');
-var firebase = require('firebase');
 var mongo = require('mongodb').MongoClient;
 var bodyParser = require('body-parser');
-// var MessengerPlatform = require('facebook-bot-messenger');
 var FaceBookClass = require('./facebook/facebook');
 var MongoQueries = require('./mongo/mongoQueries');
 var SkypeClass = require('./skype/skypeClass');
@@ -13,15 +11,7 @@ var Carousel = require('./views/carousel');
 const queryString = require('query-string');
 var client = new Client();
 
-var config = {
-    apiKey: "AIzaSyDPv3kb878z2H_zYUHsPoTjp1kPUn3ROYE",
-    authDomain: "platform-7cb54.firebaseapp.com",
-    databaseURL: "https://platform-7cb54.firebaseio.com",
-    projectId: "platform-7cb54",
-    storageBucket: "platform-7cb54.appspot.com",
-    messagingSenderId: "505324727591"
-};
-firebase.initializeApp(config);
+
 
 
 var url = "mongodb://localhost:27017/platform";
@@ -40,7 +30,8 @@ mongo.connect(url, function(err, db) {
       global = {
         threshold : 0.7,
         responseList : ['Aradığınızı bulamadım','Öğrenmek üzereyim','Başka şekilde tarif eder misin?'],
-        defaultAuthorizationToken : "DSWRM5DAQVXBGOH7BQWO455ERSGWRNR6"
+        defaultAuthorizationToken : "DSWRM5DAQVXBGOH7BQWO455ERSGWRNR6",
+        facebookDeployment : {}
       }
       instanceMongoQueries.insertOne("configuration",global,function(resp){});
     }
@@ -128,17 +119,9 @@ app.delete("/delete/intent", cors(), function(req, res){
     }
   }
   client.delete("https://api.wit.ai/entities/intent/values/"+encodeURIComponent(req.body.value), wit, function(response){
-    var ref = firebase.database().ref("/answer");
-    ref.once("value", function(snapshot) {
-        snapshot.forEach(function(childSnapshot) {
-          ref.child('/').child(childSnapshot.key).once('value', function(itemSnapshot) {
-            if(itemSnapshot.val().key == req.body.value){
-              ref.child('/').child(childSnapshot.key).remove();
-            }
-          });
-        });
+    instanceMongoQueries.deleteOne("answers",{key :  req.body.value},function(resp){
+      res.send({resp : "OK"});
     });
-    res.send({resp : "OK"});
   });
 });
 
@@ -208,63 +191,34 @@ app.delete("/delete/intent/expressions", function(req, res){
 	});
 });
 
-// http://localhost:8000/hello yazdığında fireabase database in tamamını basıyor ekrana
-app.get('/hello', cors(), function (req, res) {
-	var ref = firebase.database().ref("/");
-  ref.once("value", function(snapshot) {
-  		res.send(snapshot);
-  	}, function (errorObject) {
-      console.log("The read failed: " + errorObject.code);
-	});
-});
-
 // intent icin cevap ekleme
 app.post('/send/meaningful/sentence', cors(), function (req, res) {
-	var ref = firebase.database().ref("/answer");
-  var set = { 'key' : req.body.intent, 'value' : req.body.message, 'type' : 'text'};
-  ref.child("/").once("value", function(snapshot) {
-    var found = false;
-    snapshot.forEach(function(userSnapshot) {
-        if(userSnapshot.val().key == set.key){
-          ref.child("/").child(userSnapshot.key).update(set);
-          found = true;
-        }
-    });
-    if(!found){
-      ref.child("/").push(set)
+  instanceMongoQueries.findByQuery("answers",{ key :  req.body.intent },function(resp){
+    console.log(resp);
+    if(resp.length > 0){
+      instanceMongoQueries.updateOne("answers", { key :  req.body.intent },  { $set: { 'key' : req.body.intent, 'value' : req.body.message, 'type' : 'text'}}, function(resp){});
+    }else{
+      instanceMongoQueries.insertOne("answers", { 'key' : req.body.intent, 'value' : req.body.message, 'type' : 'text'} , function(resp){});
     }
-  });
+
+  })
+
   res.send({ resp : "OK"});
 });
 
 // intent icin cevap getirme
 app.get('/get/meaningful/sentence', cors(), function (req, res) {
-  var ref = firebase.database().ref("/answer");
-  ref.once("value", function(snapshot) {
-      var array = snapshot.val();
-      for(var key in array){
-        if(array[key].key == queryString.parse(req.query()).intent){
-          res.send({resp : array[key].value, type : array[key].type});
-          return;
-        }
-      }
-      res.send({resp : "NOT_FOUND"});
+  instanceMongoQueries.findByQuery("answers",{ key :  queryString.parse(req.query()).intent },function(resp){
+      res.send(resp[0]);
   });
 });
 
 // intent icin cevap silme
 app.delete('/delete/meaningful/sentence', cors(), function (req, res) {
-  var ref = firebase.database().ref("/answer");
-  ref.once("value", function(snapshot) {
-      snapshot.forEach(function(childSnapshot) {
-        ref.child('/').child(childSnapshot.key).once('value', function(itemSnapshot) {
-          if(itemSnapshot.val().key == queryString.parse(req.query()).intent){
-            ref.child('/').child(childSnapshot.key).remove();
-          }
-        });
-      });
+  instanceMongoQueries.deleteOne("answers",{ key :  queryString.parse(req.query()).intent },function(resp){
+    res.send({resp : "OK"});
   });
-  res.send({resp : "OK"});
+
 });
 
 //** WEB API for dialogflow**//
@@ -322,27 +276,28 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
         res.send({text : text});
         return;
       }
-      var ref = firebase.database().ref("/answer");
-      ref.once("value", function(snapshot) {
-          snapshot.forEach(function(childSnapshot) {
-            ref.child('/').child(childSnapshot.key).once('value', function(itemSnapshot) {
-              if(itemSnapshot.val().key == maxValue){
-                if(req.body.obj){
-                  req.body.obj.created_date = new Date();
-                  req.body.obj.confidenceLevel = max;
-                  req.body.obj.intentName = maxValue;
-                  instanceMongoQueries.insertOne(req.params.collectionName, req.body.obj, function(resp,obj){
-                      res.send({text : itemSnapshot.val().value, type : itemSnapshot.val().type, intent : itemSnapshot.val().key});
-                  });
-                  var obj = {"transaction":req.body.obj.transaction, "message":{text : itemSnapshot.val().value, type : itemSnapshot.val().type, intent : itemSnapshot.val().key}, "user_id":"BOT", "created_date": new Date()};
-                  instanceMongoQueries.insertOne(req.params.collectionName,obj,function(resp,obj){
 
-                  });
-                }
-              }
-            });
-          });
+      instanceMongoQueries.findByQuery("answers",{ key :  maxValue },function(response){
+          console.log(response);
+          if(response.length > 0){
+            if(req.body.obj){
+              req.body.obj.created_date = new Date();
+              req.body.obj.confidenceLevel = max;
+              req.body.obj.intentName = maxValue;
+              instanceMongoQueries.insertOne(req.params.collectionName, req.body.obj, function(resp,obj){
+                  res.send({text : response[0].value, type : response[0].type, intent : response[0].key});
+              });
+              var obj = {"transaction":req.body.obj.transaction, "message":{text : response[0].value, type : response[0].type, intent : response[0].key}, "user_id":"BOT", "created_date": new Date()};
+              instanceMongoQueries.insertOne(req.params.collectionName,obj,function(resp,obj){
+
+              });
+            }
+
+          }else{
+              res.send({resp : "NOT_FOUND"});
+          }
       });
+
     }else{
       var random = Math.floor(Math.random() * (global.responseList.length - 1));
       var text = global.responseList[random];
@@ -358,203 +313,116 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
 
 
 app.post('/view/create/carousel', cors(), function(req, res){
-    var carousel = new Carousel(req.body.obj);
-    var ref = firebase.database().ref("/answer");
-    var set = { 'key' : req.body.intent, 'value' : req.body.obj, 'type' : 'carousel'};
-    ref.child("/").once("value", function(snapshot) {
-      var found = false;
-      snapshot.forEach(function(userSnapshot) {
-          if(userSnapshot.val().key == set.key){
-            ref.child("/").child(userSnapshot.key).update(set);
-            found = true;
-          }
-      });
-      if(!found){
-        ref.child("/").push(set)
+  instanceMongoQueries.findByQuery("answers",{ key :  req.body.intent },function(resp){
+      if(resp.length > 0){
+        instanceMongoQueries.updateOne("answers", { key :  req.body.intent },  { $set:  { 'key' : req.body.intent, 'value' : req.body.obj, 'type' : 'carousel'}}, function(resp){});
+      }else{
+        instanceMongoQueries.insertOne("answers",  { 'key' : req.body.intent, 'value' : req.body.obj, 'type' : 'carousel'} , function(resp){});
       }
+        res.send({ resp : "OK"});
     });
-    res.send({ resp : "OK"});
 });
 
 app.post('/view/get/carousel', cors(), function(req, res){
-    var ref = firebase.database().ref("/answer");
-    ref.child("/").once("value", function(snapshot) {
-      var found = false;
-      snapshot.forEach(function(userSnapshot) {
-          if(userSnapshot.val().key == req.body.intent){
-            res.send(userSnapshot.val())
-            found = true;
-          }
-      });
-      if(!found){
-        res.send({resp : "NOT_FOUND"});
-      }
-    });
+  instanceMongoQueries.findByQuery("answers",{ key :  req.body.intent },function(resp){
+      res.send(resp[0]);
+  });
 });
 
 app.post('/view/create/quickReply', cors(), function(req, res){
-    var ref = firebase.database().ref("/answer");
-    var set = {'key' : req.body.intent, 'value' : req.body.quickReply, 'type' : 'quickReply'};
-    ref.child("/").once("value", function(snapshot) {
-      var found = false;
-      snapshot.forEach(function(userSnapshot) {
-          if(userSnapshot.val().key == set.key){
-            ref.child("/").child(userSnapshot.key).update(set);
-            found = true;
-          }
-      });
-      if(!found){
-        ref.child("/").push(set)
+  instanceMongoQueries.findByQuery("answers",{ key :  req.body.intent },function(resp){
+      if(resp.length > 0){
+        instanceMongoQueries.updateOne("answers", { key :  req.body.intent },  { $set:  {'key' : req.body.intent, 'value' : req.body.quickReply, 'type' : 'quickReply'}}, function(resp){});
+      }else{
+        instanceMongoQueries.insertOne("answers",  {'key' : req.body.intent, 'value' : req.body.quickReply, 'type' : 'quickReply'}, function(resp){});
       }
+        res.send({ resp : "OK"});
     });
-    res.send({ resp : "OK"});
 });
 
 app.post('/view/get/quickReply', cors(), function(req, res){
-    var ref = firebase.database().ref("/answer");
-    ref.child("/").once("value", function(snapshot) {
-      var found = false;
-      snapshot.forEach(function(userSnapshot) {
-          if(userSnapshot.val().key == req.body.intent){
-            res.send(userSnapshot.val())
-            found = true;
-          }
-      });
-      if(!found){
-        res.send({resp : "NOT_FOUND"});
-      }
-    });
+  instanceMongoQueries.findByQuery("answers",{ key :  req.body.intent },function(resp){
+      res.send(resp[0]);
+  });
 });
 
 app.post('/view/create/listTemplate', cors(), function(req, res){
-    var ref = firebase.database().ref("/answer");
-    var set = {'key' : req.body.intent, 'value' : req.body.listTemplate, 'type' : 'listTemplate'};
-    ref.child("/").once("value", function(snapshot) {
-      var found = false;
-      snapshot.forEach(function(userSnapshot) {
-          if(userSnapshot.val().key == set.key){
-            ref.child("/").child(userSnapshot.key).update(set);
-            found = true;
-          }
-      });
-      if(!found){
-        ref.child("/").push(set)
+  instanceMongoQueries.findByQuery("answers",{ key :  req.body.intent },function(resp){
+      if(resp.length > 0){
+        instanceMongoQueries.updateOne("answers", { key :  req.body.intent },  { $set:  {'key' : req.body.intent, 'value' : req.body.listTemplate, 'type' : 'listTemplate'}}, function(resp){});
+      }else{
+        instanceMongoQueries.insertOne("answers",  {'key' : req.body.intent, 'value' : req.body.listTemplate, 'type' : 'listTemplate'}, function(resp){});
       }
+        res.send({ resp : "OK"});
     });
-    res.send({ resp : "OK"});
 });
 
 app.post('/view/get/listTemplate', cors(), function(req, res){
-    var ref = firebase.database().ref("/answer");
-    ref.child("/").once("value", function(snapshot) {
-      var found = false;
-      snapshot.forEach(function(userSnapshot) {
-          if(userSnapshot.val().key == req.body.intent){
-            res.send(userSnapshot.val())
-            found = true;
-          }
-      });
-      if(!found){
-        res.send({resp : "NOT_FOUND"});
-      }
-    });
+  instanceMongoQueries.findByQuery("answers",{ key :  req.body.intent },function(resp){
+      res.send(resp[0]);
+  });
 });
 
 app.post('/view/create/genericButtons', cors(), function(req, res){
-    var ref = firebase.database().ref("/answer");
-    var set = {'key' : req.body.intent, 'value' : req.body.genericButtons, 'type' : 'genericButtons'};
-    ref.child("/").once("value", function(snapshot) {
-      var found = false;
-      snapshot.forEach(function(userSnapshot) {
-          if(userSnapshot.val().key == set.key){
-            ref.child("/").child(userSnapshot.key).update(set);
-            found = true;
-          }
-      });
-      if(!found){
-        ref.child("/").push(set)
+    instanceMongoQueries.findByQuery("answers",{ key :  req.body.intent },function(resp){
+      if(resp.length > 0){
+        instanceMongoQueries.updateOne("answers", { key :  req.body.intent },  { $set:  {'key' : req.body.intent, 'value' : req.body.genericButtons, 'type' : 'genericButtons'}}, function(resp){});
+      }else{
+        instanceMongoQueries.insertOne("answers",  {'key' : req.body.intent, 'value' : req.body.genericButtons, 'type' : 'genericButtons'}, function(resp){});
       }
+        res.send({ resp : "OK"});
     });
-    res.send({ resp : "OK"});
 });
 
 app.post('/view/get/genericButtons', cors(), function(req, res){
-    var ref = firebase.database().ref("/answer");
-    ref.child("/").once("value", function(snapshot) {
-      var found = false;
-      snapshot.forEach(function(userSnapshot) {
-          if(userSnapshot.val().key == req.body.intent){
-            res.send(userSnapshot.val())
-            found = true;
-          }
-      });
-      if(!found){
-        res.send({resp : "NOT_FOUND"});
-      }
-    });
+  instanceMongoQueries.findByQuery("answers",{ key :  req.body.intent },function(resp){
+      res.send(resp[0]);
+  });
 });
 
 app.post('/view/create/attachment', cors(), function(req, res){
-    var ref = firebase.database().ref("/answer");
-    var set = {'key' : req.body.intent, 'value' : req.body.attachments, 'type' : 'attachment'};
-    ref.child("/").once("value", function(snapshot) {
-      var found = false;
-      snapshot.forEach(function(userSnapshot) {
-          if(userSnapshot.val().key == set.key){
-            ref.child("/").child(userSnapshot.key).update(set);
-            found = true;
-          }
-      });
-      if(!found){
-        ref.child("/").push(set)
-      }
-    });
-    res.send({ resp : "OK"});
+  instanceMongoQueries.findByQuery("answers",{ key :  req.body.intent },function(resp){
+    if(resp.length > 0){
+      instanceMongoQueries.updateOne("answers", { key :  req.body.intent },  { $set:  {'key' : req.body.intent, 'value' : req.body.attachments, 'type' : 'attachment'}}, function(resp){});
+    }else{
+      instanceMongoQueries.insertOne("answers", {'key' : req.body.intent, 'value' : req.body.attachments, 'type' : 'attachment'}, function(resp){});
+    }
+      res.send({ resp : "OK"});
+  });
+
 });
 
 app.post('/view/get/attachment', cors(), function(req, res){
-    var ref = firebase.database().ref("/answer");
-    ref.child("/").once("value", function(snapshot) {
-      var found = false;
-      snapshot.forEach(function(userSnapshot) {
-          if(userSnapshot.val().key == req.body.intent){
-            res.send(userSnapshot.val())
-            found = true;
-          }
-      });
-      if(!found){
-        res.send({resp : "NOT_FOUND"});
-      }
-    });
+  instanceMongoQueries.findByQuery("answers",{ key :  req.body.intent },function(resp){
+      res.send(resp[0]);
+  });
 });
 
 
 // angular facebook deploy get
 app.get('/facebook/get', cors(), function (req, res) {
-	res.setHeader('content-type', 'application/json');
-	var ref = firebase.database().ref("/deploymentFacebook");
-	ref.once("value", function(snapshot) {
-		res.send(snapshot);
-	}, function (errorObject) {
-	  console.log("Firebase read failed: " + errorObject.code);
-	});
+  instanceMongoQueries.find("configuration", function(resp){
+    res.send(resp);
+  })
 });
 
 // angular facebook deploy post
 app.post('/facebook/post', cors(), function (req, res) {
-	var ref = firebase.database().ref("/deploymentFacebook").update(req.body.facebookDeployment);
+  console.log(req.body.facebookDeployment);
+  instanceMongoQueries.updateOne("configuration", {}, { $set: {facebookDeployment: req.body.facebookDeployment}}, function(err, resp){
+    global.facebookDeployment = req.body.facebookDeployment;
+  })
 	var facebookClass = new FaceBookClass(
     req.body.facebookDeployment.pageId,
     req.body.facebookDeployment.appId,
     req.body.facebookDeployment.appSecret,
     req.body.facebookDeployment.accessToken,
-    req.body.facebookDeployment.verifyToken,global,firebase);
+    req.body.facebookDeployment.verifyToken,global,instanceMongoQueries);
 	facebookClass.botListen();
 	res.send({data : "OK"});
 });
 
 app.post('/witaiDeploy/post', cors(), function (req, res) {
-  console.log(req.body.witDeployment);
   instanceMongoQueries.updateOne("configuration", {}, { $set: {defaultAuthorizationToken: req.body.witDeployment}}, function(err, resp){
     res.send({data : "OK"});
     global.defaultAuthorizationToken = req.body.witDeployment;
@@ -566,27 +434,6 @@ app.get('/witaiDeploy/get', cors(), function (req, res) {
   instanceMongoQueries.find("configuration", function(resp){
     res.send(resp);
   })
-});
-
-// angular skype deploy get
-app.get('/skype/get', cors(), function (req, res) {
-	var ref = firebase.database().ref("/deploymentSkype");
-	ref.once("value", function(snapshot) {
-		res.send(snapshot);
-	}, function (errorObject) {
-	  console.log("Firebase read failed: " + errorObject.code);
-	});
-});
-
-// angular skype deploy post
-app.post('/skype/post', cors(), function (req, res) {
-	var ref = firebase.database().ref("/deploymentSkype").update(req.body.skypeDeployment);
-	//skype listen olacak burda sonra yaparım bir deneyelim
-  var skypeClass = new SkypeClass(
-    req.body.skypeDeployment.appId,
-    req.body.skypeDeployment.appPassword);
-  skypeClass.botPrepare();
-	res.send({data : "OK"});
 });
 
 // angular project info deploy get bunları silsek mi? sileyim ama sildikten sonra 5 dfakka mola :Dok

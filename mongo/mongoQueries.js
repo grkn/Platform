@@ -48,6 +48,13 @@ var mongoQueries = class MongoQueries {
       callback(obj);
     });
   }
+
+  deleteOne(collectionName,query, callback){
+    this.db.db("platform").collection(collectionName).deleteOne(query, function(err, obj) {
+      if (err) throw err;
+      callback(obj);
+    });
+  }
   updateOne(collectionName, query, newValues, callback){
     this.db.db("platform").collection(collectionName).update(query, newValues, function(err, res) {
      if (err) throw err;
