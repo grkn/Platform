@@ -133,7 +133,7 @@ var facebookclass= class FacebookBotClass {
 					parameters: {}
 				},
 				headers : {
-					"Authorization" : "Bearer DSWRM5DAQVXBGOH7BQWO455ERSGWRNR6",
+					"Authorization" : "Bearer " + this.global.defaultAuthorizationToken,
 					"Content-Type": "application/json"
 				}
 

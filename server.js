@@ -39,7 +39,8 @@ mongo.connect(url, function(err, db) {
     }else{
       global = {
         threshold : 0.7,
-        responseList : ['Aradığınızı bulamadım','Öğrenmek üzereyim','Başka şekilde tarif eder misin?']
+        responseList : ['Aradığınızı bulamadım','Öğrenmek üzereyim','Başka şekilde tarif eder misin?'],
+        defaultAuthorizationToken : "DSWRM5DAQVXBGOH7BQWO455ERSGWRNR6"
       }
       instanceMongoQueries.insertOne("configuration",global,function(resp){});
     }
@@ -122,7 +123,7 @@ app.delete("/delete/intent", cors(), function(req, res){
   var wit = {
     data : { },
     headers : {
-      "Authorization" : "Bearer DSWRM5DAQVXBGOH7BQWO455ERSGWRNR6",
+      "Authorization" : "Bearer " + global.defaultAuthorizationToken,
       "Content-Type": "application/json"
     }
   }
@@ -149,7 +150,7 @@ app.post("/create/intent", cors(), function(req, res){
       "expressions":[]
     },
     headers : {
-      "Authorization" : "Bearer DSWRM5DAQVXBGOH7BQWO455ERSGWRNR6",
+      "Authorization" : "Bearer " + global.defaultAuthorizationToken,
       "Content-Type": "application/json"
     }
   }
@@ -165,7 +166,7 @@ app.get("/get/witai/entities", function(req, res){
       parameters: {}
     },
     headers : {
-      "Authorization" : "Bearer DSWRM5DAQVXBGOH7BQWO455ERSGWRNR6",
+      "Authorization" : "Bearer " + global.defaultAuthorizationToken,
       "Content-Type": "application/json"
     }
   }
@@ -183,7 +184,7 @@ app.post("/post/intent/expressions", function(req, res){
   		expressions : req.body.expressions
     },
     headers : {
-      "Authorization" : "Bearer DSWRM5DAQVXBGOH7BQWO455ERSGWRNR6",
+      "Authorization" : "Bearer " + global.defaultAuthorizationToken,
       "Content-Type": "application/json"
     }
   }
@@ -198,7 +199,7 @@ app.delete("/delete/intent/expressions", function(req, res){
 	var wit = {
 		data : { },
 		headers : {
-		  "Authorization" : "Bearer DSWRM5DAQVXBGOH7BQWO455ERSGWRNR6",
+		  "Authorization" : "Bearer " + global.defaultAuthorizationToken,
 		  "Content-Type": "application/json"
 		}
 	}
@@ -293,7 +294,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
       parameters: {}
     },
     headers : {
-      "Authorization" : "Bearer DSWRM5DAQVXBGOH7BQWO455ERSGWRNR6",
+      "Authorization" : "Bearer " + global.defaultAuthorizationToken,
       "Content-Type": "application/json"
     }
   }
@@ -552,6 +553,21 @@ app.post('/facebook/post', cors(), function (req, res) {
 	res.send({data : "OK"});
 });
 
+app.post('/witaiDeploy/post', cors(), function (req, res) {
+  console.log(req.body.witDeployment);
+  instanceMongoQueries.updateOne("configuration", {}, { $set: {defaultAuthorizationToken: req.body.witDeployment}}, function(err, resp){
+    res.send({data : "OK"});
+    global.defaultAuthorizationToken = req.body.witDeployment;
+  })
+
+});
+
+app.get('/witaiDeploy/get', cors(), function (req, res) {
+  instanceMongoQueries.find("configuration", function(resp){
+    res.send(resp);
+  })
+});
+
 // angular skype deploy get
 app.get('/skype/get', cors(), function (req, res) {
 	var ref = firebase.database().ref("/deploymentSkype");
@@ -587,7 +603,7 @@ app.post('/witai/validate', function(req, res){
   		expressions : [req.body.message]
     },
     headers : {
-      "Authorization" : "Bearer DSWRM5DAQVXBGOH7BQWO455ERSGWRNR6",
+      "Authorization" :"Bearer " + global.defaultAuthorizationToken,
       "Content-Type": "application/json"
     }
   }
