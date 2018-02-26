@@ -9,6 +9,7 @@ var SkypeClass = require('./skype/skypeClass');
 var Client = require('node-rest-client').Client;
 var Carousel = require('./views/carousel');
 const queryString = require('query-string');
+var path = require('path');
 var client = new Client();
 
 
@@ -49,10 +50,13 @@ app.use(function (req, res, next) {
     next();
 });
 
+app.use(express.static(path.join(__dirname, 'webchat')));
 
-app.get('/webchat', function(req, res){
-  res.sendFile(__dirname + "/webchat/webchat.html");
+
+app.get('/chat_images.png', function(req, res){
+  res.sendFile(__dirname + "/chat_images.png");
 })
+
 // html i ekrana basıyor
 app.get('/', function(req, res){
     res.sendFile(__dirname + '/MessageDefinitionForIntent.html');
@@ -100,6 +104,24 @@ app.get("/mongo/findByLimitTen/:collectionName", function(req, res){
 
 app.post("/mongo/findByQuery/:collectionName", function(req, res){
   instanceMongoQueries.findByQuery(req.params.collectionName, req.body.query, function(result){
+    res.send(result);
+  });
+});
+
+app.post("/mongo/findByQueryForMessages/", function(req, res){
+  instanceMongoQueries.findByQuery("messages", req.body.query, function(result){
+    for(var i = 0 ; i < result.length ; i++){
+
+      if(result[i].message.text[0] == ":" && result[i].message.text[(result[i].message.text.length - 1)] == ":")
+      var resultEmoji = result[i];
+      instanceMongoQueries.findByQuery("emoji",{text:result[i].message.text} ,function(response){
+        if(response.length > 0){
+          resultEmoji = {user_id :"BOT" , type:"text", message : {text : response[0].image}}
+        }else{
+          resultEmoji = {user_id :"BOT" , type:"text", message : {text : ":)"}}
+        }
+      });
+    }
     res.send(result);
   });
 });
@@ -294,7 +316,14 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
             }
 
           }else{
-              res.send({resp : "NOT_FOUND"});
+            var random = Math.floor(Math.random() * (global.responseList.length - 1));
+            var text = global.responseList[random];
+            req.body.obj.created_date = new Date();
+            instanceMongoQueries.insertOne(req.params.collectionName, req.body.obj, function(resp, obj){});
+            var obj = {"transaction":req.body.obj.transaction, "message":{text : text}, "user_id":"BOT", "created_date": new Date()};
+            instanceMongoQueries.insertOne(req.params.collectionName, obj, function(resp, obj){});
+            instanceMongoQueries.insertOne("training_messages", req.body.obj, function(resp, obj){});
+            res.send({text : text});
           }
       });
 

@@ -10,6 +10,9 @@
 		  crossorigin="anonymous">
 		</script>
 
+		<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css" rel="stylesheet">
+		<link href="lib/css/emoji.css" rel="stylesheet">
+
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 
 		<!-- Optional theme -->
@@ -163,7 +166,7 @@
 			var load = {
 				load : function(){
 					var request = $.ajax({
-						url: "/mongo/findByQuery/messages",
+						url: "/mongo/findByQueryForMessages/",
 						method: "POST",
 						data: {
 							query : {}
@@ -201,8 +204,8 @@
 			};
 			// quickReply show hide and sen message
 			var quickReplyFunc = function(text, event){
-				$(".input input").val(text);
-				$(".input input").trigger("keypress", [ "Automatically"]);
+				$("..input .text-left .emoji-wysiwyg-editor").val(text);
+				$("..input .text-left .emoji-wysiwyg-editor").trigger("keypress", [ "Automatically"]);
 				var el = event.target ||event.srcElement;
 				$(el).parent().hide();
 			};
@@ -215,46 +218,9 @@
 				//load all messages at mongodb
 				load.load();
 				//Key press enter after writing message triggers this function
-				$(".input input").on('keypress',function(event, parameter){
-						if(event.which == 13 || parameter){
-								//user write
-								$('#container .main-ul').append('<li class="mine"><div class="text"><span>'+event.target.value+'</span></div><br/></li>');
-								$("#container").animate({ scrollTop: $('#container ul').height()});
-								var request = $.ajax({
-								  url: "/api/getMessage/witai/messages",
-								  method: "POST",
-								  data: {
-										"obj":
-										{"transaction":new Date().getTime(),"message":{"text" : event.target.value},"user_id":"gilleez","created_date": new Date()}
-									},
-								  dataType: "json"
-								});
-								request.done(function( msg ) {
-											event.target.value = "";
-											if(msg.type && msg.type=="carousel"){
-												$('#container .main-ul').append('<li class="bot">'+views.carousel(msg)+'</li>');
-												slider.createSlider($(".slider_"+msg.intent));
-											}else if(msg.type && msg.type=="quickReply"){
-												$('#container .main-ul').append('<li class="bot">'+views.quickReply(msg)+'</li>');
-											}
-											else if(msg.type && msg.type=="listTemplate"){
-												$('#container .main-ul').append('<li class="bot">'+views.listTemplate(msg)+'</li>');
-											}
-											else if(msg.type && (msg.type=="genericButtons" || msg.type == "attachment")){
-												$('#container .main-ul').append('<li class="bot">'+views.genericButtons(msg)+'</li>');
-											}
-											else{
-													$('#container .main-ul').append('<li class="bot"><div class="text"><span>'+msg.text+'</span></div><br/></li>');
-											}
-											$("#container").animate({ scrollTop: $('#container ul').height()});
-								});
-								request.fail(function( jqXHR, textStatus ) {
-								  alert( "Request failed: " + textStatus );
-								});
-						}
-				});
+
 				$("#container").on("shown.bs.collapse", function(){
-			  	$("#container").animate({ scrollTop: $('#container ul').height()}, 1000);
+			  	$("#container").animate({ scrollTop: $('#container ul').height()}, 0);
 			  });
 			});
 		</script>
@@ -633,11 +599,93 @@
 							<li><a href="#">Separated link</a></li>
 							<li role="separator" class="divider"></li>
 					 	</ul>
-					</span><input type="text" name="input" placeholder="Please write a message" style="border:none"/>
-				 <a class="image" href="#"></a>
+					</span>
+					<a class="image" href="#"></a>
+					<div class="text-left">
+            <p class="lead emoji-picker-container">
+              <input type="text" class="form-control" name="input" placeholder="Please write a message" style="border:none" data-emojiable="true">
+            </p>
+					</div>
+
 			 </div>
 		  </div>
 		</div>
+		<script src="lib/js/config.js"></script>
+	  <script src="lib/js/util.js"></script>
+	  <script src="lib/js/jquery.emojiarea.js"></script>
+	  <script src="lib/js/emoji-picker.js"></script>
 
+		<script>
+      $(function() {
+        // Initializes and creates emoji set from sprite sheet
+        window.emojiPicker = new EmojiPicker({
+          emojiable_selector: '[data-emojiable=true]',
+          assetsPath: '../lib/img/',
+          popupButtonClasses: 'fa fa-smile-o'
+        });
+        // Finds all elements with `emojiable_selector` and converts them to rich emoji input fields
+        // You may want to delay this step if you have dynamically created input fields that appear later in the loading process
+        // It can be called as many times as necessary; previously converted input fields will not be converted again
+        window.emojiPicker.discover();
+
+				$(".input .text-left .emoji-wysiwyg-editor").on('keypress',function(event, parameter){
+
+						if(event.which == 13 || parameter){
+								//user write
+								var el = event.target.innerHTML;
+								$('#container .main-ul').append('<li class="mine"><div class="text"><span>'+el+'</span></div><br/></li>');
+								$("#container").animate({ scrollTop: $('#container ul').height()});
+
+
+								var text = "";
+
+								if(el.indexOf(":")<0 && $(el).length > 0 ){
+									$.each($(el),function(index,value){
+										text += $(value).attr('alt') ? $(value).attr('alt') : value.textContent;
+									});
+								}else{
+										if(el.indexOf(":")<0)
+											text += $(el).attr('alt') ? $(el).attr('alt') : el;
+										else {
+											text = el;
+										}
+								}
+
+
+								var request = $.ajax({
+								  url: "/api/getMessage/witai/messages",
+								  method: "POST",
+								  data: {
+										"obj":
+										{"transaction":new Date().getTime(),"message":{"text" : text },"user_id":"gilleez","created_date": new Date()}
+									},
+								  dataType: "json"
+								});
+								request.done(function( msg ) {
+											event.target.innerHTML = "";
+											if(msg.type && msg.type=="carousel"){
+												$('#container .main-ul').append('<li class="bot">'+views.carousel(msg)+'</li>');
+												slider.createSlider($(".slider_"+msg.intent));
+											}else if(msg.type && msg.type=="quickReply"){
+												$('#container .main-ul').append('<li class="bot">'+views.quickReply(msg)+'</li>');
+											}
+											else if(msg.type && msg.type=="listTemplate"){
+												$('#container .main-ul').append('<li class="bot">'+views.listTemplate(msg)+'</li>');
+											}
+											else if(msg.type && (msg.type=="genericButtons" || msg.type == "attachment")){
+												$('#container .main-ul').append('<li class="bot">'+views.genericButtons(msg)+'</li>');
+											}
+											else{
+													$('#container .main-ul').append('<li class="bot"><div class="text"><span>'+msg.text+'</span></div><br/></li>');
+											}
+											$("#container").animate({ scrollTop: $('#container ul').height()});
+								});
+								request.fail(function( jqXHR, textStatus ) {
+								  alert( "Request failed: " + textStatus );
+								});
+						}
+				});
+      });
+    </script>
 	</body>
 </html>
