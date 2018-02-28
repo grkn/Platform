@@ -143,7 +143,7 @@
 						  +'<ul >'
 							+	'<li>'
 									+'<div class="text-title-subtitle">'
-										+'<div class="text"><span>'+obj.text[0].text+'</span></div>';
+										+'<div class="text" style="display:block"><span>'+obj.text[0].text+'</span></div>';
 										var buttons = "";
 										for(var i = 0; i < obj.text[0].buttons.length; i++){
 											if(obj.text[0].buttons[i].text && obj.text[0].buttons[i].url){
@@ -241,7 +241,7 @@
 				border-bottom-right-radius: 1.0em;
 				border-top-right-radius: 4px;
 				border-top-left-radius: 1.0em;
-				background-color: #3498db;
+				background-image: linear-gradient(to bottom,#5bc0de 0,#2aabd2 100%);
 				color: #fff;
 				display:inline-block;
 			}
@@ -620,7 +620,7 @@
         // Initializes and creates emoji set from sprite sheet
         window.emojiPicker = new EmojiPicker({
           emojiable_selector: '[data-emojiable=true]',
-          assetsPath: '../lib/img/',
+          assetsPath: '../../lib/img/',
           popupButtonClasses: 'fa fa-smile-o'
         });
         // Finds all elements with `emojiable_selector` and converts them to rich emoji input fields

@@ -9,54 +9,53 @@ var mongoQueries = class MongoQueries {
     });
   }
   insertMany(collectionName, obj, callback){
-    this.db.db("platform").collection(collectionName).insertMany(obj, function(err, res) {
+    this.db.db('platform').collection(collectionName).insertMany(obj, function(err, res) {
       if (err) throw err;
-      callback({res:"OK"}, obj);
+      callback({res : 'OK'}, obj);
     });
   }
   insertOne(collectionName, obj, callback){
-    this.db.db("platform").collection(collectionName).insertOne(obj, function(err, res) {
+    this.db.db('platform').collection(collectionName).insertOne(obj, function(err, res) {
       if (err) throw err;
-      callback({res:"OK"}, obj);
+      callback({res : 'OK'}, obj);
     });
   }
   find(collectionName, callback){
-    this.db.db("platform").collection(collectionName).find({}).toArray(function(err, res) {
+    this.db.db('platform').collection(collectionName).find({}).toArray(function(err, res) {
      if (err) throw err;
       callback(res);
     });
   }
   findWithLimit(collectionName, callback){
-    this.db.db("platform").collection(collectionName).find({}).limit(10).toArray(function(err, res) {
+    this.db.db('platform').collection(collectionName).find({}).limit(10).toArray(function(err, res) {
      if (err) throw err;
       callback(res);
     });
   }
   findByQuery(collectionName, query, callback){
-    this.db.db("platform").collection(collectionName).find(query).toArray(function(err, res) {
+    this.db.db('platform').collection(collectionName).find(query).toArray(function(err, res) {
      if (err) throw err;
       callback(res);
     });
   }
   deleteCollection(collectionName){
-      this.db.db("platform").collection(collectionName).drop();
+      this.db.db('platform').collection(collectionName).drop();
   }
   deleteFromTrainingMessage(message, callback){
-    var myquery = {"message":{"text":message}};
-      this.db.db("platform").collection("training_messages").deleteMany(myquery, function(err, obj) {
+    var myquery = {'message' : {'text' : message}};
+      this.db.db('platform').collection('training_messages').deleteMany(myquery, function(err, obj) {
     if (err) throw err;
       callback(obj);
     });
   }
-
   deleteOne(collectionName,query, callback){
-    this.db.db("platform").collection(collectionName).deleteOne(query, function(err, obj) {
+    this.db.db('platform').collection(collectionName).deleteOne(query, function(err, obj) {
       if (err) throw err;
       callback(obj);
     });
   }
   updateOne(collectionName, query, newValues, callback){
-    this.db.db("platform").collection(collectionName).update(query, newValues, function(err, res) {
+    this.db.db('platform').collection(collectionName).update(query, newValues, function(err, res) {
      if (err) throw err;
       callback(res);
     });

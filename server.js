@@ -13,9 +13,7 @@ var path = require('path');
 var client = new Client();
 
 
-
-
-var url = "mongodb://localhost:27017/platform";
+var url = 'mongodb://localhost:27017/platform';
 let instanceMongoQueries;
 
 let global = { }
@@ -23,7 +21,7 @@ let global = { }
 mongo.connect(url, function(err, db) {
   if (err) throw err;
   instanceMongoQueries = new MongoQueries(db);
-  instanceMongoQueries.find("configuration",function(resp){
+  instanceMongoQueries.find('configuration', function(resp){
     console.log(resp);
     if(resp && resp.length > 0){
       global = resp[0];
@@ -31,10 +29,10 @@ mongo.connect(url, function(err, db) {
       global = {
         threshold : 0.7,
         responseList : ['Aradığınızı bulamadım','Öğrenmek üzereyim','Başka şekilde tarif eder misin?'],
-        defaultAuthorizationToken : "DSWRM5DAQVXBGOH7BQWO455ERSGWRNR6",
+        defaultAuthorizationToken : 'DSWRM5DAQVXBGOH7BQWO455ERSGWRNR6',
         facebookDeployment : {}
       }
-      instanceMongoQueries.insertOne("configuration",global,function(resp){});
+      instanceMongoQueries.insertOne('configuration', global, function(resp){});
     }
   })
 });
@@ -52,11 +50,11 @@ app.use(function (req, res, next) {
 
 app.use(express.static(path.join(__dirname, 'webchat')));
 
+app.use(express.static(path.join(__dirname, 'lib')));
 
 app.get('/chat_images.png', function(req, res){
-  res.sendFile(__dirname + "/chat_images.png");
+  res.sendFile(__dirname + '/chat_images.png');
 })
-
 // html i ekrana basıyor
 app.get('/', function(req, res){
     res.sendFile(__dirname + '/MessageDefinitionForIntent.html');
@@ -71,13 +69,13 @@ app.get('/asset/js/index.js', function(req, res){
 });
 
 
-app.get("/mongo/createCollection/:collectionName", function(req, res){
-  instanceMongoQueries.createCollection(req.params.collectionName, function(resp,err){
+app.get('/mongo/createCollection/:collectionName', function(req, res){
+  instanceMongoQueries.createCollection(req.params.collectionName, function(resp, err){
     res.send({resp : 'OK'});
   });
 });
 
-app.post("/mongo/insert/:collectionName", function(req, res){
+app.post('/mongo/insert/:collectionName', function(req, res){
   if(req.body.obj && Array.isArray(req.body.obj)){
       instanceMongoQueries.insertMany(req.params.collectionName, req.body.obj, function(resp, obj){
         res.send(resp);
@@ -90,98 +88,87 @@ app.post("/mongo/insert/:collectionName", function(req, res){
   }
 });
 
-app.get("/mongo/find/:collectionName", function(req, res){
+app.get('/mongo/find/:collectionName', function(req, res){
   instanceMongoQueries.find(req.params.collectionName, function(result){
     res.send(result);
   });
 });
 
-app.get("/mongo/findByLimitTen/:collectionName", function(req, res){
+app.get('/mongo/findByLimitTen/:collectionName', function(req, res){
   instanceMongoQueries.findWithLimit(req.params.collectionName, function(result){
     res.send(result);
   });
 });
 
-app.post("/mongo/findByQuery/:collectionName", function(req, res){
+app.post('/mongo/findByQuery/:collectionName', function(req, res){
   instanceMongoQueries.findByQuery(req.params.collectionName, req.body.query, function(result){
     res.send(result);
   });
 });
 
-app.post("/mongo/findByQueryForMessages/", function(req, res){
-  instanceMongoQueries.findByQuery("messages", req.body.query, function(result){
-    for(var i = 0 ; i < result.length ; i++){
+app.post('/mongo/findByQueryForMessages', function(req, res){
+  instanceMongoQueries.findByQuery('messages', req.body.query, function(result){
 
-      if(result[i].message.text[0] == ":" && result[i].message.text[(result[i].message.text.length - 1)] == ":")
-      var resultEmoji = result[i];
-      instanceMongoQueries.findByQuery("emoji",{text:result[i].message.text} ,function(response){
-        if(response.length > 0){
-          resultEmoji = {user_id :"BOT" , type:"text", message : {text : response[0].image}}
-        }else{
-          resultEmoji = {user_id :"BOT" , type:"text", message : {text : ":)"}}
-        }
-      });
-    }
     res.send(result);
   });
 });
 
-app.get("/mongo/delete/:collectionName", function(req, res){
+app.get('/mongo/delete/:collectionName', function(req, res){
   instanceMongoQueries.deleteCollection(req.params.collectionName);
-  res.send({resp : "OK"});
+  res.send({resp : 'OK'});
 });
 
 // wit e intent olusturyor
-app.delete("/delete/intent", cors(), function(req, res){
+app.delete('/delete/intent', cors(), function(req, res){
   var wit = {
     data : { },
     headers : {
-      "Authorization" : "Bearer " + global.defaultAuthorizationToken,
-      "Content-Type": "application/json"
+      'Authorization' : 'Bearer ' + global.defaultAuthorizationToken,
+      'Content-Type': 'application/json'
     }
   }
-  client.delete("https://api.wit.ai/entities/intent/values/"+encodeURIComponent(req.body.value), wit, function(response){
-    instanceMongoQueries.deleteOne("answers",{key :  req.body.value},function(resp){
-      res.send({resp : "OK"});
+  client.delete('https://api.wit.ai/entities/intent/values/' + encodeURIComponent(req.body.value), wit, function(response){
+    instanceMongoQueries.deleteOne('answers', {'key' :  req.body.value}, function(resp){
+      res.send({resp : 'OK'});
     });
   });
 });
 
 // wit den intent siliyor
-app.post("/create/intent", cors(), function(req, res){
+app.post('/create/intent', cors(), function(req, res){
   var wit = {
     data : {
-      "value" : req.body.value,
-      "expressions":[]
+      'value' : req.body.value,
+      'expressions' : []
     },
     headers : {
-      "Authorization" : "Bearer " + global.defaultAuthorizationToken,
-      "Content-Type": "application/json"
+      'Authorization' : 'Bearer ' + global.defaultAuthorizationToken,
+      'Content-Type': 'application/json'
     }
   }
-  client.post("https://api.wit.ai/entities/intent/values", wit, function(response){
+  client.post('https://api.wit.ai/entities/intent/values', wit, function(response){
     res.send(response);
   });
 });
 
 // wit den intent i getiriyor
-app.get("/get/witai/entities", function(req, res){
+app.get('/get/witai/entities', function(req, res){
   var wit = {
     data : {
       parameters: {}
     },
     headers : {
-      "Authorization" : "Bearer " + global.defaultAuthorizationToken,
-      "Content-Type": "application/json"
+      'Authorization' : 'Bearer ' + global.defaultAuthorizationToken,
+      'Content-Type' : 'application/json'
     }
   }
-  client.get("https://api.wit.ai/entities/intent", wit, function(response){
+  client.get('https://api.wit.ai/entities/intent', wit, function(response){
     res.send(response);
   });
 })
 
 // wit intent ine cümle kaydediyor
-app.post("/post/intent/expressions", function(req, res){
+app.post('/post/intent/expressions', function(req, res){
   console.log(req.body);
   var wit = {
     data : {
@@ -189,56 +176,56 @@ app.post("/post/intent/expressions", function(req, res){
   		expressions : req.body.expressions
     },
     headers : {
-      "Authorization" : "Bearer " + global.defaultAuthorizationToken,
-      "Content-Type": "application/json"
+      'Authorization' : 'Bearer ' + global.defaultAuthorizationToken,
+      'Content-Type' : 'application/json'
     }
   }
-  client.post("https://api.wit.ai/entities/intent/values", wit, function(response){
+  client.post('https://api.wit.ai/entities/intent/values', wit, function(response){
     res.send(response);
   });
 });
 
 // wit intent inden cümle siliyor
-app.delete("/delete/intent/expressions", function(req, res){
+app.delete('/delete/intent/expressions', function(req, res){
   console.log(req.body.expression);
 	var wit = {
 		data : { },
 		headers : {
-		  "Authorization" : "Bearer " + global.defaultAuthorizationToken,
-		  "Content-Type": "application/json"
+		  'Authorization' : 'Bearer ' + global.defaultAuthorizationToken,
+		  'Content-Type' : 'application/json'
 		}
 	}
-	client.delete("https://api.wit.ai/entities/intent/values/"+req.body.value+"/expressions/"+encodeURIComponent(req.body.expression), wit, function(response){
+	client.delete('https://api.wit.ai/entities/intent/values/' + req.body.value + '/expressions/' + encodeURIComponent(req.body.expression), wit, function(response){
 		res.send(response);
 	});
 });
 
 // intent icin cevap ekleme
 app.post('/send/meaningful/sentence', cors(), function (req, res) {
-  instanceMongoQueries.findByQuery("answers",{ key :  req.body.intent },function(resp){
+  instanceMongoQueries.findByQuery('answers', {'key' :  req.body.intent }, function(resp){
     console.log(resp);
     if(resp.length > 0){
-      instanceMongoQueries.updateOne("answers", { key :  req.body.intent },  { $set: { 'key' : req.body.intent, 'value' : req.body.message, 'type' : 'text'}}, function(resp){});
+      instanceMongoQueries.updateOne('answers', { 'key' :  req.body.intent }, { $set: {'key' : req.body.intent, 'value' : req.body.message, 'type' : 'text'}}, function(resp){});
     }else{
-      instanceMongoQueries.insertOne("answers", { 'key' : req.body.intent, 'value' : req.body.message, 'type' : 'text'} , function(resp){});
+      instanceMongoQueries.insertOne('answers', {'key' : req.body.intent, 'value' : req.body.message, 'type' : 'text'} , function(resp){});
     }
 
   })
 
-  res.send({ resp : "OK"});
+  res.send({ resp : 'OK'});
 });
 
 // intent icin cevap getirme
 app.get('/get/meaningful/sentence', cors(), function (req, res) {
-  instanceMongoQueries.findByQuery("answers",{ key :  queryString.parse(req.query()).intent },function(resp){
+  instanceMongoQueries.findByQuery('answers', {'key' :  queryString.parse(req.query()).intent }, function(resp){
       res.send(resp[0]);
   });
 });
 
 // intent icin cevap silme
 app.delete('/delete/meaningful/sentence', cors(), function (req, res) {
-  instanceMongoQueries.deleteOne("answers",{ key :  queryString.parse(req.query()).intent },function(resp){
-    res.send({resp : "OK"});
+  instanceMongoQueries.deleteOne('answers', {'key' :  queryString.parse(req.query()).intent }, function(resp){
+    res.send({resp : 'OK'});
   });
 
 });
@@ -247,17 +234,17 @@ app.delete('/delete/meaningful/sentence', cors(), function (req, res) {
 app.get('/api/getMessage/dialogFlow', cors(), function(req, res){
   var dialog = {
     data : {
-              "lang": "en",
-              "query": queryString.parse(req.query()).message,
-              "sessionId": "12345",
-              "timezone": "Asia/Istanbul"
+              'lang' : 'en',
+              'query' : queryString.parse(req.query()).message,
+              'sessionId' : '12345',
+              'timezone' : 'Asia/Istanbul'
             },
             headers : {
-              "Authorization" : "Bearer 327778ba5583490284a126400602a3b0",
-              "Content-Type": "application/json"
+              'Authorization' : 'Bearer 327778ba5583490284a126400602a3b0',
+              'Content-Type' : 'application/json'
             }
   }
-  client.post("https://api.dialogflow.com/v1/query?v=20183001", dialog, function(response){
+  client.post('https://api.dialogflow.com/v1/query?v=20183001', dialog, function(response){
     let text = response.result.fulfillment.speech;
     res.send({resp : text});
   });
@@ -270,16 +257,16 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
       parameters: {}
     },
     headers : {
-      "Authorization" : "Bearer " + global.defaultAuthorizationToken,
-      "Content-Type": "application/json"
+      'Authorization' : 'Bearer ' + global.defaultAuthorizationToken,
+      'Content-Type' : 'application/json'
     }
   }
-  client.get("https://api.wit.ai/message?q="+encodeURIComponent(req.body.obj.message.text), wit, function(response){
+  client.get('https://api.wit.ai/message?q=' + encodeURIComponent(req.body.obj.message.text), wit, function(response){
     if(response.entities && response.entities.intent && response.entities.intent.length > 0){
       var max = -1;
-      var maxValue = "";
-      for(var i= 0; i < response.entities.intent.length; i++){
-        if(max <response.entities.intent[i].confidence ){
+      var maxValue = '';
+      for(var i = 0; i < response.entities.intent.length; i++){
+        if(max < response.entities.intent[i].confidence){
           maxValue = response.entities.intent[i].value;
           max = response.entities.intent[i].confidence;
         }
@@ -290,16 +277,16 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
         var text = global.responseList[random];
         req.body.obj.created_date = new Date();
         instanceMongoQueries.insertOne(req.params.collectionName, req.body.obj, function(resp, obj){});
-        var obj = {"transaction":req.body.obj.transaction, "message":{text : text}, "user_id":"BOT", "created_date": new Date()};
+        var obj = {'transaction' : req.body.obj.transaction, 'message' : {text : text}, 'user_id' : 'BOT', 'created_date' : new Date()};
         instanceMongoQueries.insertOne(req.params.collectionName, obj, function(resp, obj){});
         req.body.obj.confidenceLevel = max;
         req.body.obj.intentName = maxValue;
-        instanceMongoQueries.insertOne("training_messages", req.body.obj, function(resp, obj){});
+        instanceMongoQueries.insertOne('training_messages', req.body.obj, function(resp, obj){});
         res.send({text : text});
         return;
       }
 
-      instanceMongoQueries.findByQuery("answers",{ key :  maxValue },function(response){
+      instanceMongoQueries.findByQuery('answers', {'key' :  maxValue }, function(response){
           console.log(response);
           if(response.length > 0){
             if(req.body.obj){
@@ -309,8 +296,8 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
               instanceMongoQueries.insertOne(req.params.collectionName, req.body.obj, function(resp,obj){
                   res.send({text : response[0].value, type : response[0].type, intent : response[0].key});
               });
-              var obj = {"transaction":req.body.obj.transaction, "message":{text : response[0].value, type : response[0].type, intent : response[0].key}, "user_id":"BOT", "created_date": new Date()};
-              instanceMongoQueries.insertOne(req.params.collectionName,obj,function(resp,obj){
+              var obj = {'transaction' : req.body.obj.transaction, 'message' : {text : response[0].value, type : response[0].type, intent : response[0].key}, 'user_id' : 'BOT', 'created_date' : new Date()};
+              instanceMongoQueries.insertOne(req.params.collectionName, obj, function(resp, obj){
 
               });
             }
@@ -320,9 +307,9 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
             var text = global.responseList[random];
             req.body.obj.created_date = new Date();
             instanceMongoQueries.insertOne(req.params.collectionName, req.body.obj, function(resp, obj){});
-            var obj = {"transaction":req.body.obj.transaction, "message":{text : text}, "user_id":"BOT", "created_date": new Date()};
+            var obj = {'transaction':req.body.obj.transaction, 'message' : {text : text}, 'user_id' : 'BOT', 'created_date' : new Date()};
             instanceMongoQueries.insertOne(req.params.collectionName, obj, function(resp, obj){});
-            instanceMongoQueries.insertOne("training_messages", req.body.obj, function(resp, obj){});
+            instanceMongoQueries.insertOne('training_messages', req.body.obj, function(resp, obj){});
             res.send({text : text});
           }
       });
@@ -332,9 +319,9 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
       var text = global.responseList[random];
       req.body.obj.created_date = new Date();
       instanceMongoQueries.insertOne(req.params.collectionName, req.body.obj, function(resp, obj){});
-      var obj = {"transaction":req.body.obj.transaction, "message":{text : text}, "user_id":"BOT", "created_date": new Date()};
+      var obj = {'transaction' : req.body.obj.transaction, 'message' : {text : text}, 'user_id' : 'BOT', 'created_date' : new Date()};
       instanceMongoQueries.insertOne(req.params.collectionName, obj, function(resp, obj){});
-      instanceMongoQueries.insertOne("training_messages", req.body.obj, function(resp, obj){});
+      instanceMongoQueries.insertOne('training_messages', req.body.obj, function(resp, obj){});
       res.send({text : text});
     }
   });
@@ -342,87 +329,104 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
 
 
 app.post('/view/create/carousel', cors(), function(req, res){
-  instanceMongoQueries.findByQuery("answers",{ key :  req.body.intent },function(resp){
+  instanceMongoQueries.findByQuery('answers', {'key' : req.body.intent}, function(resp){
       if(resp.length > 0){
-        instanceMongoQueries.updateOne("answers", { key :  req.body.intent },  { $set:  { 'key' : req.body.intent, 'value' : req.body.obj, 'type' : 'carousel'}}, function(resp){});
+        instanceMongoQueries.updateOne('answers', {'key' : req.body.intent}, {$set :  {'key' : req.body.intent, 'value' : req.body.obj, 'type' : 'carousel'}}, function(resp){});
       }else{
-        instanceMongoQueries.insertOne("answers",  { 'key' : req.body.intent, 'value' : req.body.obj, 'type' : 'carousel'} , function(resp){});
+        instanceMongoQueries.insertOne('answers', {'key' : req.body.intent, 'value' : req.body.obj, 'type' : 'carousel'} , function(resp){});
       }
-        res.send({ resp : "OK"});
+        res.send({ resp : 'OK'});
     });
 });
 
 app.post('/view/get/carousel', cors(), function(req, res){
-  instanceMongoQueries.findByQuery("answers",{ key :  req.body.intent },function(resp){
+  instanceMongoQueries.findByQuery('answers', {'key' : req.body.intent}, function(resp){
       res.send(resp[0]);
   });
 });
 
 app.post('/view/create/quickReply', cors(), function(req, res){
-  instanceMongoQueries.findByQuery("answers",{ key :  req.body.intent },function(resp){
+  instanceMongoQueries.findByQuery('answers', {'key' : req.body.intent}, function(resp){
       if(resp.length > 0){
-        instanceMongoQueries.updateOne("answers", { key :  req.body.intent },  { $set:  {'key' : req.body.intent, 'value' : req.body.quickReply, 'type' : 'quickReply'}}, function(resp){});
+        instanceMongoQueries.updateOne('answers', {'key' : req.body.intent}, {$set : {'key' : req.body.intent, 'value' : req.body.quickReply, 'type' : 'quickReply'}}, function(resp){});
       }else{
-        instanceMongoQueries.insertOne("answers",  {'key' : req.body.intent, 'value' : req.body.quickReply, 'type' : 'quickReply'}, function(resp){});
+        instanceMongoQueries.insertOne('answers', {'key' : req.body.intent, 'value' : req.body.quickReply, 'type' : 'quickReply'}, function(resp){});
       }
-        res.send({ resp : "OK"});
+        res.send({ resp : 'OK'});
     });
 });
 
 app.post('/view/get/quickReply', cors(), function(req, res){
-  instanceMongoQueries.findByQuery("answers",{ key :  req.body.intent },function(resp){
+  instanceMongoQueries.findByQuery('answers', {'key' : req.body.intent }, function(resp){
       res.send(resp[0]);
   });
 });
 
-app.post('/view/create/listTemplate', cors(), function(req, res){
-  instanceMongoQueries.findByQuery("answers",{ key :  req.body.intent },function(resp){
+app.post('/view/get/emoji', cors(), function(req, res){
+  instanceMongoQueries.findByQuery('answers', {'key' : req.body.intent }, function(resp){
+      res.send(resp[0]);
+  });
+});
+
+app.post('/view/create/emoji', cors(), function(req, res){
+  instanceMongoQueries.findByQuery('answers', {'key' : req.body.intent}, function(resp){
       if(resp.length > 0){
-        instanceMongoQueries.updateOne("answers", { key :  req.body.intent },  { $set:  {'key' : req.body.intent, 'value' : req.body.listTemplate, 'type' : 'listTemplate'}}, function(resp){});
+        instanceMongoQueries.updateOne('answers', {'key' : req.body.intent}, {$set : {'key' : req.body.intent, 'value' : req.body.emoji, 'type' : 'emoji'}}, function(resp){});
       }else{
-        instanceMongoQueries.insertOne("answers",  {'key' : req.body.intent, 'value' : req.body.listTemplate, 'type' : 'listTemplate'}, function(resp){});
+        instanceMongoQueries.insertOne('answers', {'key' : req.body.intent, 'value' : req.body.emoji, 'type' : 'emoji'}, function(resp){});
       }
-        res.send({ resp : "OK"});
+        res.send({ resp : 'OK'});
+    });
+});
+
+app.post('/view/create/listTemplate', cors(), function(req, res){
+  instanceMongoQueries.findByQuery('answers', {'key' : req.body.intent}, function(resp){
+      if(resp.length > 0){
+        instanceMongoQueries.updateOne('answers', {'key' : req.body.intent}, {$set : {'key' : req.body.intent, 'value' : req.body.listTemplate, 'type' : 'listTemplate'}}, function(resp){});
+      }else{
+        instanceMongoQueries.insertOne('answers', {'key' : req.body.intent, 'value' : req.body.listTemplate, 'type' : 'listTemplate'}, function(resp){});
+      }
+        res.send({ resp : 'OK'});
     });
 });
 
 app.post('/view/get/listTemplate', cors(), function(req, res){
-  instanceMongoQueries.findByQuery("answers",{ key :  req.body.intent },function(resp){
+  instanceMongoQueries.findByQuery('answers', {'key' : req.body.intent }, function(resp){
       res.send(resp[0]);
   });
 });
 
 app.post('/view/create/genericButtons', cors(), function(req, res){
-    instanceMongoQueries.findByQuery("answers",{ key :  req.body.intent },function(resp){
+    instanceMongoQueries.findByQuery('answers', {'key' : req.body.intent}, function(resp){
       if(resp.length > 0){
-        instanceMongoQueries.updateOne("answers", { key :  req.body.intent },  { $set:  {'key' : req.body.intent, 'value' : req.body.genericButtons, 'type' : 'genericButtons'}}, function(resp){});
+        instanceMongoQueries.updateOne('answers', {'key' : req.body.intent}, {$set : {'key' : req.body.intent, 'value' : req.body.genericButtons, 'type' : 'genericButtons'}}, function(resp){});
       }else{
-        instanceMongoQueries.insertOne("answers",  {'key' : req.body.intent, 'value' : req.body.genericButtons, 'type' : 'genericButtons'}, function(resp){});
+        instanceMongoQueries.insertOne('answers', {'key' : req.body.intent, 'value' : req.body.genericButtons, 'type' : 'genericButtons'}, function(resp){});
       }
-        res.send({ resp : "OK"});
+        res.send({ resp : 'OK'});
     });
 });
 
 app.post('/view/get/genericButtons', cors(), function(req, res){
-  instanceMongoQueries.findByQuery("answers",{ key :  req.body.intent },function(resp){
+  instanceMongoQueries.findByQuery('answers', {'key' : req.body.intent }, function(resp){
       res.send(resp[0]);
   });
 });
 
 app.post('/view/create/attachment', cors(), function(req, res){
-  instanceMongoQueries.findByQuery("answers",{ key :  req.body.intent },function(resp){
+  instanceMongoQueries.findByQuery('answers', {'key' : req.body.intent}, function(resp){
     if(resp.length > 0){
-      instanceMongoQueries.updateOne("answers", { key :  req.body.intent },  { $set:  {'key' : req.body.intent, 'value' : req.body.attachments, 'type' : 'attachment'}}, function(resp){});
+      instanceMongoQueries.updateOne('answers', {'key' : req.body.intent}, {$set :  {'key' : req.body.intent, 'value' : req.body.attachments, 'type' : 'attachment'}}, function(resp){});
     }else{
-      instanceMongoQueries.insertOne("answers", {'key' : req.body.intent, 'value' : req.body.attachments, 'type' : 'attachment'}, function(resp){});
+      instanceMongoQueries.insertOne('answers', {'key' : req.body.intent, 'value' : req.body.attachments, 'type' : 'attachment'}, function(resp){});
     }
-      res.send({ resp : "OK"});
+      res.send({ resp : 'OK'});
   });
 
 });
 
 app.post('/view/get/attachment', cors(), function(req, res){
-  instanceMongoQueries.findByQuery("answers",{ key :  req.body.intent },function(resp){
+  instanceMongoQueries.findByQuery('answers', {'key' : req.body.intent }, function(resp){
       res.send(resp[0]);
   });
 });
@@ -430,7 +434,7 @@ app.post('/view/get/attachment', cors(), function(req, res){
 
 // angular facebook deploy get
 app.get('/facebook/get', cors(), function (req, res) {
-  instanceMongoQueries.find("configuration", function(resp){
+  instanceMongoQueries.find('configuration', function(resp){
     res.send(resp);
   })
 });
@@ -438,7 +442,7 @@ app.get('/facebook/get', cors(), function (req, res) {
 // angular facebook deploy post
 app.post('/facebook/post', cors(), function (req, res) {
   console.log(req.body.facebookDeployment);
-  instanceMongoQueries.updateOne("configuration", {}, { $set: {facebookDeployment: req.body.facebookDeployment}}, function(err, resp){
+  instanceMongoQueries.updateOne('configuration', {}, { $set : {facebookDeployment : req.body.facebookDeployment}}, function(err, resp){
     global.facebookDeployment = req.body.facebookDeployment;
   })
 	var facebookClass = new FaceBookClass(
@@ -448,19 +452,19 @@ app.post('/facebook/post', cors(), function (req, res) {
     req.body.facebookDeployment.accessToken,
     req.body.facebookDeployment.verifyToken,global,instanceMongoQueries);
 	facebookClass.botListen();
-	res.send({data : "OK"});
+	res.send({data : 'OK'});
 });
 
 app.post('/witaiDeploy/post', cors(), function (req, res) {
-  instanceMongoQueries.updateOne("configuration", {}, { $set: {defaultAuthorizationToken: req.body.witDeployment}}, function(err, resp){
-    res.send({data : "OK"});
+  instanceMongoQueries.updateOne('configuration', {}, {$set : {defaultAuthorizationToken : req.body.witDeployment}}, function(err, resp){
+    res.send({data : 'OK'});
     global.defaultAuthorizationToken = req.body.witDeployment;
   })
 
 });
 
 app.get('/witaiDeploy/get', cors(), function (req, res) {
-  instanceMongoQueries.find("configuration", function(resp){
+  instanceMongoQueries.find('configuration', function(resp){
     res.send(resp);
   })
 });
@@ -479,37 +483,37 @@ app.post('/witai/validate', function(req, res){
   		expressions : [req.body.message]
     },
     headers : {
-      "Authorization" :"Bearer " + global.defaultAuthorizationToken,
-      "Content-Type": "application/json"
+      'Authorization' : 'Bearer ' + global.defaultAuthorizationToken,
+      'Content-Type' : 'application/json'
     }
   }
-  client.post("https://api.wit.ai/entities/intent/values", wit, function(response){
+  client.post('https://api.wit.ai/entities/intent/values', wit, function(response){
     instanceMongoQueries.deleteFromTrainingMessage(req.body.message, function(resp){
       res.send(resp);
     });
   });
 });
 
-app.get("/change/threshold/:threshold", function(req, res){
+app.get('/change/threshold/:threshold', function(req, res){
   global.threshold = req.params.threshold;
-  instanceMongoQueries.updateOne("configuration", {}, { $set: {threshold: req.params.threshold }}, function(err, resp){
+  instanceMongoQueries.updateOne('configuration', {}, {$set : {threshold : req.params.threshold }}, function(err, resp){
     res.send(resp);
   })
 });
 
-app.get("/get/threshold/", function(req, res){
-  instanceMongoQueries.find("configuration", function(resp){
+app.get('/get/threshold/', function(req, res){
+  instanceMongoQueries.find('configuration', function(resp){
     res.send(resp);
   })
 });
-app.get("/add/responseList/:response", function(req, res){
-  instanceMongoQueries.updateOne("configuration", {}, { $push: {responseList: req.params.response}}, function(err, resp){
+app.get('/add/responseList/:response', function(req, res){
+  instanceMongoQueries.updateOne('configuration', {}, {$push : {responseList : req.params.response}}, function(err, resp){
     res.send(resp);
   })
 });
 
-app.delete("/delete/responseList/:response", function(req, res){
-  instanceMongoQueries.updateOne("configuration", {}, { $pull: {responseList: req.params.response}}, function(err, resp){
+app.delete('/delete/responseList/:response', function(req, res){
+  instanceMongoQueries.updateOne('configuration', {}, {$pull : {responseList : req.params.response}}, function(err, resp){
     res.send(resp);
   })
 });

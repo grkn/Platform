@@ -7,10 +7,10 @@ var genericButtons = class GenericButtons {
     var buttons = [];
     for(var i = 0; i < array.length ; i++){
       var aButton = {}
-      if(array[i].url && array[i].url != "" ){
-        aButton = {"type" : "web_url" , "url" : "https://b050986c.eu.ngrok.io/",title: array[i].name,"webview_height_ratio": "full","messenger_extensions": true,"fallback_url": "https://b050986c.eu.ngrok.io/fallback"};
+      if(array[i].url && array[i].url != '' ){
+        aButton = {'type' : 'web_url' , 'url' : 'https://b050986c.eu.ngrok.io/', 'title' : array[i].name, 'webview_height_ratio' : 'full', 'messenger_extensions' : true, 'fallback_url' : 'https://b050986c.eu.ngrok.io/fallback'};
       }else{
-        aButton = {type : "postback", title : array[i].name,payload : array[i].text};
+        aButton = {'type' : 'postback', 'title' : array[i].name, 'payload' : array[i].text};
       }
       console.log(aButton);
       buttons.push(aButton);
@@ -19,7 +19,7 @@ var genericButtons = class GenericButtons {
   }
 
   createAGenericButtons(text, buttons){
-    return {elements : [{"title" : text, "buttons" : this.createButtons(buttons)}]};
+    return {elements : [{'title' : text, 'buttons' : this.createButtons(buttons)}]};
   }
   createGenericButtons(){
     console.log(this.list);
@@ -29,12 +29,3 @@ var genericButtons = class GenericButtons {
 }
 
 module.exports = genericButtons;
-/*
-let buttonGen = {elements : [
-                      {title : 'Please choose',
-                       buttons:[
-                       {type:'postback', title:'AAAA', payload:'aaa'},
-                       {type:'postback', title:'BBBBB', payload:'bbb'},
-                       {type:'phone_number', title:'Telefon', payload:'phonenumber'}
-                      ]}]};
-*/
