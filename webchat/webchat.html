@@ -189,11 +189,18 @@
 								else if(msg[i].message.type && (msg[i].message.type=="genericButtons" || msg[i].message.type=="attachment")){
 									$('#container .main-ul').append('<li class="bot">'+views.genericButtons(msg[i].message)+'</li>');
 								}
-								else{
+								else if(msg[i].message.type && msg[i].message.type=="emoji"){
+									$('#container .main-ul').append('<li class="bot"><div class="text"><span>'+msg[i].message.text.image+'</span></div><br/></li>');
+								}else{
 									$('#container .main-ul').append('<li class="bot"><div class="text"><span>'+msg[i].message.text+'</span></div><br/></li>');
 								}
 							}else{
-								$('#container .main-ul').append('<li class="mine"><div class="text"><span>'+msg[i].message.text+'</span></div><br/></li>');
+								if(msg[i].message.type && msg[i].message.type=='emoji'){
+									$('#container .main-ul').append('<li class="mine"><div class="text"><span>'+msg[i].message.text.image+'</span></div><br/></li>');
+								}else {
+									$('#container .main-ul').append('<li class="mine"><div class="text"><span>'+msg[i].message.text+'</span></div><br/></li>');
+								}
+
 							}
 						}
 					});
@@ -587,7 +594,7 @@
 						</div>
 					</li>
 				</ul>
-				<div class="input" style="width:280px;border:1px solid #c3c3c3;height:50px;">
+				<div class="input" style="width:280px; border-top:1px solid #c3c3c3; height:50px;">
 					<span class="persistenceMenu glyphicon glyphicon-menu-hamburger" >
 						<ul class="custom-drop-down ">
 							<li><a href="#">Action</a></li>
@@ -635,22 +642,17 @@
 								var el = event.target.innerHTML;
 								$('#container .main-ul').append('<li class="mine"><div class="text"><span>'+el+'</span></div><br/></li>');
 								$("#container").animate({ scrollTop: $('#container ul').height()});
-
-
 								var text = "";
 
-								if(el.indexOf(":")<0 && $(el).length > 0 ){
-									$.each($(el),function(index,value){
-										text += $(value).attr('alt') ? $(value).attr('alt') : value.textContent;
-									});
-								}else{
-										if(el.indexOf(":")<0)
-											text += $(el).attr('alt') ? $(el).attr('alt') : el;
-										else {
+								if(el.match(/(<img\s[^>]*?src\s*=\s*['\"]([^'\"]*?)['\"][^>]*?>)/g) && el.match(/(<img\s[^>]*?src\s*=\s*['\"]([^'\"]*?)['\"][^>]*?>)/g).length <= 1){
+									try{
+										text = $(el).attr("alt") ? $(el).attr("alt") : el;
+									}catch(err){
 											text = el;
-										}
+									}
+								}else{
+									text = el;
 								}
-
 
 								var request = $.ajax({
 								  url: "/api/getMessage/witai/messages",
@@ -675,8 +677,11 @@
 											else if(msg.type && (msg.type=="genericButtons" || msg.type == "attachment")){
 												$('#container .main-ul').append('<li class="bot">'+views.genericButtons(msg)+'</li>');
 											}
-											else{
-													$('#container .main-ul').append('<li class="bot"><div class="text"><span>'+msg.text+'</span></div><br/></li>');
+											else if(msg.type && msg.type =="emoji")
+											{
+													$('#container .main-ul').append('<li class="bot"><div class="text"><span>'+msg.text.image+'</span></div><br/></li>');
+											}else{
+												$('#container .main-ul').append('<li class="bot"><div class="text"><span>'+msg.text+'</span></div><br/></li>');
 											}
 											$("#container").animate({ scrollTop: $('#container ul').height()});
 								});
