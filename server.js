@@ -128,9 +128,22 @@ app.delete('/delete/intent', cors(), function(req, res){
     }
   }
   client.delete('https://api.wit.ai/entities/intent/values/' + encodeURIComponent(req.body.value), wit, function(response){
+    instanceMongoQueries.deleteOne("subject_intent_relation",{intent: req.body.value},function(resp){});
     instanceMongoQueries.deleteOne('answers', {'key' :  req.body.value}, function(resp){
       res.send({resp : 'OK'});
     });
+  });
+});
+
+app.get("/mongo/get/subjects",cors(),function(req,res){
+  instanceMongoQueries.findByQuery("subject",{},function(resp){
+    res.send(resp);
+  });
+});
+
+app.post("/mongo/post/subject",cors(),function(req,res){
+  instanceMongoQueries.insertOne("subject",{subject : req.body.subject},function(resp){
+    res.send(resp);
   });
 });
 
@@ -147,6 +160,7 @@ app.post('/create/intent', cors(), function(req, res){
     }
   }
   client.post('https://api.wit.ai/entities/intent/values', wit, function(response){
+    instanceMongoQueries.insertOne("subject_intent_relation",{intent: req.body.value,subject : req.body.subject},function(resp){});
     res.send(response);
   });
 });
@@ -263,23 +277,22 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
   }
   var searchedItem = req.body.obj.message.text.replace(/(<img\s[^>]*?src\s*=\s*['\"]([^'\"]*?)['\"][^>]*?>)/g,"");
 
-  instanceMongoQueries.findByQuery("emoji_relation",{"source.text" : searchedItem},function(resppp){
+  instanceMongoQueries.findByQuery('emoji_relation', {'source.text' : searchedItem},function(resppp){
 
       if(resppp.length > 0){
 
-        var msg = {text : resppp[0].target, type : "emoji"};
+        var msg = {text : resppp[0].target, type : 'emoji'};
 
-        var obj = {'transaction' : req.body.obj.transaction, 'message' : {text : resppp[0].source, type : "emoji"}, 'user_id' : 'gilleez', 'created_date' : new Date()};
+        var obj = {'transaction' : req.body.obj.transaction, 'message' : {text : resppp[0].source, type : 'emoji'}, 'user_id' : 'gilleez', 'created_date' : new Date()};
         instanceMongoQueries.insertOne(req.params.collectionName, obj, function(resp,obj){
-            res.send({text : resppp[0].target, type : "emoji"});
+            res.send({text : resppp[0].target, type : 'emoji'});
 
         });
-        obj = {'transaction' : req.body.obj.transaction, 'message' : {text : resppp[0].target, type : "emoji"}, 'user_id' : 'BOT', 'created_date' : new Date()};
+        obj = {'transaction' : req.body.obj.transaction, 'message' : {text : resppp[0].target, type : 'emoji'}, 'user_id' : 'BOT', 'created_date' : new Date()};
         instanceMongoQueries.insertOne(req.params.collectionName, obj, function(resp, obj){
 
         });
       }else{
-
         client.get('https://api.wit.ai/message?q=' + encodeURIComponent(searchedItem), wit, function(response){
           if(response.entities && response.entities.intent && response.entities.intent.length > 0){
 
@@ -305,7 +318,6 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
               res.send({text : text});
               return;
             }
-
             instanceMongoQueries.findByQuery('answers', {'key' :  maxValue }, function(response){
                 console.log(response);
                 if(response.length > 0){
@@ -333,7 +345,6 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                   res.send({text : text});
                 }
             });
-
           }else{
             var random = Math.floor(Math.random() * (global.responseList.length - 1));
             var text = global.responseList[random];
@@ -346,9 +357,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
           }
         });
       }
-
   });
-
 });
 
 
@@ -399,32 +408,36 @@ app.post('/view/create/emoji', cors(), function(req, res){
 });
 
 app.get('/mongo/emojiRelation/get',cors(),function(req,res){
-  instanceMongoQueries.findByQuery("emoji_relation",{},function(resp){
+  instanceMongoQueries.findByQuery('emoji_relation', {}, function(resp){
     res.send(resp);
   });
 });
 
 app.get('/mongo/emoji/get', cors(), function(req, res){
-  instanceMongoQueries.findByQuery("emoji",{},function(resp){
+  instanceMongoQueries.findByQuery('emoji', {}, function(resp){
     res.send(resp);
+  });
+});
+
+app.delete('/delete/emoji/relation',cors(),function(req,res){
+  instanceMongoQueries.deleteOne('emoji_relation', {'source.text' : req.body.text}, function(resp){
+    res.send({ resp : 'OK'});
   });
 });
 
 app.post('/save/emoji/relation', cors(), function(req, res){
   //req.body.emoji , req.body.intent
-  instanceMongoQueries.findByQuery("emoji_relation" , {source : req.body.source},function(resp){
+  instanceMongoQueries.findByQuery('emoji_relation', {source : req.body.source}, function(resp){
       if(resp.length > 0 ){
-        instanceMongoQueries.updateOne("emoji_relation",{source : req.body.source},{source : req.body.source, target : req.body.target},function(resp){
+        instanceMongoQueries.updateOne('emoji_relation', {source : req.body.source}, {source : req.body.source, target : req.body.target}, function(resp){
           res.send(resp);
         });
       }else{
-        instanceMongoQueries.insertOne("emoji_relation",{source : req.body.source, target : req.body.target},function(resp){
+        instanceMongoQueries.insertOne('emoji_relation', {source : req.body.source, target : req.body.target}, function(resp){
           res.send(resp);
         });
       }
   });
-
-
 });
 
 app.post('/view/create/listTemplate', cors(), function(req, res){
@@ -498,7 +511,7 @@ app.post('/facebook/post', cors(), function (req, res) {
     req.body.facebookDeployment.appId,
     req.body.facebookDeployment.appSecret,
     req.body.facebookDeployment.accessToken,
-    req.body.facebookDeployment.verifyToken,global,instanceMongoQueries);
+    req.body.facebookDeployment.verifyToken, global, instanceMongoQueries);
 	facebookClass.botListen();
 	res.send({data : 'OK'});
 });
@@ -554,6 +567,7 @@ app.get('/get/threshold/', function(req, res){
     res.send(resp);
   })
 });
+
 app.get('/add/responseList/:response', function(req, res){
   instanceMongoQueries.updateOne('configuration', {}, {$push : {responseList : req.params.response}}, function(err, resp){
     res.send(resp);
