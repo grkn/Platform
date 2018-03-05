@@ -28,7 +28,7 @@ mongo.connect(url, function(err, db) {
     }else{
       global = {
         threshold : 0.7,
-        responseList : ['Aradığınızı bulamadım','Öğrenmek üzereyim','Başka şekilde tarif eder misin?'],
+        responseList : ['Aradığınızı bulamadım', 'Öğrenmek üzereyim', 'Başka şekilde tarif eder misin?'],
         defaultAuthorizationToken : 'DSWRM5DAQVXBGOH7BQWO455ERSGWRNR6',
         facebookDeployment : {}
       }
@@ -128,21 +128,21 @@ app.delete('/delete/intent', cors(), function(req, res){
     }
   }
   client.delete('https://api.wit.ai/entities/intent/values/' + encodeURIComponent(req.body.value), wit, function(response){
-    instanceMongoQueries.deleteOne("subject_intent_relation",{intent: req.body.value},function(resp){});
+    instanceMongoQueries.deleteOne('subject_intent_relation', {intent: req.body.value}, function(resp){});
     instanceMongoQueries.deleteOne('answers', {'key' :  req.body.value}, function(resp){
       res.send({resp : 'OK'});
     });
   });
 });
 
-app.get("/mongo/get/subjects",cors(),function(req,res){
-  instanceMongoQueries.findByQuery("subject",{},function(resp){
+app.get('/mongo/get/subjects', cors(), function(req, res){
+  instanceMongoQueries.findByQuery('subject', {}, function(resp){
     res.send(resp);
   });
 });
 
-app.post("/mongo/post/subject",cors(),function(req,res){
-  instanceMongoQueries.insertOne("subject",{subject : req.body.subject},function(resp){
+app.post('/mongo/post/subject', cors(), function(req,res){
+  instanceMongoQueries.insertOne('subject', {subject : req.body.subject}, function(resp){
     res.send(resp);
   });
 });
@@ -160,7 +160,7 @@ app.post('/create/intent', cors(), function(req, res){
     }
   }
   client.post('https://api.wit.ai/entities/intent/values', wit, function(response){
-    instanceMongoQueries.insertOne("subject_intent_relation",{intent: req.body.value,subject : req.body.subject},function(resp){});
+    instanceMongoQueries.insertOne('subject_intent_relation', {intent: req.body.value, subject : req.body.subject}, function(resp){});
     res.send(response);
   });
 });
@@ -286,7 +286,6 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
         var obj = {'transaction' : req.body.obj.transaction, 'message' : {text : resppp[0].source, type : 'emoji'}, 'user_id' : 'gilleez', 'created_date' : new Date()};
         instanceMongoQueries.insertOne(req.params.collectionName, obj, function(resp,obj){
             res.send({text : resppp[0].target, type : 'emoji'});
-
         });
         obj = {'transaction' : req.body.obj.transaction, 'message' : {text : resppp[0].target, type : 'emoji'}, 'user_id' : 'BOT', 'created_date' : new Date()};
         instanceMongoQueries.insertOne(req.params.collectionName, obj, function(resp, obj){
