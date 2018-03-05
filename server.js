@@ -135,15 +135,54 @@ app.delete('/delete/intent', cors(), function(req, res){
   });
 });
 
+app.post('/mongo/post/subjectRelation',cors(),function(req,res){
+  instanceMongoQueries.findByQuery('subject_intent_relation',{intent : req.body.intent,subject : req.body.subject},function(response){
+    if(response.length == 0){
+      instanceMongoQueries.insertOne('subject_intent_relation', {intent: req.body.intent, subject : req.body.subject}, function(resp){
+        res.send({resp : "OK"});
+      });
+    }else{
+      instanceMongoQueries.updateOne('subject_intent_relation', {intent: req.body.intent},{intent: req.body.intent , subject : req.body.subject}, function(resp){
+        res.send({resp : "OK"});
+      });
+    }
+  })
+
+});
+
+app.post('/mongo/get/subject',cors(),function(req,res){
+
+  instanceMongoQueries.findByQuery('subject_intent_relation', {intent :  req.body.intent}, function(resp){
+    res.send(resp);
+  });
+})
+
+app.delete('/mongo/delete/subjectRelation',cors(),function(req,res){
+    instanceMongoQueries.deleteOne('subject_intent_relation', {intent: req.body.intent , subject : req.body.subject}, function(resp){
+        res.send(resp);
+    });
+});
+
 app.get('/mongo/get/subjects', cors(), function(req, res){
   instanceMongoQueries.findByQuery('subject', {}, function(resp){
     res.send(resp);
   });
 });
 
-app.post('/mongo/post/subject', cors(), function(req,res){
-  instanceMongoQueries.insertOne('subject', {subject : req.body.subject}, function(resp){
+
+app.delete('/mongo/delete/subject', cors(), function(req, res){
+  instanceMongoQueries.deleteOne("subject",{subject : req.body.subject.toLowerCase()},function(resp){
     res.send(resp);
+  });
+});
+
+app.post('/mongo/post/subject', cors(), function(req,res){
+  instanceMongoQueries.findByQuery('subject',{subject : req.body.subject.toLowerCase()}, function(resp){
+    if(resp.length == 0){
+      instanceMongoQueries.insertOne('subject', {subject : req.body.subject.toLowerCase()}, function(response){
+      });
+    }
+    res.send({resp: "OK"});
   });
 });
 
