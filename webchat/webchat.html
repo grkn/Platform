@@ -11,6 +11,8 @@
 		</script>
 
 		<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css" rel="stylesheet">
+		<link href="lib/css/webchat.css" rel="stylesheet">
+
 		<link href="lib/css/emoji.css" rel="stylesheet">
 
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
@@ -89,7 +91,7 @@
 								+'	<div>'+obj.text[i].subtitle+'</div>';
 								var buttons="";
 								for(var j = 0; j < obj.text[i].buttons.length; j++){
-										buttons +='	<a style="width:250px" href="'+obj.text[i].buttons[j].url+'" type="button" class="btn btn-info">'+obj.text[i].buttons[j].name+'</a>'
+										buttons +='	<a href="'+obj.text[i].buttons[j].url+'" type="button" class="genericbtn2 btn btn-info">'+obj.text[i].buttons[j].name+'</a>'
 								}
 								li += buttons;
 								li+='</div></li>';
@@ -133,7 +135,7 @@
 								listTemplate +='</div>'
 						}
 						listTemplate +='<div class="list-item list-item-last">'
-							+'<div><a target="_blank" href="'+obj.text.viewMoreButtonUrl+'" style="width:250px" type="button" class="btn btn-info">'+obj.text.viewMoreButtonName+'</a></div>'
+							+'<div><a target="_blank" href="'+obj.text.viewMoreButtonUrl+'" type="button" class="genericbtn2 btn btn-info">'+obj.text.viewMoreButtonName+'</a></div>'
 						+'</div>'
 					+'</div>';
 					return listTemplate;
@@ -147,11 +149,11 @@
 										var buttons = "";
 										for(var i = 0; i < obj.text[0].buttons.length; i++){
 											if(obj.text[0].buttons[i].text && obj.text[0].buttons[i].url){
-												buttons += '<a target="_blank" href="'+obj.text[0].buttons[i].url+'" onclick="buttonWrite(\''+obj.text[0].buttons[i].text+'\')" style="width:200px" type="button" class="btn btn-info">'+obj.text[0].buttons[i].name+'</a>';
+												buttons += '<a target="_blank" href="'+obj.text[0].buttons[i].url+'" onclick="buttonWrite(\''+obj.text[0].buttons[i].text+'\')" type="button" class="genericbtn first btn btn-info">'+obj.text[0].buttons[i].name+'</a>';
 											}else if(!obj.text[0].buttons[i].text && obj.text[0].buttons[i].url){
-												buttons += '<a target="_blank" href="'+obj.text[0].buttons[i].url+'" style="width:200px" type="button" class="btn btn-info">'+obj.text[0].buttons[i].name+'</a>';
+												buttons += '<a target="_blank" href="'+obj.text[0].buttons[i].url+'" type="button" class="genericbtn btn btn-info">'+obj.text[0].buttons[i].name+'</a>';
 											}else if(obj.text[0].buttons[i].text && !obj.text[0].buttons[i].url){
-												buttons += '<a onclick="buttonWrite(\''+obj.text[0].buttons[i].text+'\')" style="width:200px" type="button" class="btn btn-info">'+obj.text[0].buttons[i].name+'</a>';
+												buttons += '<a onclick="buttonWrite(\''+obj.text[0].buttons[i].text+'\')"  type="button" class="genericbtn last btn btn-info">'+obj.text[0].buttons[i].name+'</a>';
 											}
 										}
 							genericButtons += buttons;
@@ -196,9 +198,9 @@
 								}
 							}else{
 								if(msg[i].message.type && msg[i].message.type=='emoji'){
-									$('#container .main-ul').append('<li class="mine"><div class="text"><span>'+msg[i].message.text.image+'</span></div><br/></li>');
+									$('#container .main-ul').append('<li class="user"><div class="text"><span>'+msg[i].message.text.image+'</span></div><br/></li>');
 								}else {
-									$('#container .main-ul').append('<li class="mine"><div class="text"><span>'+msg[i].message.text+'</span></div><br/></li>');
+									$('#container .main-ul').append('<li class="user"><div class="text"><span>'+msg[i].message.text+'</span></div><br/></li>');
 								}
 
 							}
@@ -231,230 +233,17 @@
 			  });
 			});
 		</script>
-		<style>
-			*{
-				-webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
-				-moz-box-sizing: border-box; /* Firefox, other Gecko */
-				box-sizing: border-box; /* Opera/IE 8+ */
-			}
-			.mine{
-				text-align:right;
-			}
-			.bot{
-				text-align:left;
-			}
-			.mine .text{
-				border-bottom-left-radius: 1em;
-				border-bottom-right-radius: 1.0em;
-				border-top-right-radius: 4px;
-				border-top-left-radius: 1.0em;
-				background-image: linear-gradient(to bottom,#5bc0de 0,#2aabd2 100%);
-				color: #fff;
-				display:inline-block;
-			}
-			.mine .text span{
-				padding:10px 10px 10px 10px;
-				color: #fff;
-			}
-			.bot .text{
-				background-color: #c3c3c3;
-				border-bottom-left-radius: 1.0em;
-				border-top-left-radius: 4px;
-				border-bottom-right-radius: 1.0em;
-				border-top-right-radius: 1.0em;
-				display:inline-block;
-			}
-			.bot .text span{
-				padding:10px 10px 10px 10px;
-				overflow-wrap: break-word;
-			}
-			.input span{
-				width:9%;
-			}
-			.input input{
-				height:40px;
-				width:80%;
-			}
-			.input .image{
-				display:inline-block;
-				height:16px;
-				width:16px;
-				background-image:url("chat_images.png");
-				background-size: auto;
-				background-position: -34px -89px;
-			}
-			.custom-drop-down{
-				position: absolute;
-				bottom : 50px;
-				left: 0;
-				z-index: 1000;
-				display: none;
-				float: left;
-				min-width: 300px;
-				padding: 5px 0;
-				margin: 2px 0 0;
-				font-size: 14px;
-				text-align: left;
-				list-style: none;
-				background-color: #fff;
-				-webkit-background-clip: padding-box;
-				background-clip: padding-box;
-				border: 1px solid #ccc;
-				border: 1px solid rgba(0,0,0,.15);
-				border-radius: 4px;
-				-webkit-box-shadow: 0 6px 12px rgba(0,0,0,.175);
-				box-shadow: 0 6px 12px rgba(0,0,0,.175);
-			}
-			.custom-drop-down .divider{
-				height: 1px;
-				margin: 9px 0;
-				overflow: hidden;
-				background-color: #e5e5e5;
-			}
-			.custom-drop-down > li > a{
-				display: block;
-				padding: 3px 20px;
-				clear: both;
-				font-weight: 400;
-				line-height: 1.42857143;
-				color: #333;
-				white-space: nowrap;
-			}
-			.generic_button ul{
-				list-style : none;
-				padding-left:0px;
-				margin-left:0px;
-				margin-top:15px;
-			}
-			.generic_button ul li{
-				line-height: 2em;
-			}
-			.generic_button ul li .text-title-subtitle div{
-				margin-bottom:10px;
-			}
-			.generic_button ul li .text-title-subtitle span{
-				padding:10px 10px 10px 10px;
-			}
-			.slider {
-			  position: relative;
-			  overflow: hidden;
-			  margin: 20px auto 0 auto;
-			  border-radius: 4px;
-			}
-			.slider ul {
-			  position: relative;
-			  margin: 0;
-			  padding: 0;
-			  height: 200px;
-			  list-style: none;
-			}
-			.slider ul li {
-			  position: relative;
-			  display: block;
-			  float: left;
-			  margin: 0;
-			  padding: 0;
-			  width: 250px;
-			  height: auto;
-			  text-align: center;
-			  line-height: 150px;
-			}
-			.slider ul li .text-title-subtitle{
-				line-height:20px;
-				width : 250px !important;
-				height: auto;
-				text-align:left;
-				border-bottom : 1px solid #c3c3c3;
-			}
-			a.control_prev, a.control_next {
-			  position: absolute;
-			  top:20%;
-			  z-index: 999;
-			  display: block;
-			  padding: 4% 3%;
-			  width: auto;
-			  height: auto;
-			  background: #2a2a2a;
-			  color: #fff;
-			  text-decoration: none;
-			  font-weight: 600;
-			  font-size: 18px;
-			  opacity: 0.8;
-			  cursor: pointer;
-			}
-			a.control_prev:hover, a.control_next:hover {
-			  opacity: 1;
-			  -webkit-transition: all 0.2s ease;
-			}
-			a.control_prev {
-			  border-radius: 0 2px 2px 0;
-			}
-			a.control_next {
-			  right: 0;
-			  border-radius: 2px 0 0 2px;
-			}
-			.main-ul{
-				list-style:none;
-				line-height: 2.8em;
-				padding-left:10px;
-				padding-right:10px;
-			}
-			#container{
-				width:300px;
-				border:1px solid #c3c3c3;
-				max-height:300px;
-				overflow-y:scroll;
-			}
-			.list-view{
-				border : 1px solid #c3c3c3;
-			}
-			.list-view .list-item{
-				border-bottom : 1px solid #c3c3c3;
-				margin : 5px 5px 5px 5px;
-			}
-			.list-view .list-item-last{
-				border-bottom : none !important;
-				margin : 5px 5px 5px 5px;
-			}
-			.list-view .list-item .btn-info{
-				margin-bottom:5px;
-			}
-			.list-view .list-item .title{
-				width:80%;
-				float:left;
-			}
-			.list-view .list-item img{
-				width:20%;
-				float:left;
-			}
-			.quickReply .quickContent{
-				background-color: #c3c3c3;
-				border-bottom-left-radius: 1.0em;
-				border-top-left-radius: 4px;
-				border-bottom-right-radius: 1.0em;
-				border-top-right-radius: 1.0em;
-			}
-			.quickReply .quickContent span{
-				padding:10px 10px 10px 10px;
-				overflow-wrap: break-word;
-			}
-			.quickReply div button{
-				border-bottom-left-radius: 1.0em;
-				border-top-left-radius: 1.0em;
-				border-bottom-right-radius: 1.0em;
-				border-top-right-radius: 1.0em;
-			}
-		</style>
 	</head>
-	<body style="width:100%;height:100%">
 
+
+	<body style="width:100%;height:100%">
 		<div class="container">
-			<button style="width:300px" type="button" class="btn btn-info" data-toggle="collapse" data-target="#container">Simple collapsible</button>
+			<button type="button" class="bigbtn btn btn-info" data-toggle="collapse" data-target="#container">Simple collapsible</button>
 			<div id="container" class="collapse">
 				<ul class="main-ul">
 					<li class="bot"><div class="text"><span>AAAAAA aaaaa aaaaaaaaaaa aaaa aaaaaaa</span></div><br/></li>
-					<li class="mine"><div class="text"><span>BBBBB</span></div><br/></li>
-					<li class="mine"><div class="text"><span>CCCCCC</span></div><br/></li>
+					<li class="user"><div class="text"><span>BBBBB</span></div><br/></li>
+					<li class="user"><div class="text"><span>CCCCCC</span></div><br/></li>
 					<li class="bot"><div class="text"><span>DDDDDD</span></div><br/></li>
 					<li class="bot"><div class="text"><span>DDDDDD</span></div><br/></li>
 					<li class="bot"><div class="text"><span>DDDDDD</span></div><br/></li>
@@ -464,9 +253,9 @@
 								<li>
 									<div class="text-title-subtitle">
 										<div class="text"><span>Please select between below options AAAAAA AAAAAAAAA AAAAAAAAAAAA AAAAAAAAA</span></div>
-										<button style="width:200px" type="button" class="btn btn-info">Button</button>
-										<button style="width:200px" type="button" class="btn btn-info">Button</button>
-										<button style="width:200px" type="button" class="btn btn-info">Button</button>
+										<button type="button" class="genericbtn first btn ">Button</button>
+										<button type="button" class="genericbtn btn ">Button</button>
+										<button type="button" class="genericbtn last btn ">Button</button>
 									</div>
 								</li>
 						  </ul>
@@ -482,8 +271,8 @@
 									<div class="text-title-subtitle">
 										<div><b>Title</b></div>
 										<div>Subtitle</div>
-										<button style="width:250px" type="button" class="btn btn-info">Button</button>
-										<button style="width:250px" type="button" class="btn btn-info">Button</button>
+										<button type="button" class="genericbtn2 btn btn-info">Button</button>
+										<button type="button" class="genericbtn2 btn btn-info">Button</button>
 									</div>
 								</li>
 								<li>
@@ -491,7 +280,7 @@
 									<div class="text-title-subtitle">
 										<div><b>Title</b></div>
 										<div>Subtitle</div>
-										<button style="width:250px" type="button" class="btn btn-info">Button</button>
+										<button type="button" class="genericbtn2 btn btn-info">Button</button>
 									</div>
 								</li>
 								<li>
@@ -499,9 +288,9 @@
 									<div class="text-title-subtitle">
 										<div><b>Title</b></div>
 										<div>Subtitle</div>
-										<button style="width:250px" type="button" class="btn btn-info">Button</button>
-										<button style="width:250px" type="button" class="btn btn-info">Button</button>
-										<button style="width:250px" type="button" class="btn btn-info">Button</button>
+										<button  type="button" class="genericbtn2 btn btn-info">Button</button>
+										<button  type="button" class="genericbtn2 btn btn-info">Button</button>
+										<button  type="button" class="genericbtn2 btn btn-info">Button</button>
 									</div>
 								</li>
 						  </ul>
@@ -522,8 +311,8 @@
 									<div class="text-title-subtitle">
 										<div><b>Title</b></div>
 										<div>Subtitle</div>
-										<button style="width:250px" type="button" class="btn btn-info">Button</button>
-										<button style="width:250px" type="button" class="btn btn-info">Button</button>
+										<button  type="button" class="genericbtn2 btn btn-info">Button</button>
+										<button type="button" class="genericbtn2 btn btn-info">Button</button>
 									</div>
 								</li>
 								<li>
@@ -531,7 +320,7 @@
 									<div class="text-title-subtitle">
 										<div><b>Title</b></div>
 										<div>Subtitle</div>
-										<button style="width:250px" type="button" class="btn btn-info">Button</button>
+										<button type="button" class="genericbtn2 btn btn-info">Button</button>
 									</div>
 								</li>
 								<li>
@@ -539,9 +328,9 @@
 									<div class="text-title-subtitle">
 										<div><b>Title</b></div>
 										<div>Subtitle</div>
-										<button style="width:250px" type="button" class="btn btn-info">Button</button>
-										<button style="width:250px" type="button" class="btn btn-info">Button</button>
-										<button style="width:250px" type="button" class="btn btn-info">Button</button>
+										<button type="button" class="genericbtn2 btn btn-info">Button</button>
+										<button type="button" class="genericbtn2 btn btn-info">Button</button>
+										<button type="button" class="genericbtn2 btn btn-info">Button</button>
 									</div>
 								</li>
 						  </ul>
@@ -575,7 +364,7 @@
 								<div><button style="width:150px" type="button" class="btn btn-info">Button</button></div>
 							</div>
 							<div class="list-item">
-								<div><button style="width:250px" type="button" class="btn btn-info">View More</button></div>
+								<div><button type="button" class="genericbtn2 btn btn-info">View More</button></div>
 							</div>
 						</div>
 					</li>
@@ -623,6 +412,8 @@
 	  <script src="lib/js/emoji-picker.js"></script>
 
 		<script>
+
+			var subject  = "";
       $(function() {
         // Initializes and creates emoji set from sprite sheet
         window.emojiPicker = new EmojiPicker({
@@ -640,7 +431,7 @@
 						if(event.which == 13 || parameter){
 								//user write
 								var el = event.target.innerHTML;
-								$('#container .main-ul').append('<li class="mine"><div class="text"><span>'+el+'</span></div><br/></li>');
+								$('#container .main-ul').append('<li class="user"><div class="text"><span>'+el+'</span></div><br/></li>');
 								$("#container").animate({ scrollTop: $('#container ul').height()});
 								var text = "";
 
@@ -659,7 +450,7 @@
 								  method: "POST",
 								  data: {
 										"obj":
-										{"transaction":new Date().getTime(),"message":{"text" : text },"user_id":"gilleez","created_date": new Date()}
+										{"transaction":new Date().getTime(),"message":{"text" : subject + " "+text },"user_id":"gilleez","created_date": new Date()}
 									},
 								  dataType: "json"
 								});
@@ -683,6 +474,7 @@
 											}else{
 												$('#container .main-ul').append('<li class="bot"><div class="text"><span>'+msg.text+'</span></div><br/></li>');
 											}
+											subject = msg.subject;
 											$("#container").animate({ scrollTop: $('#container ul').height()});
 								});
 								request.fail(function( jqXHR, textStatus ) {
