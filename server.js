@@ -9,6 +9,9 @@ var SkypeClass = require('./skype/skypeClass');
 var Client = require('node-rest-client').Client;
 var Carousel = require('./views/carousel');
 const queryString = require('query-string');
+var uuid = require('uuid-random');
+var cookieSession = require('cookie-session');
+var cookieParser = require('cookie-parser');
 var path = require('path');
 var client = new Client();
 
@@ -17,6 +20,22 @@ var url = 'mongodb://localhost:27017/platform';
 let instanceMongoQueries;
 
 let global = { }
+app.use(cookieParser())
+
+app.use(cookieSession({
+  name: 'session',
+  keys: [uuid(),uuid()],
+
+  // Cookie Options
+  maxAge: 365 * 24 * 60 * 60 * 1000
+}))
+
+
+app.use(function (req, res, next) {
+    if(!req.cookies.user_id)
+      res.cookie('user_id',uuid(),{maxAge :365 * 24 * 60 * 60 * 1000})
+    next();
+});
 
 mongo.connect(url, function(err, db) {
   if (err) throw err;
@@ -107,8 +126,7 @@ app.post('/mongo/findByQuery/:collectionName', function(req, res){
 });
 
 app.post('/mongo/findByQueryForMessages', function(req, res){
-  instanceMongoQueries.findByQuery('messages', req.body.query, function(result){
-
+  instanceMongoQueries.findByQuerySort('messages', req.body.query, function(result){
     res.send(result);
   });
 });
@@ -306,6 +324,26 @@ app.get('/api/getMessage/dialogFlow', cors(), function(req, res){
   });
 })
 
+app.post('/witaiCreateApp/post', cors(), function(req, res){
+    console.log(req.body.application);
+    var wit = {
+      data : {
+        "name":req.body.application.name,
+       "lang":req.body.application.language,
+       "private":req.body.application.prvt,
+       "desc" : req.body.application.description
+      },
+      headers : {
+        'Authorization' : 'Bearer ' + global.defaultAuthorizationToken,
+        'Content-Type' : 'application/json'
+      }
+    }
+
+    client.post('https://api.wit.ai/apps', wit, function(response){
+        res.send(response);
+    });
+});
+
 // WEB API for wit.ai
 app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
   var wit = {
@@ -317,118 +355,113 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
       'Content-Type' : 'application/json'
     }
   }
+
   var searchedItem = req.body.obj.message.text.replace(/(<img\s[^>]*?src\s*=\s*['\"]([^'\"]*?)['\"][^>]*?>)/g,"");
-  console.log(searchedItem)
+
   instanceMongoQueries.findByQuery('emoji_relation', {'source.text' : searchedItem},function(resppp){
 
       if(resppp.length > 0){
 
         var msg = {text : resppp[0].target, type : 'emoji'};
 
-        var obj = {'transaction' : req.body.obj.transaction, 'message' : {text : resppp[0].source, type : 'emoji'}, 'user_id' : 'gilleez', 'created_date' : new Date()};
+        var obj = {'transaction' : req.body.obj.transaction, 'message' : {text : resppp[0].source, type : 'emoji'}, 'user_id' : req.cookies.user_id, 'created_date' : new Date()};
         instanceMongoQueries.insertOne(req.params.collectionName, obj, function(resp,obj){
             res.send({text : resppp[0].target, type : 'emoji'});
         });
-        obj = {'transaction' : req.body.obj.transaction, 'message' : {text : resppp[0].target, type : 'emoji'}, 'user_id' : 'BOT', 'created_date' : new Date()};
+        obj = {'transaction' : req.body.obj.transaction, 'message' : {text : resppp[0].target, type : 'emoji'}, 'user_id' :  req.cookies.user_id +'_BOT', 'created_date' : new Date()};
         instanceMongoQueries.insertOne(req.params.collectionName, obj, function(resp, obj){
 
         });
       }else{
-        client.get('https://api.wit.ai/message?q=' + encodeURIComponent(searchedItem), wit, function(response){
-          if(response.entities && response.entities.intent && response.entities.intent.length > 0){
+        console.log(req.session.subject);
+        if(req.session.subject){
+          client.get('https://api.wit.ai/message?q=' + encodeURIComponent(searchedItem), wit, function(response){
+            if(response.entities && response.entities.intent && response.entities.intent.length > 0){
+                var maxFirst = -1;
+                var maxValueFirst = '';
+                for(var i = 0; i < response.entities.intent.length; i++){
+                  if(maxFirst < response.entities.intent[i].confidence){
+                    maxValueFirst = response.entities.intent[i].value;
+                    maxFirst = response.entities.intent[i].confidence;
+                  }
+                }
 
-            var maxFirst = -1;
-            var maxValueFirst = '';
-            for(var i = 0; i < response.entities.intent.length; i++){
-              if(maxFirst < response.entities.intent[i].confidence){
-                maxValueFirst = response.entities.intent[i].value;
-                maxFirst = response.entities.intent[i].confidence;
-              }
-            }
+                if(maxFirst < global.threshold){
+                    client.get('https://api.wit.ai/message?q=' + encodeURIComponent(req.session.subject + " " +searchedItem), wit, function(response){
+                        if(response.entities && response.entities.intent && response.entities.intent.length > 0){
+                          maxFirst = -1;
+                          maxValueFirst = '';
+                          for(var i = 0; i < response.entities.intent.length; i++){
+                            if(maxFirst < response.entities.intent[i].confidence){
+                              maxValueFirst = response.entities.intent[i].value;
+                              maxFirst = response.entities.intent[i].confidence;
+                            }
+                          }
+                          if(maxFirst < global.threshold){
+                            var random = Math.floor(Math.random() * (global.responseList.length - 1));
+                            var text = global.responseList[random];
+                            req.body.obj.created_date = new Date();
+                            var obj = {'transaction' : req.body.obj.transaction, 'message' : {text : text}, 'user_id' : req.body.obj.user_id +'_BOT', 'created_date' : new Date()};
+                            instanceMongoQueries.insertOne(req.params.collectionName, obj, function(resp, obj){});
+                            instanceMongoQueries.insertOne(req.params.collectionName, req.body.obj, function(resp, obj){});
+                            req.body.obj.confidenceLevel = maxFirst;
+                            req.body.obj.intentName = maxValueFirst;
+                            instanceMongoQueries.insertOne('training_messages', req.body.obj, function(resp, obj){});
+                            res.send({text : text});
+                            return;
+                          }
 
-            if(maxFirst < (global.threshold - 0.2)){
-              var random = Math.floor(Math.random() * (global.responseList.length - 1));
-              var text = global.responseList[random];
-              req.body.obj.created_date = new Date();
-              instanceMongoQueries.insertOne(req.params.collectionName, req.body.obj, function(resp, obj){});
-              var obj = {'transaction' : req.body.obj.transaction, 'message' : {text : text}, 'user_id' : 'BOT', 'created_date' : new Date()};
-              instanceMongoQueries.insertOne(req.params.collectionName, obj, function(resp, obj){});
-              req.body.obj.confidenceLevel = max;
-              req.body.obj.intentName = maxValue;
-              instanceMongoQueries.insertOne('training_messages', req.body.obj, function(resp, obj){});
-              res.send({text : text});
-              return;
-            }
+                          instanceMongoQueries.findByQuery('answers', {'key' :   maxValueFirst }, function(response){
+                            if(response.length > 0){
+                                if(req.body.obj){
+                                  req.body.obj.created_date = new Date();
+                                  req.body.obj.confidenceLevel = maxFirst;
+                                  req.body.obj.intentName = maxValueFirst;
+                                  var obj = {'transaction' : req.body.obj.transaction, 'message' : {text : response[0].value, type : response[0].type, intent : response[0].key}, 'user_id' : req.body.obj.user_id+'_BOT', 'created_date' : new Date()};
+                                  instanceMongoQueries.insertOne(req.params.collectionName, obj, function(resp, obj){
 
-            instanceMongoQueries.findByQuery('subject_intent_relation',{intent : maxValueFirst},function(sResponse){
-              console.log(sResponse);
-              if(sResponse.length == 0){
-                instanceMongoQueries.findByQuery('answers', {'key' :   maxValueFirst }, function(response){
-                  if(response.length > 0){
-                      if(req.body.obj){
-                        req.body.obj.created_date = new Date();
-                        req.body.obj.confidenceLevel = maxFirst;
-                        req.body.obj.intentName = maxValueFirst;
-                        instanceMongoQueries.insertOne(req.params.collectionName, req.body.obj, function(resp,obj){
-                            res.send({text : response[0].value, type : response[0].type, intent : response[0].key, subject : ""});
-                        });
-                        var obj = {'transaction' : req.body.obj.transaction, 'message' : {text : response[0].value, type : response[0].type, intent : response[0].key}, 'user_id' : 'BOT', 'created_date' : new Date()};
-                        instanceMongoQueries.insertOne(req.params.collectionName, obj, function(resp, obj){
+                                  });
+                                  instanceMongoQueries.insertOne(req.params.collectionName, req.body.obj, function(resp,obj){
+                                      res.send({text : response[0].value, type : response[0].type, intent : response[0].key, subject : ""});
+                                  });
 
-                        });
-                      }
+                                }
 
-                    }else{
-                      var random = Math.floor(Math.random() * (global.responseList.length - 1));
-                      var text = global.responseList[random];
-                      req.body.obj.created_date = new Date();
-                      instanceMongoQueries.insertOne(req.params.collectionName, req.body.obj, function(resp, obj){});
-                      var obj = {'transaction':req.body.obj.transaction, 'message' : {text : text}, 'user_id' : 'BOT', 'created_date' : new Date()};
-                      instanceMongoQueries.insertOne(req.params.collectionName, obj, function(resp, obj){});
-                      instanceMongoQueries.insertOne('training_messages', req.body.obj, function(resp, obj){});
-                      res.send({text : text});
-                    }
-                });
-              }else {
-                console.log(sResponse[0].subject + " "+ searchedItem);
-                client.get('https://api.wit.ai/message?q=' + encodeURIComponent(sResponse[0].subject + " "+ searchedItem), wit, function(response){
-                  if(response.entities && response.entities.intent && response.entities.intent.length > 0){
+                              }else{
+                                var random = Math.floor(Math.random() * (global.responseList.length - 1));
+                                var text = global.responseList[random];
+                                req.body.obj.created_date = new Date();
+                                var obj = {'transaction':req.body.obj.transaction, 'message' : {text : text}, 'user_id' : req.body.obj.user_id+'_BOT', 'created_date' : new Date()};
+                                instanceMongoQueries.insertOne(req.params.collectionName, obj, function(resp, obj){});
+                                instanceMongoQueries.insertOne(req.params.collectionName, req.body.obj, function(resp, obj){});
+                                instanceMongoQueries.insertOne('training_messages', req.body.obj, function(resp, obj){});
+                                res.send({text : text});
+                              }
+                          });
 
-                    var max = -1;
-                    var maxValue = '';
-                    for(var i = 0; i < response.entities.intent.length; i++){
-                      if(max < response.entities.intent[i].confidence){
-                        maxValue = response.entities.intent[i].value;
-                        max = response.entities.intent[i].confidence;
-                      }
-                    }
-                    //max configdence sahip intent i bulamadıysam
-                    if(max < global.threshold){
-                      var random = Math.floor(Math.random() * (global.responseList.length - 1));
-                      var text = global.responseList[random];
-                      req.body.obj.created_date = new Date();
-                      instanceMongoQueries.insertOne(req.params.collectionName, req.body.obj, function(resp, obj){});
-                      var obj = {'transaction' : req.body.obj.transaction, 'message' : {text : text}, 'user_id' : 'BOT', 'created_date' : new Date()};
-                      instanceMongoQueries.insertOne(req.params.collectionName, obj, function(resp, obj){});
-                      req.body.obj.confidenceLevel = max;
-                      req.body.obj.intentName = maxValue;
-                      instanceMongoQueries.insertOne('training_messages', req.body.obj, function(resp, obj){});
-                      res.send({text : text});
-                      return;
+                        }
+
+                    });
+                  return;
+                }else{
+
+                  instanceMongoQueries.findByQuery('subject_intent_relation',{intent : maxValueFirst},function(sResponse){
+                    console.log(sResponse);
+                    if(sResponse.length > 0){
+                      req.session.subject = sResponse[0].subject;
                     }
 
-                    instanceMongoQueries.findByQuery('answers', {'key' :  maxValue }, function(response){
-                        if(response.length > 0){
+                    instanceMongoQueries.findByQuery('answers', {'key' :   maxValueFirst }, function(response){
+                      if(response.length > 0){
                           if(req.body.obj){
                             req.body.obj.created_date = new Date();
-                            req.body.obj.confidenceLevel = max;
-                            req.body.obj.intentName = maxValue;
-                            instanceMongoQueries.insertOne(req.params.collectionName, req.body.obj, function(resp,obj){
-                                res.send({text : response[0].value, type : response[0].type, intent : response[0].key , subject : sResponse[0].subject});
-                            });
-                            var obj = {'transaction' : req.body.obj.transaction, 'message' : {text : response[0].value, type : response[0].type, intent : response[0].key}, 'user_id' : 'BOT', 'created_date' : new Date()};
+                            req.body.obj.confidenceLevel = maxFirst;
+                            req.body.obj.intentName = maxValueFirst;
+                            var obj = {'transaction' : req.body.obj.transaction, 'message' : {text : response[0].value, type : response[0].type, intent : response[0].key}, 'user_id' : req.body.obj.user_id+'_BOT', 'created_date' : new Date()};
                             instanceMongoQueries.insertOne(req.params.collectionName, obj, function(resp, obj){
-
+                            });
+                            instanceMongoQueries.insertOne(req.params.collectionName, req.body.obj, function(resp,obj){
+                                res.send({text : response[0].value, type : response[0].type, intent : response[0].key, subject : ""});
                             });
                           }
 
@@ -436,40 +469,155 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                           var random = Math.floor(Math.random() * (global.responseList.length - 1));
                           var text = global.responseList[random];
                           req.body.obj.created_date = new Date();
-                          instanceMongoQueries.insertOne(req.params.collectionName, req.body.obj, function(resp, obj){});
-                          var obj = {'transaction':req.body.obj.transaction, 'message' : {text : text}, 'user_id' : 'BOT', 'created_date' : new Date()};
+                          var obj = {'transaction':req.body.obj.transaction, 'message' : {text : text}, 'user_id' : req.body.obj.user_id+'_BOT', 'created_date' : new Date()};
                           instanceMongoQueries.insertOne(req.params.collectionName, obj, function(resp, obj){});
+                          instanceMongoQueries.insertOne(req.params.collectionName, req.body.obj, function(resp, obj){});
                           instanceMongoQueries.insertOne('training_messages', req.body.obj, function(resp, obj){});
                           res.send({text : text});
                         }
                     });
-                  }else{
-                    var random = Math.floor(Math.random() * (global.responseList.length - 1));
-                    var text = global.responseList[random];
-                    req.body.obj.created_date = new Date();
-                    instanceMongoQueries.insertOne(req.params.collectionName, req.body.obj, function(resp, obj){});
-                    var obj = {'transaction':req.body.obj.transaction, 'message' : {text : text}, 'user_id' : 'BOT', 'created_date' : new Date()};
-                    instanceMongoQueries.insertOne(req.params.collectionName, obj, function(resp, obj){});
-                    instanceMongoQueries.insertOne('training_messages', req.body.obj, function(resp, obj){});
-                    res.send({text : text});
+
+
+                  });
+                }
+            }else{
+              client.get('https://api.wit.ai/message?q=' + encodeURIComponent(req.session.subject + " " +searchedItem), wit, function(response){
+                  if(response.entities && response.entities.intent && response.entities.intent.length > 0){
+                    maxFirst = -1;
+                    maxValueFirst = '';
+                    for(var i = 0; i < response.entities.intent.length; i++){
+                      if(maxFirst < response.entities.intent[i].confidence){
+                        maxValueFirst = response.entities.intent[i].value;
+                        maxFirst = response.entities.intent[i].confidence;
+                      }
+                    }
+                    if(maxFirst < global.threshold){
+                      var random = Math.floor(Math.random() * (global.responseList.length - 1));
+                      var text = global.responseList[random];
+                      req.body.obj.created_date = new Date();
+                      var obj = {'transaction' : req.body.obj.transaction, 'message' : {text : text}, 'user_id' : req.body.obj.user_id+'_BOT', 'created_date' : new Date()};
+                      instanceMongoQueries.insertOne(req.params.collectionName, obj, function(resp, obj){});
+                      instanceMongoQueries.insertOne(req.params.collectionName, req.body.obj, function(resp, obj){});
+
+                      req.body.obj.confidenceLevel = maxFirst;
+                      req.body.obj.intentName = maxValueFirst;
+                      instanceMongoQueries.insertOne('training_messages', req.body.obj, function(resp, obj){});
+                      res.send({text : text});
+                      return;
+                    }
+
+                    instanceMongoQueries.findByQuery('answers', {'key' :   maxValueFirst }, function(response){
+                      if(response.length > 0){
+                          if(req.body.obj){
+                            req.body.obj.created_date = new Date();
+                            req.body.obj.confidenceLevel = maxFirst;
+                            req.body.obj.intentName = maxValueFirst;
+                            var obj = {'transaction' : req.body.obj.transaction, 'message' : {text : response[0].value, type : response[0].type, intent : response[0].key}, 'user_id' : req.body.obj.user_id+'_BOT', 'created_date' : new Date()};
+                            instanceMongoQueries.insertOne(req.params.collectionName, obj, function(resp, obj){
+
+                            });
+                            instanceMongoQueries.insertOne(req.params.collectionName, req.body.obj, function(resp,obj){
+                                res.send({text : response[0].value, type : response[0].type, intent : response[0].key, subject : ""});
+                            });
+
+                          }
+
+                        }else{
+                          var random = Math.floor(Math.random() * (global.responseList.length - 1));
+                          var text = global.responseList[random];
+                          req.body.obj.created_date = new Date();
+                          var obj = {'transaction':req.body.obj.transaction, 'message' : {text : text}, 'user_id' :req.body.obj.user_id+'_BOT', 'created_date' : new Date()};
+                          instanceMongoQueries.insertOne(req.params.collectionName, obj, function(resp, obj){});
+                          instanceMongoQueries.insertOne(req.params.collectionName, req.body.obj, function(resp, obj){});
+                          instanceMongoQueries.insertOne('training_messages', req.body.obj, function(resp, obj){});
+                          res.send({text : text});
+                        }
+                    });
                   }
 
-                });
+              });
+            }
+          });
+        }else{
+          client.get('https://api.wit.ai/message?q=' + encodeURIComponent(searchedItem), wit, function(response){
+            if(response.entities && response.entities.intent && response.entities.intent.length > 0){
+
+              var maxFirst = -1;
+              var maxValueFirst = '';
+              for(var i = 0; i < response.entities.intent.length; i++){
+                if(maxFirst < response.entities.intent[i].confidence){
+                  maxValueFirst = response.entities.intent[i].value;
+                  maxFirst = response.entities.intent[i].confidence;
+                }
               }
 
+              if(maxFirst < global.threshold){
+                var random = Math.floor(Math.random() * (global.responseList.length - 1));
+                var text = global.responseList[random];
+                req.body.obj.created_date = new Date();
+                var obj = {'transaction' : req.body.obj.transaction, 'message' : {text : text}, 'user_id' : req.body.obj.user_id+'_BOT', 'created_date' : new Date()};
+                instanceMongoQueries.insertOne(req.params.collectionName, obj, function(resp, obj){});
 
-            });
-          }else{
-            var random = Math.floor(Math.random() * (global.responseList.length - 1));
-            var text = global.responseList[random];
-            req.body.obj.created_date = new Date();
-            instanceMongoQueries.insertOne(req.params.collectionName, req.body.obj, function(resp, obj){});
-            var obj = {'transaction' : req.body.obj.transaction, 'message' : {text : text}, 'user_id' : 'BOT', 'created_date' : new Date()};
-            instanceMongoQueries.insertOne(req.params.collectionName, obj, function(resp, obj){});
-            instanceMongoQueries.insertOne('training_messages', req.body.obj, function(resp, obj){});
-            res.send({text : text});
-          }
-        });
+                instanceMongoQueries.insertOne(req.params.collectionName, req.body.obj, function(resp, obj){});
+
+                req.body.obj.confidenceLevel = maxFirst;
+                req.body.obj.intentName = maxValueFirst;
+                instanceMongoQueries.insertOne('training_messages', req.body.obj, function(resp, obj){});
+                res.send({text : text});
+                return;
+              }
+
+              instanceMongoQueries.findByQuery('subject_intent_relation',{intent : maxValueFirst},function(sResponse){
+                console.log(sResponse);
+                if(sResponse.length > 0){
+                  req.session.subject = sResponse[0].subject;
+                }
+
+                instanceMongoQueries.findByQuery('answers', {'key' :   maxValueFirst }, function(response){
+                  if(response.length > 0){
+                      if(req.body.obj){
+                        req.body.obj.created_date = new Date();
+                        req.body.obj.confidenceLevel = maxFirst;
+                        req.body.obj.intentName = maxValueFirst;
+                        var obj = {'transaction' : req.body.obj.transaction, 'message' : {text : response[0].value, type : response[0].type, intent : response[0].key}, 'user_id' : req.body.obj.user_id+'_BOT', 'created_date' : new Date()};
+                        instanceMongoQueries.insertOne(req.params.collectionName, obj, function(resp, obj){
+
+                        });
+                        instanceMongoQueries.insertOne(req.params.collectionName, req.body.obj, function(resp,obj){
+                            res.send({text : response[0].value, type : response[0].type, intent : response[0].key, subject : ""});
+                        });
+
+                      }
+
+                    }else{
+                      var random = Math.floor(Math.random() * (global.responseList.length - 1));
+                      var text = global.responseList[random];
+                      req.body.obj.created_date = new Date();
+                      var obj = {'transaction':req.body.obj.transaction, 'message' : {text : text}, 'user_id' :req.body.obj.user_id+'_BOT', 'created_date' : new Date()};
+                      instanceMongoQueries.insertOne(req.params.collectionName, obj, function(resp, obj){});
+
+                      instanceMongoQueries.insertOne(req.params.collectionName, req.body.obj, function(resp, obj){});
+
+                      instanceMongoQueries.insertOne('training_messages', req.body.obj, function(resp, obj){});
+                      res.send({text : text});
+                    }
+                });
+
+
+              });
+            }else{
+              var random = Math.floor(Math.random() * (global.responseList.length - 1));
+              var text = global.responseList[random];
+              req.body.obj.created_date = new Date();
+              var obj = {'transaction' : req.body.obj.transaction, 'message' : {text : text}, 'user_id' : req.body.obj.user_id+'_BOT', 'created_date' : new Date()};
+              instanceMongoQueries.insertOne(req.params.collectionName, obj, function(resp, obj){});
+              instanceMongoQueries.insertOne(req.params.collectionName, req.body.obj, function(resp, obj){});
+              instanceMongoQueries.insertOne('training_messages', req.body.obj, function(resp, obj){});
+              res.send({text : text});
+            }
+          });
+        }
+
       }
   });
 });

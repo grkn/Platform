@@ -28,9 +28,11 @@ var facebookclass= class FacebookBotClass {
 		this.bot.on('error', (err) => {
 		  console.log(err.message)
 		})
+		var subjectArray = {
 
+		};
 		this.bot.on('message', (payload, reply) => {
-
+			console.log(payload.sender.id);
 
 			/*var dialog = {
 				data : {
@@ -77,78 +79,386 @@ var facebookclass= class FacebookBotClass {
 			var carouselTemplateFunc = this.carousel;
 			var quickReplyFunc = this.quickReply;
 			var buttonGenericsFunc = this.buttonGenerics;
-			client.get('https://api.wit.ai/message?q=' + encodeURIComponent(payload.message.text), wit, function(response){
 
-				if(response.entities && response.entities.intent && response.entities.intent.length > 0){
-					var max = -1;
-		      var maxValue = '';
-		      for(var i = 0; i < response.entities.intent.length; i++){
-		        if(max < response.entities.intent[i].confidence ){
-		          maxValue = response.entities.intent[i].value;
-		          max = response.entities.intent[i].confidence;
-		        }
-		      }
-		      //max configdence sahip intent i bulamadıysam
-		      if(max < globals.threshold){
-		        var random = Math.floor(Math.random() * (globals.responseList.length - 1));
-						var text = globals.responseList[random];
-						reply({text}, function(err){
-								console.log(err);
-						});
-		        return;
-		      }
 
-					instanceMongoQueries.findByQuery('answers', {key :  maxValue}, function(response){
-						if(response.length > 0){
-							var total = {text : response[0].value, type : response[0].type, intent : response[0].key};
-							if(total.type == 'listTemplate'){
-								var listTemplate = new ListTemplate(total.text);
+			var searchedItem = payload.message.text;
+				console.log(subjectArray[payload.sender.id]);
+				if(subjectArray[payload.sender.id]){
+					client.get('https://api.wit.ai/message?q=' + encodeURIComponent(searchedItem), wit, function(response){
+						if(response.entities && response.entities.intent && response.entities.intent.length > 0){
+								var maxFirst = -1;
+								var maxValueFirst = '';
+								for(var i = 0; i < response.entities.intent.length; i++){
+									if(maxFirst < response.entities.intent[i].confidence){
+										maxValueFirst = response.entities.intent[i].value;
+										maxFirst = response.entities.intent[i].confidence;
+									}
+								}
 
-								bot.sendMessage(payload.sender.id, listTemplateFunc(listTemplate.createListTemplate()), function(resp){
-									console.log(resp);
-								});
-							}else if (total.type == 'carousel'){
-									var carousel = new Carousel(total.text);
-									bot.sendMessage(payload.sender.id, carouselTemplateFunc(carousel.createListCarousel()), function(resp){
-										console.log(resp);
+								if(maxFirst < global.threshold){
+										client.get('https://api.wit.ai/message?q=' + encodeURIComponent(subjectArray[payload.sender.id] + " " +searchedItem), wit, function(response){
+												if(response.entities && response.entities.intent && response.entities.intent.length > 0){
+													maxFirst = -1;
+													maxValueFirst = '';
+													for(var i = 0; i < response.entities.intent.length; i++){
+														if(maxFirst < response.entities.intent[i].confidence){
+															maxValueFirst = response.entities.intent[i].value;
+															maxFirst = response.entities.intent[i].confidence;
+														}
+													}
+													if(maxFirst < global.threshold){
+														var random = Math.floor(Math.random() * (global.responseList.length - 1));
+														var text = global.responseList[random];
+
+														var transaction = new Date().getTime();
+														var objUser = {'transaction' : transaction, 'message' : {text : text}, 'user_id' : payload.sender.id, 'created_date' : new Date()};
+														var obj = {'transaction' : transaction, 'message' : {text : text}, 'user_id' : payload.sender.id +'_BOT', 'created_date' : new Date()};
+														instanceMongoQueries.insertOne("facebook_messages", obj, function(resp, obj){});
+														instanceMongoQueries.insertOne("facebook_messages", objUser, function(resp, obj){});
+														objUser.confidenceLevel = maxFirst;
+														objUser.intentName = maxValueFirst;
+														instanceMongoQueries.insertOne('training_messages', objUser, function(resp, obj){});
+														reply({text}, function(err){
+													 		 console.log(err);
+													  });
+														return;
+													}
+
+													instanceMongoQueries.findByQuery('answers', {'key' :   maxValueFirst }, function(response){
+															if(response.length > 0){
+
+																var transaction = new Date().getTime();
+																var objUser = {'transaction' : transaction, 'message' : {text : response[0].value, type : response[0].type, intent : response[0].key}, 'user_id' : payload.sender.id, 'created_date' : new Date()};
+																var obj = {'transaction' : transaction, 'message' : {text : response[0].value, type : response[0].type, intent : response[0].key}, 'user_id' : payload.sender.id+'_BOT', 'created_date' : new Date()};
+																instanceMongoQueries.insertOne("facebook_messages", obj, function(resp, obj){
+																});
+																instanceMongoQueries.insertOne("facebook_messages", objUser, function(resp,obj){
+																});
+																var total = {text : response[0].value, type : response[0].type, intent : response[0].key};
+																if(total.type == 'listTemplate'){
+																	var listTemplate = new ListTemplate(total.text);
+
+																	bot.sendMessage(payload.sender.id, listTemplateFunc(listTemplate.createListTemplate()), function(resp){
+																		console.log(resp);
+																	});
+																}else if (total.type == 'carousel'){
+																		var carousel = new Carousel(total.text);
+																		bot.sendMessage(payload.sender.id, carouselTemplateFunc(carousel.createListCarousel()), function(resp){
+																			console.log(resp);
+																		});
+
+																}else if (total.type == 'quickReply'){
+																		var quickReply = new QuickReply(total.text);
+																		bot.sendMessage(payload.sender.id,quickReplyFunc(quickReply.createListQuickReply()) , function(resp){
+																			console.log(resp);
+																		});
+
+																}else if (total.type == 'genericButtons'){
+																		var genericButtons = new GenericButtons(total.text);
+																		bot.sendMessage(payload.sender.id,buttonGenericsFunc(genericButtons.createGenericButtons()) , function(resp){
+																			console.log(resp);
+																		});
+
+																}else{
+																	var text= total.text;
+																	reply({text}, function(err){
+																			console.log(err);
+																	});
+																}
+															}else{
+																var random = Math.floor(Math.random() * (global.responseList.length - 1));
+																var text = global.responseList[random];
+																var transaction = new Date().getTime();
+																var objUser = {'transaction':transaction, 'message' : {text : text}, 'user_id' : payload.sender.id, 'created_date' : new Date()};
+																var obj = {'transaction':transaction, 'message' : {text : text}, 'user_id' : payload.sender.id+'_BOT', 'created_date' : new Date()};
+																instanceMongoQueries.insertOne("facebook_messages", obj, function(resp, obj){});
+																instanceMongoQueries.insertOne("facebook_messages",objUser, function(resp, obj){});
+																objUser.confidenceLevel = maxFirst;
+																objUser.intentName = maxValueFirst;
+																instanceMongoQueries.insertOne('training_messages', objUser, function(resp, obj){});
+																reply({text}, function(err){
+															 		 console.log(err);
+															  });
+															}
+													});
+
+												}
+
+										});
+									return;
+								}else{
+
+									instanceMongoQueries.findByQuery('subject_intent_relation',{intent : maxValueFirst},function(sResponse){
+
+										if(sResponse.length > 0){
+											subjectArray[payload.sender.id] = sResponse[0].subject;
+										}
+
+										instanceMongoQueries.findByQuery('answers', {'key' :   maxValueFirst }, function(response){
+											if(response.length > 0){
+													var transaction = new Date().getTime();
+													var objUser = {'transaction' : transaction, 'message' : {text : response[0].value, type : response[0].type, intent : response[0].key}, 'user_id' : payload.sender.id, 'created_date' : new Date()};
+													var obj = {'transaction' : transaction, 'message' : {text : response[0].value, type : response[0].type, intent : response[0].key}, 'user_id' :  payload.sender.id+'_BOT', 'created_date' : new Date()};
+													instanceMongoQueries.insertOne("facebook_messages", obj, function(resp, obj){
+													});
+													instanceMongoQueries.insertOne("facebook_messages", objUser, function(resp,obj){
+													});
+													var total = {text : response[0].value, type : response[0].type, intent : response[0].key};
+													if(total.type == 'listTemplate'){
+														var listTemplate = new ListTemplate(total.text);
+
+														bot.sendMessage(payload.sender.id, listTemplateFunc(listTemplate.createListTemplate()), function(resp){
+															console.log(resp);
+														});
+													}else if (total.type == 'carousel'){
+															var carousel = new Carousel(total.text);
+															bot.sendMessage(payload.sender.id, carouselTemplateFunc(carousel.createListCarousel()), function(resp){
+																console.log(resp);
+															});
+
+													}else if (total.type == 'quickReply'){
+															var quickReply = new QuickReply(total.text);
+															bot.sendMessage(payload.sender.id,quickReplyFunc(quickReply.createListQuickReply()) , function(resp){
+																console.log(resp);
+															});
+
+													}else if (total.type == 'genericButtons'){
+															var genericButtons = new GenericButtons(total.text);
+															bot.sendMessage(payload.sender.id,buttonGenericsFunc(genericButtons.createGenericButtons()) , function(resp){
+																console.log(resp);
+															});
+
+													}else{
+														var text= total.text;
+														reply({text}, function(err){
+																console.log(err);
+														});
+													}
+												}else{
+													var random = Math.floor(Math.random() * (global.responseList.length - 1));
+													var text = global.responseList[random];
+														var transaction = new Date().getTime();
+													var objUser = {'transaction':transaction, 'message' : {text : text}, 'user_id' : payload.sender.id, 'created_date' : new Date()};
+													var obj = {'transaction':transaction, 'message' : {text : text}, 'user_id' : payload.sender.id+'_BOT', 'created_date' : new Date()};
+													instanceMongoQueries.insertOne("facebook_messages", obj, function(resp, obj){});
+													instanceMongoQueries.insertOne("facebook_messages", objUser, function(resp, obj){});
+													objUser.confidenceLevel = maxFirst;
+													objUser.intentName = maxValueFirst;
+													instanceMongoQueries.insertOne('training_messages', objUser, function(resp, obj){});
+													reply({text}, function(err){
+												 		 console.log(err);
+												  });
+												}
+										});
+
+
 									});
-
-							}else if (total.type == 'quickReply'){
-									var quickReply = new QuickReply(total.text);
-									bot.sendMessage(payload.sender.id,quickReplyFunc(quickReply.createListQuickReply()) , function(resp){
-										console.log(resp);
-									});
-
-							}else if (total.type == 'genericButtons'){
-									var genericButtons = new GenericButtons(total.text);
-									bot.sendMessage(payload.sender.id,buttonGenericsFunc(genericButtons.createGenericButtons()) , function(resp){
-										console.log(resp);
-									});
-
-							}else{
-								var text= total.type;
-								reply({text}, function(err){
-										console.log(err);
-								});
-							}
+								}
 						}else{
-							var random = Math.floor(Math.random() * (globals.responseList.length - 1));
-							var text = globals.responseList[random];
-						  reply({text}, function(err){
+							client.get('https://api.wit.ai/message?q=' + encodeURIComponent(subjectArray[payload.sender.id] + " " +searchedItem), wit, function(response){
+									if(response.entities && response.entities.intent && response.entities.intent.length > 0){
+										maxFirst = -1;
+										maxValueFirst = '';
+										for(var i = 0; i < response.entities.intent.length; i++){
+											if(maxFirst < response.entities.intent[i].confidence){
+												maxValueFirst = response.entities.intent[i].value;
+												maxFirst = response.entities.intent[i].confidence;
+											}
+										}
+										if(maxFirst < global.threshold){
+											var random = Math.floor(Math.random() * (global.responseList.length - 1));
+											var text = global.responseList[random];
+											var transaction = new Date().getTime();
+											var objUser = {'transaction' : transaction, 'message' : {text : text}, 'user_id' : payload.sender.id, 'created_date' : new Date()};
+											var obj = {'transaction' : transaction, 'message' : {text : text}, 'user_id' : payload.sender.id+'_BOT', 'created_date' : new Date()};
+											instanceMongoQueries.insertOne("facebook_messages", obj, function(resp, obj){});
+											instanceMongoQueries.insertOne("facebook_messages", objUser, function(resp, obj){});
+
+											objUser.confidenceLevel = maxFirst;
+											objUser.intentName = maxValueFirst;
+											instanceMongoQueries.insertOne('training_messages', objUser, function(resp, obj){});
+											reply({text}, function(err){
+										 		 console.log(err);
+										  });
+											return;
+										}
+
+										instanceMongoQueries.findByQuery('answers', {'key' :   maxValueFirst }, function(response){
+											if(response.length > 0){
+												var transaction = new Date().getTime();
+														var objUser = {'transaction' : transaction, 'message' : {text : response[0].value, type : response[0].type, intent : response[0].key}, 'user_id' : payload.sender.id, 'created_date' : new Date()};
+														var obj = {'transaction' : transaction, 'message' : {text : response[0].value, type : response[0].type, intent : response[0].key}, 'user_id' : payload.sender.id+'_BOT', 'created_date' : new Date()};
+														instanceMongoQueries.insertOne("facebook_messages", obj, function(resp, obj){
+														});
+														instanceMongoQueries.insertOne("facebook_messages", objUser, function(resp,obj){
+														});
+														var total = {text : response[0].value, type : response[0].type, intent : response[0].key};
+														if(total.type == 'listTemplate'){
+															var listTemplate = new ListTemplate(total.text);
+
+															bot.sendMessage(payload.sender.id, listTemplateFunc(listTemplate.createListTemplate()), function(resp){
+																console.log(resp);
+															});
+														}else if (total.type == 'carousel'){
+																var carousel = new Carousel(total.text);
+																bot.sendMessage(payload.sender.id, carouselTemplateFunc(carousel.createListCarousel()), function(resp){
+																	console.log(resp);
+																});
+
+														}else if (total.type == 'quickReply'){
+																var quickReply = new QuickReply(total.text);
+																bot.sendMessage(payload.sender.id,quickReplyFunc(quickReply.createListQuickReply()) , function(resp){
+																	console.log(resp);
+																});
+
+														}else if (total.type == 'genericButtons'){
+																var genericButtons = new GenericButtons(total.text);
+																bot.sendMessage(payload.sender.id,buttonGenericsFunc(genericButtons.createGenericButtons()) , function(resp){
+																	console.log(resp);
+																});
+
+														}else{
+															var text= total.text;
+															reply({text}, function(err){
+																	console.log(err);
+															});
+														}
+												}else{
+													var random = Math.floor(Math.random() * (global.responseList.length - 1));
+													var text = global.responseList[random];
+													var transaction = new Date().getTime();
+													var objUser = {'transaction':transaction, 'message' : {text : text}, 'user_id' : payload.sender.id, 'created_date' : new Date()};
+													var obj = {'transaction':transaction, 'message' : {text : text}, 'user_id' : payload.sender.id+'_BOT', 'created_date' : new Date()};
+													instanceMongoQueries.insertOne("facebook_messages", obj, function(resp, obj){});
+													instanceMongoQueries.insertOne("facebook_messages", objUser, function(resp, obj){});
+													objUser.confidenceLevel = maxFirst;
+													objUser.intentName = maxValueFirst;
+													instanceMongoQueries.insertOne('training_messages', objUser, function(resp, obj){});
+													reply({text}, function(err){
+												 		 console.log(err);
+												  });
+												}
+										});
+									}
+
+							});
+						}
+					});
+				}else{
+					client.get('https://api.wit.ai/message?q=' + encodeURIComponent(searchedItem), wit, function(response){
+					if(response.entities && response.entities.intent && response.entities.intent.length > 0){
+
+							var maxFirst = -1;
+							var maxValueFirst = '';
+							for(var i = 0; i < response.entities.intent.length; i++){
+								if(maxFirst < response.entities.intent[i].confidence){
+									maxValueFirst = response.entities.intent[i].value;
+									maxFirst = response.entities.intent[i].confidence;
+								}
+							}
+
+							if(maxFirst < global.threshold){
+								var random = Math.floor(Math.random() * (global.responseList.length - 1));
+								var text = global.responseList[random];
+								var transaction = new Date().getTime();
+								var objUser = {'transaction' : transaction, 'message' : {text : text}, 'user_id' : payload.sender.id, 'created_date' : new Date()};
+								var obj = {'transaction' : transaction, 'message' : {text : text}, 'user_id' : payload.sender.id+'_BOT', 'created_date' : new Date()};
+								instanceMongoQueries.insertOne("facebook_messages", obj, function(resp, obj){});
+								instanceMongoQueries.insertOne("facebook_messages", objUser, function(resp, obj){});
+
+								objUser.confidenceLevel = maxFirst;
+								objUser.intentName = maxValueFirst;
+								instanceMongoQueries.insertOne('training_messages', objUser, function(resp, obj){});
+								reply({text}, function(err){
+							 		 console.log(err);
+							  });
+								return;
+							}
+
+							instanceMongoQueries.findByQuery('subject_intent_relation',{intent : maxValueFirst},function(sResponse){
+								console.log(sResponse);
+								if(sResponse.length > 0){
+									subjectArray[payload.sender.id] = sResponse[0].subject;
+								}
+
+								instanceMongoQueries.findByQuery('answers', {'key' :   maxValueFirst }, function(response){
+									if(response.length > 0){
+											var transaction = new Date().getTime();
+											var objUser = {'transaction' : transaction, 'message' : {text : response[0].value, type : response[0].type, intent : response[0].key}, 'user_id' : payload.sender.id, 'created_date' : new Date()};
+											var obj = {'transaction' : transaction, 'message' : {text : response[0].value, type : response[0].type, intent : response[0].key}, 'user_id' :  payload.sender.id+'_BOT', 'created_date' : new Date()};
+											instanceMongoQueries.insertOne("facebook_messages", obj, function(resp, obj){
+											});
+											instanceMongoQueries.insertOne("facebook_messages", objUser, function(resp,obj){
+											});
+
+											var total = {text : response[0].value, type : response[0].type, intent : response[0].key};
+											if(total.type == 'listTemplate'){
+												var listTemplate = new ListTemplate(total.text);
+
+												bot.sendMessage(payload.sender.id, listTemplateFunc(listTemplate.createListTemplate()), function(resp){
+													console.log(resp);
+												});
+											}else if (total.type == 'carousel'){
+													var carousel = new Carousel(total.text);
+													bot.sendMessage(payload.sender.id, carouselTemplateFunc(carousel.createListCarousel()), function(resp){
+														console.log(resp);
+													});
+
+											}else if (total.type == 'quickReply'){
+													var quickReply = new QuickReply(total.text);
+													bot.sendMessage(payload.sender.id,quickReplyFunc(quickReply.createListQuickReply()) , function(resp){
+														console.log(resp);
+													});
+
+											}else if (total.type == 'genericButtons'){
+													var genericButtons = new GenericButtons(total.text);
+													bot.sendMessage(payload.sender.id,buttonGenericsFunc(genericButtons.createGenericButtons()) , function(resp){
+														console.log(resp);
+													});
+
+											}else{
+												var text= total.text;
+												reply({text}, function(err){
+														console.log(err);
+												});
+											}
+										}else{
+											var random = Math.floor(Math.random() * (global.responseList.length - 1));
+											var text = global.responseList[random];
+												var transaction = new Date().getTime();
+											var objUser = {'transaction':transaction, 'message' : {text : text}, 'user_id' : payload.sender.id, 'created_date' : new Date()};
+											var obj = {'transaction':transaction, 'message' : {text : text}, 'user_id' : payload.sender.id+'_BOT', 'created_date' : new Date()};
+											instanceMongoQueries.insertOne("facebook_messages", obj, function(resp, obj){});
+											instanceMongoQueries.insertOne("facebook_messages", objUser, function(resp, obj){});
+											objUser.confidenceLevel = maxFirst;
+											objUser.intentName = maxValueFirst;
+											instanceMongoQueries.insertOne('training_messages', objUser, function(resp, obj){});
+											reply({text}, function(err){
+										 		 console.log(err);
+										  });
+										}
+								});
+
+
+							});
+						}else{
+							var random = Math.floor(Math.random() * (global.responseList.length - 1));
+							var text = global.responseList[random];
+							var transaction = new Date().getTime();
+							var objUser = {'transaction':transaction, 'message' : {text : text}, 'user_id' : payload.sender.id, 'created_date' : new Date()};
+							var obj = {'transaction':transaction, 'message' : {text : text}, 'user_id' : payload.sender.id+'_BOT', 'created_date' : new Date()};
+							instanceMongoQueries.insertOne("facebook_messages", obj, function(resp, obj){});
+							instanceMongoQueries.insertOne("facebook_messages", objUser, function(resp, obj){});
+							objUser.confidenceLevel = maxFirst;
+							objUser.intentName = maxValueFirst;
+							instanceMongoQueries.insertOne('training_messages', objUser, function(resp, obj){});
+							reply({text}, function(err){
 						 		 console.log(err);
 						  });
 						}
 					});
-				}else{
-						var random = Math.floor(Math.random() * (globals.responseList.length - 1));
-						var text = globals.responseList[random];
-					  reply({text}, function(err){
-					 		 console.log(err);
-					  });
-					  return;
 				}
-			});
-		})
+		});
 		http.createServer(this.bot.middleware()).listen(8081);
 	}
 

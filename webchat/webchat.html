@@ -17,13 +17,30 @@
 
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 
-		<!-- Optional theme -->
+		<!-- Optional theme
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
-
+		-->
 		<!-- Latest compiled and minified JavaScript -->
 		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 
 		<script type="text/javascript">
+
+		function getCookie(cname) {
+		  var name = cname + "=";
+		  var decodedCookie = decodeURIComponent(document.cookie);
+		  var ca = decodedCookie.split(';');
+		  for(var i = 0; i <ca.length; i++) {
+		      var c = ca[i];
+		      while (c.charAt(0) == ' ') {
+		          c = c.substring(1);
+		      }
+		      if (c.indexOf(name) == 0) {
+		          return c.substring(name.length, c.length);
+		      }
+		  }
+		  return "";
+		}
+
 			//Persistence Menu load at the begining
 			var persistenceMenu = {
 				toggle : function(el){
@@ -85,30 +102,53 @@
 							var li = "";
 						for(var i = 0; i < obj.text.length; i++){
 						 li +='<li>'
-								+'<img width="250px" height="150px" src="'+obj.text[i].imgUrl+'"/>'
-								+'<div class="text-title-subtitle">'
-									+'<div><b>'+obj.text[i].title+'</b></div>'
-								+'	<div>'+obj.text[i].subtitle+'</div>';
+								+'<img max-width="300px" height="150px" class="img_border" src="'+obj.text[i].imgUrl+'"/>'
+									+'<div class="slider-title">'+obj.text[i].title+'</div>'
+								+'<div class="slider-subtitle">'+obj.text[i].subtitle+'</div>';
 								var buttons="";
 								for(var j = 0; j < obj.text[i].buttons.length; j++){
-										buttons +='	<a href="'+obj.text[i].buttons[j].url+'" type="button" class="genericbtn2 btn btn-info">'+obj.text[i].buttons[j].name+'</a>'
+										buttons +='	<a target="_blank" href="'+obj.text[i].buttons[j].url+'" type="button" class="sliderbtn btn">'+obj.text[i].buttons[j].name+'</a>'
 								}
 								li += buttons;
-								li+='</div></li>';
+								li+='</li>';
 						}
 						carousel +=li+'</ul></div>'
 						return carousel;
 				},
+				listTemplate : function(obj){
+					var listTemplate = '<div class="list-view">'
+						console.log(obj);
+						for(var i = 0; i < obj.text.list.length; i++){
+								listTemplate += '<div class="list-item">'
+								+'<div><span class="title"><b>'+obj.text.list[i].title+'</b></span><img max-width="80px"  src="'+obj.text.list[i].imgUrl+'"/></div>'
+								+'<div class="subtitle"><span >'+obj.text.list[i].subTitle+'</span></div>';
+								var buttons = "";
+								for(var j = 0; j < obj.text.list[i].buttons.length; j++){
+									if(obj.text.list[i].buttons[j].text){
+										buttons +='<div><a target="_blank" href="'+obj.text.list[i].buttons[j].url+'" onclick="buttonWrite(\''+obj.text.list[i].buttons[j].text+'\')" type="button" class="listbtn btn">'+obj.text.list[i].buttons[j].name+'</a></div>'
+									}else{
+										buttons +='<div><a target="_blank" href="'+obj.text.list[i].buttons[j].url+'" type="button" class="listbtn btn">'+obj.text.list[i].buttons[j].name+'</a></div>'
+									}
+								}
+								listTemplate += buttons;
+								listTemplate +='</div>'
+						}
+						listTemplate +='<div class="list-item list-item-last">'
+							+'<div><a target="_blank" href="'+obj.text.viewMoreButtonUrl+'" type="button" class="genericbtn2 btn">'+obj.text.viewMoreButtonName+'</a></div>'
+						+'</div>'
+					+'</div>';
+					return listTemplate;
+				},
 				quickReply : function(obj){
 					var qReply = '<div class="quickReply">'
-						+'<div class="quickContent">'
+						+'<div class=" quickContent">'
 							+	'<span>'+obj.text[0].text+'</span>'
 						+'</div>';
 						for(var j = 0; j < obj.text[0].buttons.length; j++){
 								if(j % 2 == 0){
-										qReply += '<div style="text-align:center">';
+										qReply += '<div class="hiddable" style="text-align:center">';
 								}
-								qReply +='<button style="width:40%" type="button" class="btn btn-info" onclick="quickReplyFunc(\''+obj.text[0].buttons[j].text+'\', event)">'+obj.text[0].buttons[j].name+'</button>';
+								qReply +='<button type="button" class="quickreplybtn btn" onclick="quickReplyFunc(\''+obj.text[0].buttons[j].text+'\', event)">'+obj.text[0].buttons[j].name+'</button>';
 								if(j % 2 == 1){
 									qReply += '</div>'
 								}
@@ -116,44 +156,19 @@
 						qReply +='</div>';
 					return qReply;
 				},
-				listTemplate : function(obj){
-					var listTemplate = '<div class="list-view">'
-						console.log(obj);
-						for(var i = 0; i < obj.text.list.length; i++){
-								listTemplate += '<div class="list-item">'
-								+'<div><span class="title"><b>'+obj.text.list[i].title+'</b></span><img width="40px" height="40px" src="'+obj.text.list[i].imgUrl+'"/></div>'
-								+'<div><span>'+obj.text.list[i].subTitle+'</span></div>';
-								var buttons = "";
-								for(var j = 0; j < obj.text.list[i].buttons.length; j++){
-									if(obj.text.list[i].buttons[j].text){
-										buttons +='<div><a target="_blank" href="'+obj.text.list[i].buttons[j].url+'" onclick="buttonWrite(\''+obj.text.list[i].buttons[j].text+'\')" style="width:150px" type="button" class="btn btn-info">'+obj.text.list[i].buttons[j].name+'</a></div>'
-									}else{
-										buttons +='<div><a target="_blank" href="'+obj.text.list[i].buttons[j].url+'"  style="width:150px" type="button" class="btn btn-info">'+obj.text.list[i].buttons[j].name+'</a></div>'
-									}
-								}
-								listTemplate += buttons;
-								listTemplate +='</div>'
-						}
-						listTemplate +='<div class="list-item list-item-last">'
-							+'<div><a target="_blank" href="'+obj.text.viewMoreButtonUrl+'" type="button" class="genericbtn2 btn btn-info">'+obj.text.viewMoreButtonName+'</a></div>'
-						+'</div>'
-					+'</div>';
-					return listTemplate;
-				},
 				genericButtons : function(obj){
 					var genericButtons = '<div class="generic_button">'
 						  +'<ul >'
 							+	'<li>'
-									+'<div class="text-title-subtitle">'
-										+'<div class="text" style="display:block"><span>'+obj.text[0].text+'</span></div>';
+										+'<div class="text generic_text"><span>'+obj.text[0].text+'</span></div><div class="genericframe">'
 										var buttons = "";
 										for(var i = 0; i < obj.text[0].buttons.length; i++){
 											if(obj.text[0].buttons[i].text && obj.text[0].buttons[i].url){
-												buttons += '<a target="_blank" href="'+obj.text[0].buttons[i].url+'" onclick="buttonWrite(\''+obj.text[0].buttons[i].text+'\')" type="button" class="genericbtn first btn btn-info">'+obj.text[0].buttons[i].name+'</a>';
+												buttons += '<div class="divide"></div><a target="_blank" href="'+obj.text[0].buttons[i].url+'" onclick="buttonWrite(\''+obj.text[0].buttons[i].text+'\')" type="button" class="genericbtn btn">'+obj.text[0].buttons[i].name+'</a>';
 											}else if(!obj.text[0].buttons[i].text && obj.text[0].buttons[i].url){
-												buttons += '<a target="_blank" href="'+obj.text[0].buttons[i].url+'" type="button" class="genericbtn btn btn-info">'+obj.text[0].buttons[i].name+'</a>';
+												buttons += '<a target="_blank" href="'+obj.text[0].buttons[i].url+'" type="button" class="genericbtn btn">'+obj.text[0].buttons[i].name+'</a>';
 											}else if(obj.text[0].buttons[i].text && !obj.text[0].buttons[i].url){
-												buttons += '<a onclick="buttonWrite(\''+obj.text[0].buttons[i].text+'\')"  type="button" class="genericbtn last btn btn-info">'+obj.text[0].buttons[i].name+'</a>';
+												buttons += '<a onclick="buttonWrite(\''+obj.text[0].buttons[i].text+'\')" type="button" class="genericbtn btn">'+obj.text[0].buttons[i].name+'</a>';
 											}
 										}
 							genericButtons += buttons;
@@ -171,33 +186,34 @@
 						url: "/mongo/findByQueryForMessages/",
 						method: "POST",
 						data: {
-							query : {}
+							query : { user_id : { $regex: getCookie("user_id") } }
 						},
 						dataType: "json"
 					});
 					request.done(function( msg ) {
-						for(var i=0; i < msg.length; i++){
-							if(msg[i].user_id == "BOT"){
-								if(msg[i].message.type && msg[i].message.type=='carousel'){
+
+						for(var i= msg.length-1; 0 <= i; i--){
+							if(msg[i].user_id.indexOf('BOT') >= 0){
+								if(msg[i].message.type && msg[i].message.type == 'carousel'){
 									$('#container .main-ul').append('<li class="bot">'+views.carousel(msg[i].message)+'</li>');
 									slider.createSlider($(".slider_"+msg[i].message.intent));
 								}
-								else if (msg[i].message.type && msg[i].message.type=='quickReply'){
+								else if (msg[i].message.type && msg[i].message.type == 'quickReply'){
 									$('#container .main-ul').append('<li class="bot">'+views.quickReply(msg[i].message)+'</li>');
 								}
-								else if(msg[i].message.type && msg[i].message.type=="listTemplate"){
+								else if(msg[i].message.type && msg[i].message.type == "listTemplate"){
 									$('#container .main-ul').append('<li class="bot">'+views.listTemplate(msg[i].message)+'</li>');
 								}
-								else if(msg[i].message.type && (msg[i].message.type=="genericButtons" || msg[i].message.type=="attachment")){
+								else if(msg[i].message.type && (msg[i].message.type == "genericButtons" || msg[i].message.type == "attachment")){
 									$('#container .main-ul').append('<li class="bot">'+views.genericButtons(msg[i].message)+'</li>');
 								}
-								else if(msg[i].message.type && msg[i].message.type=="emoji"){
+								else if(msg[i].message.type && msg[i].message.type == "emoji"){
 									$('#container .main-ul').append('<li class="bot"><div class="text"><span>'+msg[i].message.text.image+'</span></div><br/></li>');
 								}else{
 									$('#container .main-ul').append('<li class="bot"><div class="text"><span>'+msg[i].message.text+'</span></div><br/></li>');
 								}
 							}else{
-								if(msg[i].message.type && msg[i].message.type=='emoji'){
+								if(msg[i].message.type && msg[i].message.type == 'emoji'){
 									$('#container .main-ul').append('<li class="user"><div class="text"><span>'+msg[i].message.text.image+'</span></div><br/></li>');
 								}else {
 									$('#container .main-ul').append('<li class="user"><div class="text"><span>'+msg[i].message.text+'</span></div><br/></li>');
@@ -213,10 +229,10 @@
 			};
 			// quickReply show hide and sen message
 			var quickReplyFunc = function(text, event){
-				$("..input .text-left .emoji-wysiwyg-editor").val(text);
-				$("..input .text-left .emoji-wysiwyg-editor").trigger("keypress", [ "Automatically"]);
-				var el = event.target ||event.srcElement;
-				$(el).parent().hide();
+				$(".input .text-left .emoji-wysiwyg-editor").html(text);
+				$(".input .text-left .emoji-wysiwyg-editor").trigger("keypress", [ "Automatically"]);
+				var el = event.target || event.srcElement;
+				$(el).parent().parent().find(".hiddable").hide();
 			};
 			var buttonWrite = function(text){
 				$(".input input").val(text);
@@ -236,184 +252,42 @@
 	</head>
 
 
-	<body style="width:100%;height:100%">
+	<body >
 		<div class="container">
-			<button type="button" class="bigbtn btn btn-info" data-toggle="collapse" data-target="#container">Simple collapsible</button>
+			<button type="button" class="bigbtn btn btn-info" data-toggle="collapse" data-target="#container">Talk to BOT</button>
 			<div id="container" class="collapse">
 				<ul class="main-ul">
-					<li class="bot"><div class="text"><span>AAAAAA aaaaa aaaaaaaaaaa aaaa aaaaaaa</span></div><br/></li>
-					<li class="user"><div class="text"><span>BBBBB</span></div><br/></li>
-					<li class="user"><div class="text"><span>CCCCCC</span></div><br/></li>
-					<li class="bot"><div class="text"><span>DDDDDD</span></div><br/></li>
-					<li class="bot"><div class="text"><span>DDDDDD</span></div><br/></li>
-					<li class="bot"><div class="text"><span>DDDDDD</span></div><br/></li>
-					<li class="bot">
-						<div class="generic_button">
-						  <ul >
-								<li>
-									<div class="text-title-subtitle">
-										<div class="text"><span>Please select between below options AAAAAA AAAAAAAAA AAAAAAAAAAAA AAAAAAAAA</span></div>
-										<button type="button" class="genericbtn first btn ">Button</button>
-										<button type="button" class="genericbtn btn ">Button</button>
-										<button type="button" class="genericbtn last btn ">Button</button>
-									</div>
-								</li>
-						  </ul>
-						</div>
-					</li>
-					<li class="bot">
-						<div class="slider_1 slider">
-						  <a href="javascript:void(0)" class="control_next">></a>
-						  <a href="javascript:void(0)" class="control_prev"><</a>
-							<ul>
-								<li>
-									<img width="250px" height="150px" src="https://beebom-redkapmedia.netdna-ssl.com/wp-content/uploads/2016/01/Reverse-Image-Search-Engines-Apps-And-Its-Uses-2016.jpg"/>
-									<div class="text-title-subtitle">
-										<div><b>Title</b></div>
-										<div>Subtitle</div>
-										<button type="button" class="genericbtn2 btn btn-info">Button</button>
-										<button type="button" class="genericbtn2 btn btn-info">Button</button>
-									</div>
-								</li>
-								<li>
-									<img width="250px" height="150px" src="https://i0.wp.com/lovecuteanimals.objects.cdn.dream.io/wp-content/uploads/2016/01/Cute-Netherland-Dwarf-Rabbit.jpg?w=1160"/>
-									<div class="text-title-subtitle">
-										<div><b>Title</b></div>
-										<div>Subtitle</div>
-										<button type="button" class="genericbtn2 btn btn-info">Button</button>
-									</div>
-								</li>
-								<li>
-									<img width="250px" height="150px" src="https://static.pexels.com/photos/67636/rose-blue-flower-rose-blooms-67636.jpeg"/>
-									<div class="text-title-subtitle">
-										<div><b>Title</b></div>
-										<div>Subtitle</div>
-										<button  type="button" class="genericbtn2 btn btn-info">Button</button>
-										<button  type="button" class="genericbtn2 btn btn-info">Button</button>
-										<button  type="button" class="genericbtn2 btn btn-info">Button</button>
-									</div>
-								</li>
-						  </ul>
-						</div>
-						<script>
-							$(document).ready(function(){
-								slider.createSlider($('.slider_1'));
-							});
-						</script>
-					</li>
-					<li class="bot">
-						<div class="slider_2 slider">
-						  <a href="javascript:void(0)" class="control_next">></a>
-						  <a href="javascript:void(0)" class="control_prev"><</a>
-							<ul>
-								<li>
-									<img width="250px" height="150px" src="https://beebom-redkapmedia.netdna-ssl.com/wp-content/uploads/2016/01/Reverse-Image-Search-Engines-Apps-And-Its-Uses-2016.jpg"/>
-									<div class="text-title-subtitle">
-										<div><b>Title</b></div>
-										<div>Subtitle</div>
-										<button  type="button" class="genericbtn2 btn btn-info">Button</button>
-										<button type="button" class="genericbtn2 btn btn-info">Button</button>
-									</div>
-								</li>
-								<li>
-									<img width="250px" height="150px" src="https://i0.wp.com/lovecuteanimals.objects.cdn.dream.io/wp-content/uploads/2016/01/Cute-Netherland-Dwarf-Rabbit.jpg?w=1160"/>
-									<div class="text-title-subtitle">
-										<div><b>Title</b></div>
-										<div>Subtitle</div>
-										<button type="button" class="genericbtn2 btn btn-info">Button</button>
-									</div>
-								</li>
-								<li>
-									<img width="250px" height="150px" src="https://static.pexels.com/photos/67636/rose-blue-flower-rose-blooms-67636.jpeg"/>
-									<div class="text-title-subtitle">
-										<div><b>Title</b></div>
-										<div>Subtitle</div>
-										<button type="button" class="genericbtn2 btn btn-info">Button</button>
-										<button type="button" class="genericbtn2 btn btn-info">Button</button>
-										<button type="button" class="genericbtn2 btn btn-info">Button</button>
-									</div>
-								</li>
-						  </ul>
-						</div>
-						<script>
-							$(document).ready(function(){
-								slider.createSlider($('.slider_2'));
-							});
-						</script>
-					</li>
-					<li class="bot">
-						<div class="list-view">
-							<div class="list-item">
-								<div><span class="title"><b>Title Title TitleTitleTitle Title TitleTitle TitleTitleTitle</b></span><img width="40px" height="40px" src="https://static.pexels.com/photos/67636/rose-blue-flower-rose-blooms-67636.jpeg"/></div>
-								<div><span>SubTitle SubTitle SubTitleSubTitleSubTitleSubTitle SubTitle</span></div>
-								<div><button style="width:150px" type="button" class="btn btn-info">Button</button></div>
-							</div>
-							<div class="list-item">
-								<div><span class="title"><b>Title</b></span><img  width="40px" height="40px" src="https://static.pexels.com/photos/67636/rose-blue-flower-rose-blooms-67636.jpeg"/></div>
-								<div><span>SubTitle</span></div>
-								<div><button style="width:150px" type="button" class="btn btn-info">Button</button></div>
-							</div>
-							<div class="list-item">
-								<div><span class="title"><b>Title</b></span><img  width="40px" height="40px" src="https://static.pexels.com/photos/67636/rose-blue-flower-rose-blooms-67636.jpeg"/></div>
-								<div><span>SubTitle</span></div>
-								<div><button style="width:150px" type="button" class="btn btn-info">Button</button></div>
-							</div >
-							<div class="list-item">
-								<div><span class="title"><b>Title</b></span><img  width="40px" height="40px" src="https://static.pexels.com/photos/67636/rose-blue-flower-rose-blooms-67636.jpeg"/></div>
-								<div><span>SubTitle</span></div>
-								<div><button style="width:150px" type="button" class="btn btn-info">Button</button></div>
-							</div>
-							<div class="list-item">
-								<div><button type="button" class="genericbtn2 btn btn-info">View More</button></div>
-							</div>
-						</div>
-					</li>
-					<li class="bot">
-						<div class="quickReply">
-							<div class="quickContent">
-									<span>Hello, did you like my intent, please answer....</span>
-							</div>
-							<div style="text-align:center">
-								<button style="width:40%" type="button" class="btn btn-info">Button</button>
-								<button style="width:40%" type="button" class="btn btn-info">Button</button>
-							</div>
-							<div style="text-align:center">
-								<button style="width:40%" type="button" class="btn btn-info">Button</button>
-							</div>
-						</div>
-					</li>
-				</ul>
-				<div class="input" style="width:280px; border-top:1px solid #c3c3c3; height:50px;">
-					<span class="persistenceMenu glyphicon glyphicon-menu-hamburger" >
-						<ul class="custom-drop-down ">
-							<li><a href="#">Action</a></li>
-						 	<li role="separator" class="divider"></li>
-						 	<li><a href="#">Another action</a></li>
-						 	<li role="separator" class="divider"></li>
-							<li><a href="#">Something else here</a></li>
-							<li role="separator" class="divider"></li>
-							<li><a href="#">Separated link</a></li>
-							<li role="separator" class="divider"></li>
-					 	</ul>
-					</span>
-					<a class="image" href="#"></a>
-					<div class="text-left">
-            <p class="lead emoji-picker-container">
-              <input type="text" class="form-control" name="input" placeholder="Please write a message" style="border:none" data-emojiable="true">
-            </p>
-					</div>
 
-			 </div>
+				</ul>
+				<div class="input" style="">
+						<span class="myicon persistenceMenu glyphicon glyphicon-menu-hamburger" >
+							<ul class="custom-drop-down ">
+								<li><a href="#">Menu 1</a></li>
+								<li role="separator" class="divider"></li>
+								<li><a href="#">Menu 2</a></li>
+								<li role="separator" class="divider"></li>
+								<li><a href="#">Menu 3</a></li>
+								<li role="separator" class="divider"></li>
+								<li><a href="#">Menu 4</a></li>
+							</ul>
+						</span>
+						<a class="image" href="#"></a>
+						<div class="text-left">
+							<p class="lead emoji-picker-container">
+								<input type="text" class="form-control" name="input" placeholder="Please write a message" style="border:none" data-emojiable="true">
+							</p>
+						</div>
+				 </div>
+
+
 		  </div>
 		</div>
 		<script src="lib/js/config.js"></script>
 	  <script src="lib/js/util.js"></script>
 	  <script src="lib/js/jquery.emojiarea.js"></script>
 	  <script src="lib/js/emoji-picker.js"></script>
-
 		<script>
 
-			var subject  = "";
       $(function() {
         // Initializes and creates emoji set from sprite sheet
         window.emojiPicker = new EmojiPicker({
@@ -450,7 +324,7 @@
 								  method: "POST",
 								  data: {
 										"obj":
-										{"transaction":new Date().getTime(),"message":{"text" : subject + " "+text },"user_id":"gilleez","created_date": new Date()}
+										{"transaction":new Date().getTime(),"message":{"text" :text },"user_id":getCookie("user_id"),"created_date": new Date()}
 									},
 								  dataType: "json"
 								});
@@ -459,23 +333,23 @@
 											if(msg.type && msg.type=="carousel"){
 												$('#container .main-ul').append('<li class="bot">'+views.carousel(msg)+'</li>');
 												slider.createSlider($(".slider_"+msg.intent));
-											}else if(msg.type && msg.type=="quickReply"){
-												$('#container .main-ul').append('<li class="bot">'+views.quickReply(msg)+'</li>');
 											}
 											else if(msg.type && msg.type=="listTemplate"){
 												$('#container .main-ul').append('<li class="bot">'+views.listTemplate(msg)+'</li>');
 											}
+											else if(msg.type && msg.type=="quickReply"){
+												$('#container .main-ul').append('<li class="bot">'+views.quickReply(msg)+'</li>');
+											}
 											else if(msg.type && (msg.type=="genericButtons" || msg.type == "attachment")){
 												$('#container .main-ul').append('<li class="bot">'+views.genericButtons(msg)+'</li>');
 											}
-											else if(msg.type && msg.type =="emoji")
+											else if(msg.type && msg.type=="emoji")
 											{
 													$('#container .main-ul').append('<li class="bot"><div class="text"><span>'+msg.text.image+'</span></div><br/></li>');
 											}else{
 												$('#container .main-ul').append('<li class="bot"><div class="text"><span>'+msg.text+'</span></div><br/></li>');
 											}
-											subject = msg.subject;
-											$("#container").animate({ scrollTop: $('#container ul').height()});
+											$("#container").animate({scrollTop: $('#container ul').height()});
 								});
 								request.fail(function( jqXHR, textStatus ) {
 								  alert( "Request failed: " + textStatus );

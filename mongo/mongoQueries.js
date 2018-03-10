@@ -38,6 +38,12 @@ var mongoQueries = class MongoQueries {
       callback(res);
     });
   }
+  findByQuerySort(collectionName, query, callback){
+    this.db.db('platform').collection(collectionName).find(query).sort( { "created_date": -1 } ).limit(100).toArray(function(err, res) {
+     if (err) throw err;
+      callback(res);
+    });
+  }
   deleteCollection(collectionName){
       this.db.db('platform').collection(collectionName).drop();
   }
