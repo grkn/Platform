@@ -49,6 +49,7 @@ body{
 .input{
   width: 100%;
   border-top: 1px solid #c3c3c3;
+  margin-top: 25px;
 }
 .input span{
   width:9%;

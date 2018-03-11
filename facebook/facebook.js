@@ -109,12 +109,11 @@ var facebookclass= class FacebookBotClass {
 													if(maxFirst < global.threshold){
 														var random = Math.floor(Math.random() * (global.responseList.length - 1));
 														var text = global.responseList[random];
-
 														var transaction = new Date().getTime();
 														var objUser = {'transaction' : transaction, 'message' : {text : text}, 'user_id' : payload.sender.id, 'created_date' : new Date()};
-														var obj = {'transaction' : transaction, 'message' : {text : text}, 'user_id' : payload.sender.id +'_BOT', 'created_date' : new Date()};
-														instanceMongoQueries.insertOne("facebook_messages", obj, function(resp, obj){});
-														instanceMongoQueries.insertOne("facebook_messages", objUser, function(resp, obj){});
+														var obj = {'transaction' : transaction, 'message' : {text : text}, 'user_id' : payload.sender.id + '_BOT', 'created_date' : new Date()};
+														instanceMongoQueries.insertOne('facebook_messages', obj, function(resp, obj){});
+														instanceMongoQueries.insertOne('facebook_messages', objUser, function(resp, obj){});
 														objUser.confidenceLevel = maxFirst;
 														objUser.intentName = maxValueFirst;
 														instanceMongoQueries.insertOne('training_messages', objUser, function(resp, obj){});
@@ -123,21 +122,16 @@ var facebookclass= class FacebookBotClass {
 													  });
 														return;
 													}
-
-													instanceMongoQueries.findByQuery('answers', {'key' :   maxValueFirst }, function(response){
+													instanceMongoQueries.findByQuery('answers', {'key' : maxValueFirst }, function(response){
 															if(response.length > 0){
-
 																var transaction = new Date().getTime();
 																var objUser = {'transaction' : transaction, 'message' : {text : response[0].value, type : response[0].type, intent : response[0].key}, 'user_id' : payload.sender.id, 'created_date' : new Date()};
-																var obj = {'transaction' : transaction, 'message' : {text : response[0].value, type : response[0].type, intent : response[0].key}, 'user_id' : payload.sender.id+'_BOT', 'created_date' : new Date()};
-																instanceMongoQueries.insertOne("facebook_messages", obj, function(resp, obj){
-																});
-																instanceMongoQueries.insertOne("facebook_messages", objUser, function(resp,obj){
-																});
+																var obj = {'transaction' : transaction, 'message' : {text : response[0].value, type : response[0].type, intent : response[0].key}, 'user_id' : payload.sender.id + '_BOT', 'created_date' : new Date()};
+																instanceMongoQueries.insertOne("facebook_messages", obj, function(resp, obj){});
+																instanceMongoQueries.insertOne("facebook_messages", objUser, function(resp,obj){});
 																var total = {text : response[0].value, type : response[0].type, intent : response[0].key};
 																if(total.type == 'listTemplate'){
 																	var listTemplate = new ListTemplate(total.text);
-
 																	bot.sendMessage(payload.sender.id, listTemplateFunc(listTemplate.createListTemplate()), function(resp){
 																		console.log(resp);
 																	});
@@ -146,19 +140,16 @@ var facebookclass= class FacebookBotClass {
 																		bot.sendMessage(payload.sender.id, carouselTemplateFunc(carousel.createListCarousel()), function(resp){
 																			console.log(resp);
 																		});
-
 																}else if (total.type == 'quickReply'){
 																		var quickReply = new QuickReply(total.text);
-																		bot.sendMessage(payload.sender.id,quickReplyFunc(quickReply.createListQuickReply()) , function(resp){
+																		bot.sendMessage(payload.sender.id, quickReplyFunc(quickReply.createListQuickReply()) , function(resp){
 																			console.log(resp);
 																		});
-
 																}else if (total.type == 'genericButtons'){
 																		var genericButtons = new GenericButtons(total.text);
-																		bot.sendMessage(payload.sender.id,buttonGenericsFunc(genericButtons.createGenericButtons()) , function(resp){
+																		bot.sendMessage(payload.sender.id, buttonGenericsFunc(genericButtons.createGenericButtons()) , function(resp){
 																			console.log(resp);
 																		});
-
 																}else{
 																	var text= total.text;
 																	reply({text}, function(err){
@@ -169,10 +160,10 @@ var facebookclass= class FacebookBotClass {
 																var random = Math.floor(Math.random() * (global.responseList.length - 1));
 																var text = global.responseList[random];
 																var transaction = new Date().getTime();
-																var objUser = {'transaction':transaction, 'message' : {text : text}, 'user_id' : payload.sender.id, 'created_date' : new Date()};
-																var obj = {'transaction':transaction, 'message' : {text : text}, 'user_id' : payload.sender.id+'_BOT', 'created_date' : new Date()};
-																instanceMongoQueries.insertOne("facebook_messages", obj, function(resp, obj){});
-																instanceMongoQueries.insertOne("facebook_messages",objUser, function(resp, obj){});
+																var objUser = {'transaction' : transaction, 'message' : {text : text}, 'user_id' : payload.sender.id, 'created_date' : new Date()};
+																var obj = {'transaction' : transaction, 'message' : {text : text}, 'user_id' : payload.sender.id + '_BOT', 'created_date' : new Date()};
+																instanceMongoQueries.insertOne('facebook_messages', obj, function(resp, obj){});
+																instanceMongoQueries.insertOne('facebook_messages', objUser, function(resp, obj){});
 																objUser.confidenceLevel = maxFirst;
 																objUser.intentName = maxValueFirst;
 																instanceMongoQueries.insertOne('training_messages', objUser, function(resp, obj){});
@@ -181,32 +172,24 @@ var facebookclass= class FacebookBotClass {
 															  });
 															}
 													});
-
 												}
-
 										});
 									return;
 								}else{
-
-									instanceMongoQueries.findByQuery('subject_intent_relation',{intent : maxValueFirst},function(sResponse){
-
+									instanceMongoQueries.findByQuery('subject_intent_relation', {intent : maxValueFirst}, function(sResponse){
 										if(sResponse.length > 0){
 											subjectArray[payload.sender.id] = sResponse[0].subject;
 										}
-
 										instanceMongoQueries.findByQuery('answers', {'key' :   maxValueFirst }, function(response){
 											if(response.length > 0){
 													var transaction = new Date().getTime();
 													var objUser = {'transaction' : transaction, 'message' : {text : response[0].value, type : response[0].type, intent : response[0].key}, 'user_id' : payload.sender.id, 'created_date' : new Date()};
-													var obj = {'transaction' : transaction, 'message' : {text : response[0].value, type : response[0].type, intent : response[0].key}, 'user_id' :  payload.sender.id+'_BOT', 'created_date' : new Date()};
-													instanceMongoQueries.insertOne("facebook_messages", obj, function(resp, obj){
-													});
-													instanceMongoQueries.insertOne("facebook_messages", objUser, function(resp,obj){
-													});
+													var obj = {'transaction' : transaction, 'message' : {text : response[0].value, type : response[0].type, intent : response[0].key}, 'user_id' :  payload.sender.id + '_BOT', 'created_date' : new Date()};
+													instanceMongoQueries.insertOne('facebook_messages', obj, function(resp, obj){});
+													instanceMongoQueries.insertOne('facebook_messages', objUser, function(resp,obj){});
 													var total = {text : response[0].value, type : response[0].type, intent : response[0].key};
 													if(total.type == 'listTemplate'){
 														var listTemplate = new ListTemplate(total.text);
-
 														bot.sendMessage(payload.sender.id, listTemplateFunc(listTemplate.createListTemplate()), function(resp){
 															console.log(resp);
 														});
@@ -215,21 +198,18 @@ var facebookclass= class FacebookBotClass {
 															bot.sendMessage(payload.sender.id, carouselTemplateFunc(carousel.createListCarousel()), function(resp){
 																console.log(resp);
 															});
-
 													}else if (total.type == 'quickReply'){
 															var quickReply = new QuickReply(total.text);
-															bot.sendMessage(payload.sender.id,quickReplyFunc(quickReply.createListQuickReply()) , function(resp){
+															bot.sendMessage(payload.sender.id, quickReplyFunc(quickReply.createListQuickReply()), function(resp){
 																console.log(resp);
 															});
-
 													}else if (total.type == 'genericButtons'){
 															var genericButtons = new GenericButtons(total.text);
-															bot.sendMessage(payload.sender.id,buttonGenericsFunc(genericButtons.createGenericButtons()) , function(resp){
+															bot.sendMessage(payload.sender.id, buttonGenericsFunc(genericButtons.createGenericButtons()), function(resp){
 																console.log(resp);
 															});
-
 													}else{
-														var text= total.text;
+														var text = total.text;
 														reply({text}, function(err){
 																console.log(err);
 														});
@@ -237,11 +217,11 @@ var facebookclass= class FacebookBotClass {
 												}else{
 													var random = Math.floor(Math.random() * (global.responseList.length - 1));
 													var text = global.responseList[random];
-														var transaction = new Date().getTime();
-													var objUser = {'transaction':transaction, 'message' : {text : text}, 'user_id' : payload.sender.id, 'created_date' : new Date()};
-													var obj = {'transaction':transaction, 'message' : {text : text}, 'user_id' : payload.sender.id+'_BOT', 'created_date' : new Date()};
-													instanceMongoQueries.insertOne("facebook_messages", obj, function(resp, obj){});
-													instanceMongoQueries.insertOne("facebook_messages", objUser, function(resp, obj){});
+													var transaction = new Date().getTime();
+													var objUser = {'transaction' : transaction, 'message' : {text : text}, 'user_id' : payload.sender.id, 'created_date' : new Date()};
+													var obj = {'transaction' : transaction, 'message' : {text : text}, 'user_id' : payload.sender.id + '_BOT', 'created_date' : new Date()};
+													instanceMongoQueries.insertOne('facebook_messages', obj, function(resp, obj){});
+													instanceMongoQueries.insertOne('facebook_messages', objUser, function(resp, obj){});
 													objUser.confidenceLevel = maxFirst;
 													objUser.intentName = maxValueFirst;
 													instanceMongoQueries.insertOne('training_messages', objUser, function(resp, obj){});
@@ -250,12 +230,10 @@ var facebookclass= class FacebookBotClass {
 												  });
 												}
 										});
-
-
 									});
 								}
 						}else{
-							client.get('https://api.wit.ai/message?q=' + encodeURIComponent(subjectArray[payload.sender.id] + " " +searchedItem), wit, function(response){
+							client.get('https://api.wit.ai/message?q=' + encodeURIComponent(subjectArray[payload.sender.id] + " " + searchedItem), wit, function(response){
 									if(response.entities && response.entities.intent && response.entities.intent.length > 0){
 										maxFirst = -1;
 										maxValueFirst = '';
@@ -270,10 +248,9 @@ var facebookclass= class FacebookBotClass {
 											var text = global.responseList[random];
 											var transaction = new Date().getTime();
 											var objUser = {'transaction' : transaction, 'message' : {text : text}, 'user_id' : payload.sender.id, 'created_date' : new Date()};
-											var obj = {'transaction' : transaction, 'message' : {text : text}, 'user_id' : payload.sender.id+'_BOT', 'created_date' : new Date()};
-											instanceMongoQueries.insertOne("facebook_messages", obj, function(resp, obj){});
-											instanceMongoQueries.insertOne("facebook_messages", objUser, function(resp, obj){});
-
+											var obj = {'transaction' : transaction, 'message' : {text : text}, 'user_id' : payload.sender.id + '_BOT', 'created_date' : new Date()};
+											instanceMongoQueries.insertOne('facebook_messages', obj, function(resp, obj){});
+											instanceMongoQueries.insertOne('facebook_messages', objUser, function(resp, obj){});
 											objUser.confidenceLevel = maxFirst;
 											objUser.intentName = maxValueFirst;
 											instanceMongoQueries.insertOne('training_messages', objUser, function(resp, obj){});
@@ -282,20 +259,16 @@ var facebookclass= class FacebookBotClass {
 										  });
 											return;
 										}
-
-										instanceMongoQueries.findByQuery('answers', {'key' :   maxValueFirst }, function(response){
+										instanceMongoQueries.findByQuery('answers', {'key' : maxValueFirst }, function(response){
 											if(response.length > 0){
 												var transaction = new Date().getTime();
 														var objUser = {'transaction' : transaction, 'message' : {text : response[0].value, type : response[0].type, intent : response[0].key}, 'user_id' : payload.sender.id, 'created_date' : new Date()};
 														var obj = {'transaction' : transaction, 'message' : {text : response[0].value, type : response[0].type, intent : response[0].key}, 'user_id' : payload.sender.id+'_BOT', 'created_date' : new Date()};
-														instanceMongoQueries.insertOne("facebook_messages", obj, function(resp, obj){
-														});
-														instanceMongoQueries.insertOne("facebook_messages", objUser, function(resp,obj){
-														});
+														instanceMongoQueries.insertOne('facebook_messages', obj, function(resp, obj){});
+														instanceMongoQueries.insertOne('facebook_messages', objUser, function(resp, obj){});
 														var total = {text : response[0].value, type : response[0].type, intent : response[0].key};
 														if(total.type == 'listTemplate'){
 															var listTemplate = new ListTemplate(total.text);
-
 															bot.sendMessage(payload.sender.id, listTemplateFunc(listTemplate.createListTemplate()), function(resp){
 																console.log(resp);
 															});
@@ -304,19 +277,16 @@ var facebookclass= class FacebookBotClass {
 																bot.sendMessage(payload.sender.id, carouselTemplateFunc(carousel.createListCarousel()), function(resp){
 																	console.log(resp);
 																});
-
 														}else if (total.type == 'quickReply'){
 																var quickReply = new QuickReply(total.text);
-																bot.sendMessage(payload.sender.id,quickReplyFunc(quickReply.createListQuickReply()) , function(resp){
+																bot.sendMessage(payload.sender.id, quickReplyFunc(quickReply.createListQuickReply()) , function(resp){
 																	console.log(resp);
 																});
-
 														}else if (total.type == 'genericButtons'){
 																var genericButtons = new GenericButtons(total.text);
-																bot.sendMessage(payload.sender.id,buttonGenericsFunc(genericButtons.createGenericButtons()) , function(resp){
+																bot.sendMessage(payload.sender.id, buttonGenericsFunc(genericButtons.createGenericButtons()) , function(resp){
 																	console.log(resp);
 																});
-
 														}else{
 															var text= total.text;
 															reply({text}, function(err){
@@ -327,10 +297,10 @@ var facebookclass= class FacebookBotClass {
 													var random = Math.floor(Math.random() * (global.responseList.length - 1));
 													var text = global.responseList[random];
 													var transaction = new Date().getTime();
-													var objUser = {'transaction':transaction, 'message' : {text : text}, 'user_id' : payload.sender.id, 'created_date' : new Date()};
-													var obj = {'transaction':transaction, 'message' : {text : text}, 'user_id' : payload.sender.id+'_BOT', 'created_date' : new Date()};
-													instanceMongoQueries.insertOne("facebook_messages", obj, function(resp, obj){});
-													instanceMongoQueries.insertOne("facebook_messages", objUser, function(resp, obj){});
+													var objUser = {'transaction' : transaction, 'message' : {text : text}, 'user_id' : payload.sender.id, 'created_date' : new Date()};
+													var obj = {'transaction' : transaction, 'message' : {text : text}, 'user_id' : payload.sender.id + '_BOT', 'created_date' : new Date()};
+													instanceMongoQueries.insertOne('facebook_messages', obj, function(resp, obj){});
+													instanceMongoQueries.insertOne('facebook_messages', objUser, function(resp, obj){});
 													objUser.confidenceLevel = maxFirst;
 													objUser.intentName = maxValueFirst;
 													instanceMongoQueries.insertOne('training_messages', objUser, function(resp, obj){});
@@ -347,7 +317,6 @@ var facebookclass= class FacebookBotClass {
 				}else{
 					client.get('https://api.wit.ai/message?q=' + encodeURIComponent(searchedItem), wit, function(response){
 					if(response.entities && response.entities.intent && response.entities.intent.length > 0){
-
 							var maxFirst = -1;
 							var maxValueFirst = '';
 							for(var i = 0; i < response.entities.intent.length; i++){
@@ -356,16 +325,14 @@ var facebookclass= class FacebookBotClass {
 									maxFirst = response.entities.intent[i].confidence;
 								}
 							}
-
 							if(maxFirst < global.threshold){
 								var random = Math.floor(Math.random() * (global.responseList.length - 1));
 								var text = global.responseList[random];
 								var transaction = new Date().getTime();
 								var objUser = {'transaction' : transaction, 'message' : {text : text}, 'user_id' : payload.sender.id, 'created_date' : new Date()};
-								var obj = {'transaction' : transaction, 'message' : {text : text}, 'user_id' : payload.sender.id+'_BOT', 'created_date' : new Date()};
-								instanceMongoQueries.insertOne("facebook_messages", obj, function(resp, obj){});
-								instanceMongoQueries.insertOne("facebook_messages", objUser, function(resp, obj){});
-
+								var obj = {'transaction' : transaction, 'message' : {text : text}, 'user_id' : payload.sender.id + '_BOT', 'created_date' : new Date()};
+								instanceMongoQueries.insertOne('facebook_messages', obj, function(resp, obj){});
+								instanceMongoQueries.insertOne('facebook_messages', objUser, function(resp, obj){});
 								objUser.confidenceLevel = maxFirst;
 								objUser.intentName = maxValueFirst;
 								instanceMongoQueries.insertOne('training_messages', objUser, function(resp, obj){});
@@ -374,23 +341,18 @@ var facebookclass= class FacebookBotClass {
 							  });
 								return;
 							}
-
-							instanceMongoQueries.findByQuery('subject_intent_relation',{intent : maxValueFirst},function(sResponse){
+							instanceMongoQueries.findByQuery('subject_intent_relation', {intent : maxValueFirst}, function(sResponse){
 								console.log(sResponse);
 								if(sResponse.length > 0){
 									subjectArray[payload.sender.id] = sResponse[0].subject;
 								}
-
-								instanceMongoQueries.findByQuery('answers', {'key' :   maxValueFirst }, function(response){
+								instanceMongoQueries.findByQuery('answers', {'key' : maxValueFirst }, function(response){
 									if(response.length > 0){
 											var transaction = new Date().getTime();
 											var objUser = {'transaction' : transaction, 'message' : {text : response[0].value, type : response[0].type, intent : response[0].key}, 'user_id' : payload.sender.id, 'created_date' : new Date()};
 											var obj = {'transaction' : transaction, 'message' : {text : response[0].value, type : response[0].type, intent : response[0].key}, 'user_id' :  payload.sender.id+'_BOT', 'created_date' : new Date()};
-											instanceMongoQueries.insertOne("facebook_messages", obj, function(resp, obj){
-											});
-											instanceMongoQueries.insertOne("facebook_messages", objUser, function(resp,obj){
-											});
-
+											instanceMongoQueries.insertOne('facebook_messages', obj, function(resp, obj){});
+											instanceMongoQueries.insertOne('facebook_messages', objUser, function(resp,obj){});
 											var total = {text : response[0].value, type : response[0].type, intent : response[0].key};
 											if(total.type == 'listTemplate'){
 												var listTemplate = new ListTemplate(total.text);
@@ -415,7 +377,6 @@ var facebookclass= class FacebookBotClass {
 													bot.sendMessage(payload.sender.id,buttonGenericsFunc(genericButtons.createGenericButtons()) , function(resp){
 														console.log(resp);
 													});
-
 											}else{
 												var text= total.text;
 												reply({text}, function(err){
@@ -425,11 +386,11 @@ var facebookclass= class FacebookBotClass {
 										}else{
 											var random = Math.floor(Math.random() * (global.responseList.length - 1));
 											var text = global.responseList[random];
-												var transaction = new Date().getTime();
-											var objUser = {'transaction':transaction, 'message' : {text : text}, 'user_id' : payload.sender.id, 'created_date' : new Date()};
-											var obj = {'transaction':transaction, 'message' : {text : text}, 'user_id' : payload.sender.id+'_BOT', 'created_date' : new Date()};
-											instanceMongoQueries.insertOne("facebook_messages", obj, function(resp, obj){});
-											instanceMongoQueries.insertOne("facebook_messages", objUser, function(resp, obj){});
+											var transaction = new Date().getTime();
+											var objUser = {'transaction' : transaction, 'message' : {text : text}, 'user_id' : payload.sender.id, 'created_date' : new Date()};
+											var obj = {'transaction' : transaction, 'message' : {text : text}, 'user_id' : payload.sender.id + '_BOT', 'created_date' : new Date()};
+											instanceMongoQueries.insertOne('facebook_messages', obj, function(resp, obj){});
+											instanceMongoQueries.insertOne('facebook_messages', objUser, function(resp, obj){});
 											objUser.confidenceLevel = maxFirst;
 											objUser.intentName = maxValueFirst;
 											instanceMongoQueries.insertOne('training_messages', objUser, function(resp, obj){});
@@ -438,17 +399,15 @@ var facebookclass= class FacebookBotClass {
 										  });
 										}
 								});
-
-
 							});
 						}else{
 							var random = Math.floor(Math.random() * (global.responseList.length - 1));
 							var text = global.responseList[random];
 							var transaction = new Date().getTime();
-							var objUser = {'transaction':transaction, 'message' : {text : text}, 'user_id' : payload.sender.id, 'created_date' : new Date()};
-							var obj = {'transaction':transaction, 'message' : {text : text}, 'user_id' : payload.sender.id+'_BOT', 'created_date' : new Date()};
-							instanceMongoQueries.insertOne("facebook_messages", obj, function(resp, obj){});
-							instanceMongoQueries.insertOne("facebook_messages", objUser, function(resp, obj){});
+							var objUser = {'transaction' : transaction, 'message' : {text : text}, 'user_id' : payload.sender.id, 'created_date' : new Date()};
+							var obj = {'transaction' : transaction, 'message' : {text : text}, 'user_id' : payload.sender.id + '_BOT', 'created_date' : new Date()};
+							instanceMongoQueries.insertOne('facebook_messages', obj, function(resp, obj){});
+							instanceMongoQueries.insertOne('facebook_messages', objUser, function(resp, obj){});
 							objUser.confidenceLevel = maxFirst;
 							objUser.intentName = maxValueFirst;
 							instanceMongoQueries.insertOne('training_messages', objUser, function(resp, obj){});
@@ -524,14 +483,12 @@ var facebookclass= class FacebookBotClass {
 			var mainObject = {title : obj.elements[i].title};
 			var buttons = [];
 			for(var j = 0; j < obj.elements[i].buttons.length; j++){
-				var button = {
-					'type' : obj.elements[i].buttons[j].type,
-				};
+				var button = {'type' : obj.elements[i].buttons[j].type};
 				button['title']  = obj.elements[i].buttons[j].title;
 				if(obj.elements[i].buttons[j].type == 'web_url'){
-					button['url'] = obj.elements[i].buttons[j].url,
-					button['webview_height_ratio'] = 'full',
-					button['messenger_extensions'] =  true,
+					button['url'] = obj.elements[i].buttons[j].url;
+					button['webview_height_ratio'] = 'full';
+					button['messenger_extensions'] =  true;
 					button['fallback_url'] =  obj.elements[i].buttons[j].url;
 				}else{
 					button['payload'] =  obj.elements[i].buttons[j].payload;
@@ -545,7 +502,7 @@ var facebookclass= class FacebookBotClass {
 			'attachment': {
 				'type' : 'template',
 				'payload' : {
-					'template_type': 'generic',
+					'template_type' : 'generic',
 					'elements' : elements
 				}
 			}
@@ -571,9 +528,9 @@ var facebookclass= class FacebookBotClass {
 				var button = {'type' : obj.elements[i].buttons[j].type};
 				button['title']  = obj.elements[i].buttons[j].title;
 				if(obj.elements[i].buttons[j].type == 'web_url'){
-					button['url'] = obj.elements[i].buttons[j].url,
-					button['webview_height_ratio'] = 'full',
-					button['messenger_extensions'] =  true,
+					button['url'] = obj.elements[i].buttons[j].url;
+					button['webview_height_ratio'] = 'full';
+					button['messenger_extensions'] =  true;
 					button['fallback_url'] =  obj.elements[i].buttons[j].url;
 				}else{
 					button['payload'] =  obj.elements[i].buttons[j].payload;
@@ -607,7 +564,7 @@ var facebookclass= class FacebookBotClass {
 		for(var i = 0; i< obj.elements.length; i++){
 			var mainObject = {
 				'title' : obj.elements[i].title,
-				'subtitle' : obj.elements[i].subtitle,
+				'subtitle' : obj.elements[i].subtitle
 			};
 			if(obj.elements[i].image_url){
 				mainObject['image_url'] = obj.elements[i].image_url;
@@ -617,7 +574,7 @@ var facebookclass= class FacebookBotClass {
 						'type' : obj.elements[i].default_action.type,
 						'url' : obj.elements[i].default_action.url,
 						'messenger_extensions' : false,
-						'webview_height_ratio' : 'tall',
+						'webview_height_ratio' : 'tall'
 					}
 					mainObject['default_action'] = default_action;
 			}
