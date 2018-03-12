@@ -168,6 +168,27 @@
 						 +' </ul>'
 						+'</div>'
 					return genericButtons;
+				},
+				attachment : function(obj){
+					var attch = '<div class="generic_button">'
+						  +'<ul >'
+							+	'<li>';
+										var buttons = "";
+										for(var i = 0; i < obj.text[0].buttons.length; i++){
+											if(obj.text[0].buttons[i].text && obj.text[0].buttons[i].url){
+												buttons += '<a target="_blank" href="'+obj.text[0].buttons[i].url+'" onclick="buttonWrite(\''+obj.text[0].buttons[i].text+'\')" >'+obj.text[0].buttons[i].name+'</a>';
+											}else if(!obj.text[0].buttons[i].text && obj.text[0].buttons[i].url){
+												buttons += '<div class="divide"></div><a target="_blank" href="'+obj.text[0].buttons[i].url+'" >'+obj.text[0].buttons[i].name+'</a>';
+											}else if(obj.text[0].buttons[i].text && !obj.text[0].buttons[i].url){
+												buttons += '<div class="divide"></div><a onclick="buttonWrite(\''+obj.text[0].buttons[i].text+'\')">'+obj.text[0].buttons[i].name+'</a>';
+											}
+										}
+							attch += buttons;
+							attch += '</div>'
+								+'</li>'
+						 +' </ul>'
+						+'</div>'
+					return attch;
 				}
 			};
 			//load function for messages from Mongo db
@@ -196,10 +217,11 @@
 								else if(msg[i].message.type && msg[i].message.type == "listTemplate"){
 									$('#container .main-ul').append('<li class="bot">'+views.listTemplate(msg[i].message)+'</li>');
 								}
-								else if(msg[i].message.type && (msg[i].message.type == "genericButtons" || msg[i].message.type == "attachment")){
+								else if(msg[i].message.type && (msg[i].message.type == "genericButtons")){
 									$('#container .main-ul').append('<li class="bot">'+views.genericButtons(msg[i].message)+'</li>');
-								}
-								else if(msg[i].message.type && msg[i].message.type == "emoji"){
+								}else if (msg[i].message.type && msg[i].message.type == "attachment"){
+									$('#container .main-ul').append('<li class="bot">'+views.attachment(msg[i].message)+'</li>');
+								}else if(msg[i].message.type && msg[i].message.type == "emoji"){
 									$('#container .main-ul').append('<li class="bot"><div class="text"><span>'+msg[i].message.text.image+'</span></div><br/></li>');
 								}else{
 									$('#container .main-ul').append('<li class="bot"><div class="text"><span>'+msg[i].message.text+'</span></div><br/></li>');
@@ -227,8 +249,8 @@
 				$(el).parent().parent().find(".hiddable").hide();
 			};
 			var buttonWrite = function(text){
-				$(".input input").val(text);
-				$(".input input").trigger("keypress", [ "Automatically"]);
+				$(".input .text-left .emoji-wysiwyg-editor").html(text);
+				$(".input .text-left .emoji-wysiwyg-editor").trigger("keypress", [ "Automatically"]);
 			};
 			$(document).ready(function(){
 				persistenceMenu.bind();
@@ -246,33 +268,30 @@
 
 	<body >
 		<div class="container">
-			<button type="button" class="bigbtn btn btn-info" data-toggle="collapse" data-target="#container">Talk to BOT</button>
-			<div id="container" class="collapse">
+			<div id="container" >
 				<ul class="main-ul">
 
 				</ul>
-				<div class="input" style="">
-						<span class="myicon persistenceMenu glyphicon glyphicon-menu-hamburger" >
-							<ul class="custom-drop-down ">
-								<li><a href="#">Menu 1</a></li>
-								<li role="separator" class="divider"></li>
-								<li><a href="#">Menu 2</a></li>
-								<li role="separator" class="divider"></li>
-								<li><a href="#">Menu 3</a></li>
-								<li role="separator" class="divider"></li>
-								<li><a href="#">Menu 4</a></li>
-							</ul>
-						</span>
-						<a class="image" href="#"></a>
-						<div class="text-left">
-							<p class="lead emoji-picker-container">
-								<input type = "text" class ="form-control" name = "input" style = "border:none" data-emojiable="true">
-							</p>
-						</div>
-				 </div>
-
-
-		  </div>
+			</div>
+			<div class="input" style="">
+					<span class="myicon persistenceMenu glyphicon glyphicon-menu-hamburger" >
+						<ul class="custom-drop-down ">
+							<li><a href="#">Menu 1</a></li>
+							<li role="separator" class="divider"></li>
+							<li><a href="#">Menu 2</a></li>
+							<li role="separator" class="divider"></li>
+							<li><a href="#">Menu 3</a></li>
+							<li role="separator" class="divider"></li>
+							<li><a href="#">Menu 4</a></li>
+						</ul>
+					</span>
+					<a class="image" href="#"></a>
+					<div class="text-left">
+						<p class="lead emoji-picker-container">
+							<input type = "text" class ="form-control" name = "input" style = "border:none" data-emojiable="true">
+						</p>
+					</div>
+			 </div>
 		</div>
 		<script src = "lib/js/config.js"></script>
 	  <script src = "lib/js/util.js"></script>
@@ -333,8 +352,10 @@
 											else if(msg.type && msg.type=="quickReply"){
 												$('#container .main-ul').append('<li class="bot">' + views.quickReply(msg) + '</li>');
 											}
-											else if(msg.type && (msg.type=="genericButtons" || msg.type == "attachment")){
+											else if(msg.type && msg.type=="genericButtons"){
 												$('#container .main-ul').append('<li class="bot">' + views.genericButtons(msg) + '</li>');
+											}else if (msg.type && msg.type == "attachment"){
+												$('#container .main-ul').append('<li class="bot">' + views.attachment(msg) + '</li>');
 											}
 											else if(msg.type && msg.type=="emoji")
 											{

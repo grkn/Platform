@@ -112,7 +112,7 @@ width: 16px;
 }
 
 .bigbtn{
-  width:300px;
+  width:100%;
   border-color: #28a4c9;
   background-image: linear-gradient(to bottom,#5bc0de 0,#2aabd2 100%);
 }
@@ -160,10 +160,8 @@ a.control_next {
 }
 
 #container{
-  width: 300px;
+  width: 100%;
   border: 1px solid #c3c3c3;
-  max-height: 400px;
-  overflow-y: scroll;
 }
 
 
@@ -189,7 +187,7 @@ a.control_next {
   float: left;
   margin: 0;
   padding: 0;
-  width: 250px;
+  width: 100%;
   height: auto;
   text-align: center;
   line-height: 2em;
@@ -221,7 +219,7 @@ a.control_next {
 }
 
 .listbtn{
-  width:250px !important;
+  width:100% !important;
   border-left: 1px solid #ccc !important;
   border-right: 1px solid #ccc !important;
   border-radius: 0 !important;
@@ -349,4 +347,7 @@ a.control_next {
 }
 .quickreplybtn :nth-child(2){
   margin-left: 4px;
+}
+.emoji-menu{
+
 }
