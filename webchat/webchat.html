@@ -125,7 +125,7 @@
 								listTemplate +='</div>'
 						}
 						listTemplate +='<div class="list-item list-item-last">'
-							+'<div><a target="_blank" href="'+obj.text.viewMoreButtonUrl+'" type="button" class="genericbtn2 btn">'+obj.text.viewMoreButtonName+'</a></div>'
+							+'<div class="text-center"><a target="_blank" href="'+obj.text.viewMoreButtonUrl+'" type="button">'+obj.text.viewMoreButtonName+'</a></div>'
 						+'</div>'
 					+'</div>';
 					return listTemplate;
@@ -157,9 +157,9 @@
 											if(obj.text[0].buttons[i].text && obj.text[0].buttons[i].url){
 												buttons += '<div class="divide"></div><a target="_blank" href="'+obj.text[0].buttons[i].url+'" onclick="buttonWrite(\''+obj.text[0].buttons[i].text+'\')" type="button" class="genericbtn btn">'+obj.text[0].buttons[i].name+'</a>';
 											}else if(!obj.text[0].buttons[i].text && obj.text[0].buttons[i].url){
-												buttons += '<a target="_blank" href="'+obj.text[0].buttons[i].url+'" type="button" class="genericbtn btn">'+obj.text[0].buttons[i].name+'</a>';
+												buttons += '<div class="divide"></div><a target="_blank" href="'+obj.text[0].buttons[i].url+'" type="button" class="genericbtn btn">'+obj.text[0].buttons[i].name+'</a>';
 											}else if(obj.text[0].buttons[i].text && !obj.text[0].buttons[i].url){
-												buttons += '<a onclick="buttonWrite(\''+obj.text[0].buttons[i].text+'\')" type="button" class="genericbtn btn">'+obj.text[0].buttons[i].name+'</a>';
+												buttons += '<div class="divide"></div><a onclick="buttonWrite(\''+obj.text[0].buttons[i].text+'\')" type="button" class="genericbtn btn">'+obj.text[0].buttons[i].name+'</a>';
 											}
 										}
 							genericButtons += buttons;

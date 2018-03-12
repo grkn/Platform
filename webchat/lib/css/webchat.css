@@ -228,12 +228,11 @@ a.control_next {
 }
 .list-view{
   border: 1px solid #ccc;
-
   position: relative;
   overflow: hidden;
   margin: 8px auto 0 auto;
-
   margin-top: 20px;
+  border-radius: 12px;
 }
 .list-view .list-item{
   border-bottom: 1px solid #ccc;
@@ -268,31 +267,35 @@ a.control_next {
   border: 1px solid #ccc !important;
   border-radius: 4px !important;
 }
+.text-center{
+  text-align: center;
+  vertical-align: middle;
+}
+
 
 .generic_text{
-  margin-bottom: 10px;
+  margin-bottom: 18px;
   padding: 10px 10px 10px 10px;
 }
 .genericbtn {
   width: 180px;
 }
 .genericframe{
-  width: 200px !important;
+  width: 185px !important;
   border-right: 1px solid #ccc !important;
   border-left: 1px solid #ccc !important;
   border-bottom: 1px solid #ccc !important;
   border-bottom-left-radius: 12px !important;
   border-bottom-right-radius: 12px !important;
-  padding-bottom: 3px;
+  line-height: 1.8em;
 }
 .genericframe a{
-  padding-bottom: 5px;
-  margin-left: 2px;
-  margin-top: -9px;
+
+
 }
 .divide{
-  width: 200px;
-  height: 10px;
+  width: 180px;
+  height: 5px;
   border-top: 1px solid #ccc !important;
 }
 .genericframe a:hover{
@@ -308,7 +311,7 @@ a.control_next {
   border-radius: 0 !important;
 }
 .generic_button ul li{
-  line-height: 1.3em;
+  line-height: 1.4em;
 }
 .generic_button ul li .text-title-subtitle div{
   margin-bottom: 10px;
@@ -323,7 +326,7 @@ a.control_next {
 }
 .quickReply .quickContent{
   background-color: #f1f0f0;
-  line-height: 1.8em;
+  line-height: 1.4em;
   border-bottom-left-radius: 1.0em;
   border-bottom-right-radius: 1.0em;
   border-top-left-radius: 4px;
