@@ -5,8 +5,8 @@ var carousel = class Carousel {
 
   createButtons(array){
     var buttons = [];
-    for(var i = 0; i < array.length ; i++){
-      var aButton = {}
+    for(var i = 0; i < array.length; i++){
+      var aButton = {};
       if(array[i].url){
         aButton = {'type' : 'web_url', 'url' : 'https://b050986c.eu.ngrok.io/', 'title' : array[i].name};
       }else{
@@ -18,8 +18,9 @@ var carousel = class Carousel {
   }
 
   createACarousel(imgUrl, title, subtitle, buttons){
-    return {'image_url' : imgUrl, 'title' : title, 'subtitle' : subtitle, default_action : {'type' : 'web_url', "url":"https://b050986c.eu.ngrok.io"}, 'buttons' : this.createButtons(buttons)}
+    return {'image_url' : imgUrl, 'title' : title, 'subtitle' : subtitle, default_action : {'type' : 'web_url', "url" : "https://b050986c.eu.ngrok.io"}, 'buttons' : this.createButtons(buttons)};
   }
+
   createListCarousel(){
     var obj = {elements : []};
     for(var i = 0; i < this.list.length; i++){
@@ -27,6 +28,6 @@ var carousel = class Carousel {
     }
     return obj;
   }
-}
+};
 
 module.exports = carousel;

@@ -2,10 +2,11 @@ var listTemplate = class ListTemplate {
   constructor(list){
     this.list = list;
   }
+
   createButtons(array){
     var buttons = [];
     for(var i = 0; i < array.length; i++){
-      var aButton = {}
+      var aButton = {};
       if(array[i].url){
         aButton = {'type' : 'web_url' , 'url' : 'https://b050986c.eu.ngrok.io/', 'title' : array[i].name, 'webview_height_ratio' : 'full', 'messenger_extensions' : true, 'fallback_url' : 'https://b050986c.eu.ngrok.io/fallback'};
       }else{
@@ -17,9 +18,15 @@ var listTemplate = class ListTemplate {
   }
 
   createAListTemplate(title, subtitle, imageUrl, buttons){
-    return {'title' : title, 'subtitle' : subtitle, 'image_url' : imageUrl, 'buttons' : this.createButtons(buttons)}
+    return {'title' : title, 'subtitle' : subtitle, 'image_url' : imageUrl, 'buttons' : this.createButtons(buttons)};
   }
+
   createListTemplate(){
+    /*
+    "title": "Classic T-Shirt Collection",
+    "subtitle": "See all our colors",
+    "image_url": "https://peterssendreceiveapp.ngrok.io/img/collection.png",
+    */
     var obj = {elements : [], buttons : []};
     for(var i = 0; i < this.list.list.length; i++){
       obj.elements.push(this.createAListTemplate(this.list.list[i].title, this.list.list[i].subTitle, this.list.list[i].imgUrl, this.list.list[i].buttons));
@@ -27,6 +34,6 @@ var listTemplate = class ListTemplate {
     obj.buttons.push({'type' : 'postback', 'title' : this.list.viewMoreButtonName, 'payload' : this.list.viewMoreButtonUrl});
     return obj;
   }
-}
+};
 
 module.exports = listTemplate;

@@ -47,15 +47,20 @@ body{
 }
 
 .input{
-  width: 100%;
   border-top: 1px solid #c3c3c3;
-  margin-top: 25px;
+  padding: 0px;
+  position:fixed;
+  bottom:0px;
+  left:0px;
+  width:100%;
+  display:block;
+  background-color:white
 }
 .input span{
   width:9%;
 }
 .input input{
-  height: 40px;
+  height: 20px;
   width: 80%;
 }
 .input .image{
@@ -157,11 +162,11 @@ a.control_next {
   padding-left: 10px;
   padding-right: 10px;
   padding-top: 8px;
+  margin-bottom: 75px;
 }
 
 #container{
   width: 100%;
-  border: 1px solid #c3c3c3;
 }
 
 
@@ -347,7 +352,4 @@ a.control_next {
 }
 .quickreplybtn :nth-child(2){
   margin-left: 4px;
-}
-.emoji-menu{
-
 }

@@ -10,9 +10,9 @@
 		  crossorigin = "anonymous">
 		</script>
 
-		<link href = "https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css" rel = "stylesheet"/>
-		<link href = "lib/css/webchat.css" rel = "stylesheet"/>
-		<link href = "lib/css/emoji.css" rel = "stylesheet"/>
+		<link rel = "stylesheet" href = "https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css"/>
+		<link rel = "stylesheet" href = "lib/css/webchat.css"/>
+		<link rel = "stylesheet" href = "lib/css/emoji.css"/>
 		<link rel = "stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity = "sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin = "anonymous"/>
 		<script src = "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity = "sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin = "anonymous"></script>
 
@@ -33,14 +33,48 @@
 			  return "";
 			}
 
+			var sendMessagePersistentMenu = function(text){
+				$(".input .emoji-wysiwyg-editor").html(text);
+				$(".input .emoji-wysiwyg-editor").trigger("keypress", ["Automatically"]);
+			}
+
 			//Persistence Menu load at the begining
-			var persistenceMenu = {
+			var persistentMenu = {
 				toggle : function(el){
 					$(el).toggle();
 				},
 				bind : function(){
-					$(".persistenceMenu").on("click", function(event){
-						persistenceMenu.toggle($(".custom-drop-down"));
+					$('.persistentMenu').on('click', function(event){
+						persistentMenu.toggle($('.custom-drop-down'));
+					});
+				},
+				load : function(){
+					var request = $.ajax({
+						url : "/get/threshold/",
+						method : "GET",
+						data : {
+
+						},
+						dataType: "json"
+					});
+					request.done(function( msg ) {
+							if(msg && msg.length > 0 && msg[0].persistentMenu){
+								var html = '<ul class="custom-drop-down">'
+									for(var i = 0 ; i < msg[0].persistentMenu.length;i++){
+										if(msg[0].persistentMenu[i].text.indexOf("http") != -1){
+											html += '<li><a target="_blank" href="'+msg[0].persistentMenu[i].text+'">'+msg[0].persistentMenu[i].name+'</a></li>'
+											html += '<li role="separator" class="divider"></li>';
+										}else{
+											html += '<li><a href="javascript:sendMessagePersistentMenu(\''+msg[0].persistentMenu[i].text+'\')">'+msg[0].persistentMenu[i].text+'</a></li>'
+											html += '<li role="separator" class="divider"></li>';
+										}
+									}
+									html += "</ul>"
+									$(".persistentMenu").html(html);
+							}
+					});
+					request.fail(function( jqXHR, textStatus) {
+						alert("Request failed : " + textStatus);
 					});
 				}
 			};
@@ -55,14 +89,14 @@
 							max = $($(el).find("ul li")[i]).height();
 						}
 					}
-					var slideHeight =max;
+					var slideHeight = max;
 					var sliderUlWidth = slideCount * slideWidth;
-					$(el).css({ width : slideWidth, height: 'auto'});
-					$(el).find('ul').css({ width: sliderUlWidth, marginLeft: "0px" });
+					$(el).css({ width : slideWidth, height : 'auto'});
+					$(el).find('ul').css({ width: sliderUlWidth, marginLeft : "0px" });
 					$(el).find('ul li').first().prependTo($(el).find('ul'));
 					function moveLeft(el) {
 						$($(el).children()[2]).animate({
-							left: + slideWidth
+							left : + slideWidth
 						}, 200, function () {
 							$($(el).children()[2]).children().last().prependTo(($(el).children()[2]));
 							$($(el).children()[2]).css('left', '');
@@ -87,45 +121,45 @@
 			//created Views and templates
 			var views = {
 				carousel : function(obj,timeInMilis){
-					var carousel = '<div class="slider_'+obj.intent+"_"+timeInMilis+' slider">'
+					var carousel = '<div class="slider_' + obj.intent + "_" + timeInMilis + ' slider">'
 						+'<a href="javascript:void(0)" class="control_next">></a>'
 						+'<a href="javascript:void(0)" class="control_prev"><</a>'
 						+'<ul>'
 							var li = "";
 						for(var i = 0; i < obj.text.length; i++){
-						 li +='<li>'
-								+'<img max-width="300px" height="150px" class="img_border" src="'+obj.text[i].imgUrl+'"/>'
-									+'<div class="slider-title">'+obj.text[i].title+'</div>'
-								+'<div class="slider-subtitle">'+obj.text[i].subtitle+'</div>';
-								var buttons="";
+						 li += '<li>'
+								+'<img max-width="300px" height="150px" class="img_border" src="' + obj.text[i].imgUrl + '"/>'
+									+'<div class="slider-title">' + obj.text[i].title + '</div>'
+								+'<div class="slider-subtitle">' + obj.text[i].subtitle + '</div>';
+								var buttons = "";
 								for(var j = 0; j < obj.text[i].buttons.length; j++){
-										buttons +='	<a target="_blank" href="'+obj.text[i].buttons[j].url+'" type="button" class="sliderbtn btn">'+obj.text[i].buttons[j].name+'</a>'
+										buttons += '<a target="_blank" href="' + obj.text[i].buttons[j].url + '" type="button" class="sliderbtn btn">' + obj.text[i].buttons[j].name + '</a>'
 								}
 								li += buttons;
-								li+='</li>';
+								li += '</li>';
 						}
-						carousel +=li+'</ul></div>'
+						carousel += li + '</ul></div>'
 						return carousel;
 				},
 				listTemplate : function(obj){
 					var listTemplate = '<div class="list-view">'
 						for(var i = 0; i < obj.text.list.length; i++){
 								listTemplate += '<div class="list-item">'
-								+'<div><span class="title"><b>'+obj.text.list[i].title+'</b></span><img max-width="80px"  src="'+obj.text.list[i].imgUrl+'"/></div>'
-								+'<div class="subtitle"><span >'+obj.text.list[i].subTitle+'</span></div>';
+								+'<div><span class="title"><b>' + obj.text.list[i].title + '</b></span><img max-width="80px"  src="' + obj.text.list[i].imgUrl + '"/></div>'
+								+'<div class="subtitle"><span >' + obj.text.list[i].subTitle + '</span></div>';
 								var buttons = "";
 								for(var j = 0; j < obj.text.list[i].buttons.length; j++){
 									if(obj.text.list[i].buttons[j].text){
-										buttons +='<div><a target="_blank" href="'+obj.text.list[i].buttons[j].url+'" onclick="buttonWrite(\''+obj.text.list[i].buttons[j].text+'\')" type="button" class="listbtn btn">'+obj.text.list[i].buttons[j].name+'</a></div>'
+										buttons += '<div><a target="_blank" href="' + obj.text.list[i].buttons[j].url + '" onclick="buttonWrite(\'' + obj.text.list[i].buttons[j].text + '\')" type="button" class="listbtn btn">' + obj.text.list[i].buttons[j].name + '</a></div>'
 									}else{
-										buttons +='<div><a target="_blank" href="'+obj.text.list[i].buttons[j].url+'" type="button" class="listbtn btn">'+obj.text.list[i].buttons[j].name+'</a></div>'
+										buttons += '<div><a target="_blank" href="' + obj.text.list[i].buttons[j].url + '" type="button" class="listbtn btn">' + obj.text.list[i].buttons[j].name + '</a></div>'
 									}
 								}
 								listTemplate += buttons;
 								listTemplate +='</div>'
 						}
-						listTemplate +='<div class="list-item list-item-last">'
-							+'<div class="text-center"><a target="_blank" href="'+obj.text.viewMoreButtonUrl+'" type="button">'+obj.text.viewMoreButtonName+'</a></div>'
+						listTemplate += '<div class="list-item list-item-last">'
+							+'<div class="text-center"><a target="_blank" href="' + obj.text.viewMoreButtonUrl + '" type="button">' + obj.text.viewMoreButtonName + '</a></div>'
 						+'</div>'
 					+'</div>';
 					return listTemplate;
@@ -133,33 +167,33 @@
 				quickReply : function(obj){
 					var qReply = '<div class="quickReply">'
 						+'<div class=" quickContent">'
-							+	'<span>'+obj.text[0].text+'</span>'
+							+	'<span>' + obj.text[0].text + '</span>'
 						+'</div>';
 						for(var j = 0; j < obj.text[0].buttons.length; j++){
 								if(j % 2 == 0){
 										qReply += '<div class="hiddable" style="text-align:center">';
 								}
-								qReply +='<button type="button" class="quickreplybtn btn" onclick="quickReplyFunc(\''+obj.text[0].buttons[j].text+'\', event)">'+obj.text[0].buttons[j].name+'</button>';
+								qReply += '<button type="button" class="quickreplybtn btn" onclick="quickReplyFunc(\'' + obj.text[0].buttons[j].text + '\', event)">' + obj.text[0].buttons[j].name + '</button>';
 								if(j % 2 == 1){
 									qReply += '</div>'
 								}
 						}
-						qReply +='</div>';
+						qReply += '</div>';
 					return qReply;
 				},
 				genericButtons : function(obj){
 					var genericButtons = '<div class="generic_button">'
 						  +'<ul >'
 							+	'<li>'
-										+'<div class="text generic_text"><span>'+obj.text[0].text+'</span></div><div class="genericframe">'
+										+'<div class="text generic_text"><span>' + obj.text[0].text + '</span></div><div class="genericframe">'
 										var buttons = "";
 										for(var i = 0; i < obj.text[0].buttons.length; i++){
 											if(obj.text[0].buttons[i].text && obj.text[0].buttons[i].url){
-												buttons += '<div class="divide"></div><a target="_blank" href="'+obj.text[0].buttons[i].url+'" onclick="buttonWrite(\''+obj.text[0].buttons[i].text+'\')" type="button" class="genericbtn btn">'+obj.text[0].buttons[i].name+'</a>';
+												buttons += '<div class="divide"></div><a target="_blank" href="' + obj.text[0].buttons[i].url + '" onclick="buttonWrite(\'' + obj.text[0].buttons[i].text + '\')" type="button" class="genericbtn btn">' + obj.text[0].buttons[i].name + '</a>';
 											}else if(!obj.text[0].buttons[i].text && obj.text[0].buttons[i].url){
-												buttons += '<div class="divide"></div><a target="_blank" href="'+obj.text[0].buttons[i].url+'" type="button" class="genericbtn btn">'+obj.text[0].buttons[i].name+'</a>';
+												buttons += '<div class="divide"></div><a target="_blank" href="' + obj.text[0].buttons[i].url + '" type="button" class="genericbtn btn">' + obj.text[0].buttons[i].name + '</a>';
 											}else if(obj.text[0].buttons[i].text && !obj.text[0].buttons[i].url){
-												buttons += '<div class="divide"></div><a onclick="buttonWrite(\''+obj.text[0].buttons[i].text+'\')" type="button" class="genericbtn btn">'+obj.text[0].buttons[i].name+'</a>';
+												buttons += '<div class="divide"></div><a onclick="buttonWrite(\'' + obj.text[0].buttons[i].text + '\')" type="button" class="genericbtn btn">' + obj.text[0].buttons[i].name + '</a>';
 											}
 										}
 							genericButtons += buttons;
@@ -170,37 +204,37 @@
 					return genericButtons;
 				},
 				attachment : function(obj){
-					var attch = '<div class="generic_button">'
+					var attachment = '<div class="generic_button">'
 						  +'<ul >'
 							+	'<li>';
 										var buttons = "";
 										for(var i = 0; i < obj.text[0].buttons.length; i++){
 											if(obj.text[0].buttons[i].text && obj.text[0].buttons[i].url){
-												buttons += '<a target="_blank" href="'+obj.text[0].buttons[i].url+'" onclick="buttonWrite(\''+obj.text[0].buttons[i].text+'\')" >'+obj.text[0].buttons[i].name+'</a>';
+												buttons += '<a target="_blank" href="' + obj.text[0].buttons[i].url + '" onclick="buttonWrite(\'' + obj.text[0].buttons[i].text + '\')" >' + obj.text[0].buttons[i].name + '</a>';
 											}else if(!obj.text[0].buttons[i].text && obj.text[0].buttons[i].url){
-												buttons += '<div class="divide"></div><a target="_blank" href="'+obj.text[0].buttons[i].url+'" >'+obj.text[0].buttons[i].name+'</a>';
+												buttons += '<div class="divide"></div><a target="_blank" href="' + obj.text[0].buttons[i].url + '" >' + obj.text[0].buttons[i].name + '</a>';
 											}else if(obj.text[0].buttons[i].text && !obj.text[0].buttons[i].url){
-												buttons += '<div class="divide"></div><a onclick="buttonWrite(\''+obj.text[0].buttons[i].text+'\')">'+obj.text[0].buttons[i].name+'</a>';
+												buttons += '<div class="divide"></div><a onclick="buttonWrite(\'' + obj.text[0].buttons[i].text + '\')">' + obj.text[0].buttons[i].name + '</a>';
 											}
 										}
-							attch += buttons;
-							attch += '</div>'
+							attachment += buttons;
+							attachment += '</div>'
 								+'</li>'
 						 +' </ul>'
 						+'</div>'
-					return attch;
+					return attachment;
 				}
 			};
 			//load function for messages from Mongo db
 			var load = {
 				load : function(){
 					var request = $.ajax({
-						url: "/mongo/findByQueryForMessages/",
-						method: "POST",
-						data: {
-							query : { user_id : { $regex: getCookie("user_id") } }
+						url : "/mongo/findByQueryForMessages/",
+						method : "POST",
+						data : {
+							query : {user_id : {$regex: getCookie("user_id")}}
 						},
-						dataType: "json"
+						dataType : "json"
 					});
 					request.done(function( msg ) {
 
@@ -208,95 +242,88 @@
 							if(msg[i].user_id.indexOf('BOT') >= 0){
 								if(msg[i].message.type && msg[i].message.type == 'carousel'){
 									var timeInMilis = new Date().getTime();
-									$('#container .main-ul').append('<li class="bot">'+views.carousel(msg[i].message,timeInMilis)+'</li>');
-									slider.createSlider($(".slider_"+msg[i].message.intent+"_"+timeInMilis));
+									$('#container .main-ul').append('<li class="bot">' + views.carousel(msg[i].message, timeInMilis) + '</li>');
+									slider.createSlider($(".slider_" + msg[i].message.intent + "_" + timeInMilis));
 								}
 								else if (msg[i].message.type && msg[i].message.type == 'quickReply'){
-									$('#container .main-ul').append('<li class="bot">'+views.quickReply(msg[i].message)+'</li>');
+									$('#container .main-ul').append('<li class="bot">' + views.quickReply(msg[i].message) + '</li>');
 								}
 								else if(msg[i].message.type && msg[i].message.type == "listTemplate"){
-									$('#container .main-ul').append('<li class="bot">'+views.listTemplate(msg[i].message)+'</li>');
+									$('#container .main-ul').append('<li class="bot">' + views.listTemplate(msg[i].message) + '</li>');
 								}
 								else if(msg[i].message.type && (msg[i].message.type == "genericButtons")){
-									$('#container .main-ul').append('<li class="bot">'+views.genericButtons(msg[i].message)+'</li>');
-								}else if (msg[i].message.type && msg[i].message.type == "attachment"){
-									$('#container .main-ul').append('<li class="bot">'+views.attachment(msg[i].message)+'</li>');
-								}else if(msg[i].message.type && msg[i].message.type == "emoji"){
-									$('#container .main-ul').append('<li class="bot"><div class="text"><span>'+msg[i].message.text.image+'</span></div><br/></li>');
-								}else{
-									$('#container .main-ul').append('<li class="bot"><div class="text"><span>'+msg[i].message.text+'</span></div><br/></li>');
+									$('#container .main-ul').append('<li class="bot">' + views.genericButtons(msg[i].message) + '</li>');
+								}
+								else if (msg[i].message.type && msg[i].message.type == "attachment"){
+									$('#container .main-ul').append('<li class="bot">' + views.attachment(msg[i].message) + '</li>');
+								}
+								else if(msg[i].message.type && msg[i].message.type == "emoji"){
+									$('#container .main-ul').append('<li class="bot"><div class="text"><span>' + msg[i].message.text.image + '</span></div><br/></li>');
+								}
+								else{
+									$('#container .main-ul').append('<li class="bot"><div class="text"><span>' + msg[i].message.text + '</span></div><br/></li>');
 								}
 							}else{
 								if(msg[i].message.type && msg[i].message.type == 'emoji'){
-									$('#container .main-ul').append('<li class="user"><div class="text"><span>'+msg[i].message.text.image+'</span></div><br/></li>');
+									$('#container .main-ul').append('<li class="user"><div class="text"><span>' + msg[i].message.text.image + '</span></div><br/></li>');
 								}else {
-									$('#container .main-ul').append('<li class="user"><div class="text"><span>'+msg[i].message.text+'</span></div><br/></li>');
+									$('#container .main-ul').append('<li class="user"><div class="text"><span>' + msg[i].message.text + '</span></div><br/></li>');
 								}
-
 							}
 						}
+						$('html, body').animate({ scrollTop: $('html, body').height()});
 					});
 					request.fail(function( jqXHR, textStatus ) {
 						alert( "Request failed: " + textStatus );
 					});
+
+					persistentMenu.load();
 				}
 			};
-			// quickReply show hide and sen message
+			// quickReply show hide and send message
 			var quickReplyFunc = function(text, event){
-				$(".input .text-left .emoji-wysiwyg-editor").html(text);
-				$(".input .text-left .emoji-wysiwyg-editor").trigger("keypress", [ "Automatically"]);
+				$(".input .emoji-wysiwyg-editor").html(text);
+				$(".input .emoji-wysiwyg-editor").trigger("keypress", ["Automatically"]);
 				var el = event.target || event.srcElement;
 				$(el).parent().parent().find(".hiddable").hide();
 			};
 			var buttonWrite = function(text){
-				$(".input .text-left .emoji-wysiwyg-editor").html(text);
-				$(".input .text-left .emoji-wysiwyg-editor").trigger("keypress", [ "Automatically"]);
+				$(".input .emoji-wysiwyg-editor").html(text);
+				$(".input .emoji-wysiwyg-editor").trigger("keypress", [ "Automatically"]);
 			};
 			$(document).ready(function(){
-				persistenceMenu.bind();
+				persistentMenu.bind();
 				//load all messages at mongodb
 				load.load();
 				//Key press enter after writing message triggers this function
 
 				$("#container").on("shown.bs.collapse", function(){
-			  	$("#container").animate({ scrollTop: $('#container ul').height()}, 0);
+			  	$('html, body').animate({ scrollTop: $('html, body').height()});
 			  });
 			});
 		</script>
 	</head>
 
-
-	<body >
-		<div class="container">
-			<div id="container" >
+	<body>
+		<div>
+			<div id="container">
 				<ul class="main-ul">
 
 				</ul>
 			</div>
 			<div class="input" style="">
-					<span class="myicon persistenceMenu glyphicon glyphicon-menu-hamburger" >
-						<ul class="custom-drop-down ">
-							<li><a href="#">Menu 1</a></li>
-							<li role="separator" class="divider"></li>
-							<li><a href="#">Menu 2</a></li>
-							<li role="separator" class="divider"></li>
-							<li><a href="#">Menu 3</a></li>
-							<li role="separator" class="divider"></li>
-							<li><a href="#">Menu 4</a></li>
-						</ul>
+					<span class="myicon persistentMenu glyphicon glyphicon-menu-hamburger">
+
 					</span>
-					<a class="image" href="#"></a>
-					<div class="text-left">
-						<p class="lead emoji-picker-container">
-							<input type = "text" class ="form-control" name = "input" style = "border:none" data-emojiable="true">
-						</p>
-					</div>
+					<p class="lead emoji-picker-container">
+						<input type="text" class="form-control" name="input" style="border:none" data-emojiable="true">
+					</p>
 			 </div>
 		</div>
-		<script src = "lib/js/config.js"></script>
-	  <script src = "lib/js/util.js"></script>
-	  <script src = "lib/js/jquery.emojiarea.js"></script>
-	  <script src = "lib/js/emoji-picker.js"></script>
+		<script src="lib/js/config.js"></script>
+	  <script src="lib/js/util.js"></script>
+	  <script src="lib/js/jquery.emojiarea.js"></script>
+	  <script src="lib/js/emoji-picker.js"></script>
 		<script>
 
       $(function() {
@@ -306,18 +333,15 @@
           assetsPath : '../../lib/img/',
           popupButtonClasses : 'fa fa-smile-o'
         });
-        // Finds all elements with `emojiable_selector` and converts them to rich emoji input fields
-        // You may want to delay this step if you have dynamically created input fields that appear later in the loading process
-        // It can be called as many times as necessary; previously converted input fields will not be converted again
         window.emojiPicker.discover();
 
-				$(".input .text-left .emoji-wysiwyg-editor").on('keypress',function(event, parameter){
+				$(".input .emoji-wysiwyg-editor").on('keypress', function(event, parameter){
 
 						if(event.which == 13 || parameter){
 								//user write
 								var el = event.target.innerHTML;
-								$('#container .main-ul').append('<li class="user"><div class="text"><span>'+el+'</span></div><br/></li>');
-								$("#container").animate({ scrollTop: $('#container ul').height()});
+								$('#container .main-ul').append('<li class="user"><div class="text"><span>' + el + '</span></div><br/></li>');
+								$('html, body').animate({ scrollTop: $('html, body').height()});
 								var text = "";
 
 								if(el.match(/(<img\s[^>]*?src\s*=\s*['\"]([^'\"]*?)['\"][^>]*?>)/g) && el.match(/(<img\s[^>]*?src\s*=\s*['\"]([^'\"]*?)['\"][^>]*?>)/g).length <= 1){
@@ -335,7 +359,7 @@
 								  method : "POST",
 								  data : {
 										"obj" :
-										{"transaction" : new Date().getTime(), "message" : {"text" : text }, "user_id" : getCookie("user_id"), "created_date" : new Date()}
+										{"transaction" : new Date().getTime(), "message" : {"text" : text}, "user_id" : getCookie("user_id"), "created_date" : new Date()}
 									},
 								  dataType: "json"
 								});
@@ -343,30 +367,31 @@
 											event.target.innerHTML = "";
 											if(msg.type && msg.type == "carousel"){
 												var timeInMilis = new Date().getTime();
-												$('#container .main-ul').append('<li class="bot">'+views.carousel(msg,timeInMilis) + '</li>');
-												slider.createSlider($(".slider_" + msg.intent+"_"+timeInMilis));
+												$('#container .main-ul').append('<li class="bot">' + views.carousel(msg, timeInMilis) + '</li>');
+												slider.createSlider($(".slider_" + msg.intent + "_" + timeInMilis));
 											}
-											else if(msg.type && msg.type=="listTemplate"){
+											else if(msg.type && msg.type == "listTemplate"){
 												$('#container .main-ul').append('<li class="bot">' + views.listTemplate(msg) + '</li>');
 											}
-											else if(msg.type && msg.type=="quickReply"){
+											else if(msg.type && msg.type == "quickReply"){
 												$('#container .main-ul').append('<li class="bot">' + views.quickReply(msg) + '</li>');
 											}
-											else if(msg.type && msg.type=="genericButtons"){
+											else if(msg.type && msg.type == "genericButtons"){
 												$('#container .main-ul').append('<li class="bot">' + views.genericButtons(msg) + '</li>');
-											}else if (msg.type && msg.type == "attachment"){
+											}
+											else if (msg.type && msg.type == "attachment"){
 												$('#container .main-ul').append('<li class="bot">' + views.attachment(msg) + '</li>');
 											}
-											else if(msg.type && msg.type=="emoji")
-											{
-													$('#container .main-ul').append('<li class="bot"><div class="text"><span>' + msg.text.image + '</span></div><br/></li>');
-											}else{
+											else if(msg.type && msg.type == "emoji"){
+												$('#container .main-ul').append('<li class="bot"><div class="text"><span>' + msg.text.image + '</span></div><br/></li>');
+											}
+											else{
 												$('#container .main-ul').append('<li class="bot"><div class="text"><span>' + msg.text + '</span></div><br/></li>');
 											}
-											$("#container").animate({scrollTop: $('#container ul').height()});
+											$('html, body').animate({ scrollTop: $('html, body').height()});
 								});
-								request.fail(function( jqXHR, textStatus ) {
-								  alert( "Request failed: " + textStatus );
+								request.fail(function( jqXHR, textStatus) {
+								  alert("Request failed : " + textStatus);
 								});
 						}
 				});

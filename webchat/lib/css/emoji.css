@@ -50,8 +50,9 @@ img.emoji {
 
 .emoji-picker-container {
     position: relative;
+    margin-bottom : 0px !important;
+    border: none !important;
 }
-
 .emoji-picker-icon {
     cursor: pointer;
     position: absolute;
@@ -97,16 +98,20 @@ img.emoji {
     max-height: 284px;
     overflow: auto;
     line-height: 17px;
-    border: 1px solid #d2dbe3;
-    border-radius: 2px;
+    border-top: 1px solid #ccc;
+    box-shadow: none;
+    word-wrap: break-word;
     -webkit-box-shadow: none;
     box-shadow: none;
-    -webkit-transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;
-    transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;
+    -webkit-transition: border-color ease-in-out 0s, box-shadow ease-in-out 0s;
+    transition: border-color ease-in-out 0s, box-shadow ease-in-out 0s;
     -webkit-user-select: text;
     word-wrap: break-word;
 }
-
+.emoji-picker-container>.form-control{
+  border: 0px solid #ccc !important;
+  border-radius: 0px !important;
+}
 .emoji-wysiwyg-editor.parent-has-scroll {
      padding-right: 40px;
  }
@@ -129,14 +134,15 @@ img.emoji {
     z-index: 999;
     width: 100%;
     overflow: hidden;
-    border: 1px #dfdfdf solid;
+    border: 0;
     -webkit-border-radius: 3px;
     -moz-border-radius: 3px;
-    border-radius: 3px;
+    border-radius: 6px;
     overflow: hidden;
     -webkit-box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.1);
     -moz-box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.1);
-    box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, .1), 0 1px 10px rgba(0, 0, 0, .35);
+    bottom: 40px !important;
 }
 
 .emoji-items-wrap1 {
@@ -212,7 +218,7 @@ img.emoji {
 .emoji-menu .emoji-items-wrap {
     position: relative;
     height: 174px;
-    overflow: scroll;
+    overflow-y: scroll;
 }
 
 .emoji-menu .emoji-items {

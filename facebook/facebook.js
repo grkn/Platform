@@ -5,6 +5,7 @@ var ListTemplate = require('../views/listTemplate');
 var Carousel = require('../views/carousel');
 var QuickReply = require('../views/quickReply');
 var GenericButtons = require('../views/genericButtons');
+var Attachment = require('../views/attachment');
 
 var client = new Client();
 
@@ -21,6 +22,23 @@ var facebookclass= class FacebookBotClass {
 			this.token = pageToken;
 			this.global = globals;
 			this.instanceMongoQueries = instanceMongoQueries;
+			if(this.global.persistentMenu){
+				var array = [];
+				for(var i = 0 ; i < this.global.persistentMenu.length;i++){
+					if(this.global.persistentMenu[i].text.indexOf("http") != -1){
+						array.push({title : this.global.persistentMenu[i].name , type : 'web_url' , url : this.global.persistentMenu[i].text ,"webview_height_ratio":"full"});
+					}else{
+						array.push({title : this.global.persistentMenu[i].text , type : 'postback' , payload : this.global.persistentMenu[i].text });
+					}
+				}
+
+				//persistent menu
+				this.bot.setPersistentMenu (array
+				, function(dt){
+					console.log(dt);
+				});
+			}
+
   }
 
 	botListen(){
@@ -69,7 +87,6 @@ var facebookclass= class FacebookBotClass {
 					'Authorization' : 'Bearer ' + this.global.defaultAuthorizationToken,
 					'Content-Type' : 'application/json'
 				}
-
 			}
 
 			var instanceMongoQueries = this.instanceMongoQueries;
@@ -79,6 +96,7 @@ var facebookclass= class FacebookBotClass {
 			var carouselTemplateFunc = this.carousel;
 			var quickReplyFunc = this.quickReply;
 			var buttonGenericsFunc = this.buttonGenerics;
+			var attachmentFunc = this.attachment;
 
 
 			var searchedItem = payload.message.text;
@@ -127,8 +145,8 @@ var facebookclass= class FacebookBotClass {
 																var transaction = new Date().getTime();
 																var objUser = {'transaction' : transaction, 'message' : {text : response[0].value, type : response[0].type, intent : response[0].key}, 'user_id' : payload.sender.id, 'created_date' : new Date()};
 																var obj = {'transaction' : transaction, 'message' : {text : response[0].value, type : response[0].type, intent : response[0].key}, 'user_id' : payload.sender.id + '_BOT', 'created_date' : new Date()};
-																instanceMongoQueries.insertOne("facebook_messages", obj, function(resp, obj){});
-																instanceMongoQueries.insertOne("facebook_messages", objUser, function(resp,obj){});
+																instanceMongoQueries.insertOne('facebook_messages', obj, function(resp, obj){});
+																instanceMongoQueries.insertOne('facebook_messages', objUser, function(resp, obj){});
 																var total = {text : response[0].value, type : response[0].type, intent : response[0].key};
 																if(total.type == 'listTemplate'){
 																	var listTemplate = new ListTemplate(total.text);
@@ -142,16 +160,23 @@ var facebookclass= class FacebookBotClass {
 																		});
 																}else if (total.type == 'quickReply'){
 																		var quickReply = new QuickReply(total.text);
-																		bot.sendMessage(payload.sender.id, quickReplyFunc(quickReply.createListQuickReply()) , function(resp){
+																		bot.sendMessage(payload.sender.id, quickReplyFunc(quickReply.createListQuickReply()), function(resp){
 																			console.log(resp);
 																		});
 																}else if (total.type == 'genericButtons'){
 																		var genericButtons = new GenericButtons(total.text);
-																		bot.sendMessage(payload.sender.id, buttonGenericsFunc(genericButtons.createGenericButtons()) , function(resp){
+																		bot.sendMessage(payload.sender.id, buttonGenericsFunc(genericButtons.createGenericButtons()), function(resp){
 																			console.log(resp);
 																		});
-																}else{
-																	var text= total.text;
+																}
+																else if (total.type == 'attachment'){
+																		var attachment = new Attachment(total.text);
+																		bot.sendMessage(payload.sender.id, attachmentFunc(attachment.createAttachment()), function(resp){
+																			console.log(resp);
+																		});
+																}
+																else{
+																	var text = total.text;
 																	reply({text}, function(err){
 																			console.log(err);
 																	});
@@ -180,13 +205,13 @@ var facebookclass= class FacebookBotClass {
 										if(sResponse.length > 0){
 											subjectArray[payload.sender.id] = sResponse[0].subject;
 										}
-										instanceMongoQueries.findByQuery('answers', {'key' :   maxValueFirst }, function(response){
+										instanceMongoQueries.findByQuery('answers', {'key' :  maxValueFirst}, function(response){
 											if(response.length > 0){
 													var transaction = new Date().getTime();
 													var objUser = {'transaction' : transaction, 'message' : {text : response[0].value, type : response[0].type, intent : response[0].key}, 'user_id' : payload.sender.id, 'created_date' : new Date()};
 													var obj = {'transaction' : transaction, 'message' : {text : response[0].value, type : response[0].type, intent : response[0].key}, 'user_id' :  payload.sender.id + '_BOT', 'created_date' : new Date()};
 													instanceMongoQueries.insertOne('facebook_messages', obj, function(resp, obj){});
-													instanceMongoQueries.insertOne('facebook_messages', objUser, function(resp,obj){});
+													instanceMongoQueries.insertOne('facebook_messages', objUser, function(resp, obj){});
 													var total = {text : response[0].value, type : response[0].type, intent : response[0].key};
 													if(total.type == 'listTemplate'){
 														var listTemplate = new ListTemplate(total.text);
@@ -208,7 +233,14 @@ var facebookclass= class FacebookBotClass {
 															bot.sendMessage(payload.sender.id, buttonGenericsFunc(genericButtons.createGenericButtons()), function(resp){
 																console.log(resp);
 															});
-													}else{
+													}
+													else if (total.type == 'attachment'){
+															var attachment = new Attachment(total.text);
+															bot.sendMessage(payload.sender.id, attachmentFunc(attachment.createAttachment()), function(resp){
+																console.log(resp);
+															});
+													}
+													else{
 														var text = total.text;
 														reply({text}, function(err){
 																console.log(err);
@@ -279,16 +311,23 @@ var facebookclass= class FacebookBotClass {
 																});
 														}else if (total.type == 'quickReply'){
 																var quickReply = new QuickReply(total.text);
-																bot.sendMessage(payload.sender.id, quickReplyFunc(quickReply.createListQuickReply()) , function(resp){
+																bot.sendMessage(payload.sender.id, quickReplyFunc(quickReply.createListQuickReply()), function(resp){
 																	console.log(resp);
 																});
 														}else if (total.type == 'genericButtons'){
 																var genericButtons = new GenericButtons(total.text);
-																bot.sendMessage(payload.sender.id, buttonGenericsFunc(genericButtons.createGenericButtons()) , function(resp){
+																bot.sendMessage(payload.sender.id, buttonGenericsFunc(genericButtons.createGenericButtons()), function(resp){
 																	console.log(resp);
 																});
-														}else{
-															var text= total.text;
+														}
+														else if (total.type == 'attachment'){
+																var attachment = new Attachment(total.text);
+																bot.sendMessage(payload.sender.id, attachmentFunc(attachment.createAttachment()), function(resp){
+																	console.log(resp);
+																});
+														}
+														else{
+															var text = total.text;
 															reply({text}, function(err){
 																	console.log(err);
 															});
@@ -346,13 +385,13 @@ var facebookclass= class FacebookBotClass {
 								if(sResponse.length > 0){
 									subjectArray[payload.sender.id] = sResponse[0].subject;
 								}
-								instanceMongoQueries.findByQuery('answers', {'key' : maxValueFirst }, function(response){
+								instanceMongoQueries.findByQuery('answers', {'key' : maxValueFirst}, function(response){
 									if(response.length > 0){
 											var transaction = new Date().getTime();
 											var objUser = {'transaction' : transaction, 'message' : {text : response[0].value, type : response[0].type, intent : response[0].key}, 'user_id' : payload.sender.id, 'created_date' : new Date()};
-											var obj = {'transaction' : transaction, 'message' : {text : response[0].value, type : response[0].type, intent : response[0].key}, 'user_id' :  payload.sender.id+'_BOT', 'created_date' : new Date()};
+											var obj = {'transaction' : transaction, 'message' : {text : response[0].value, type : response[0].type, intent : response[0].key}, 'user_id' :  payload.sender.id + '_BOT', 'created_date' : new Date()};
 											instanceMongoQueries.insertOne('facebook_messages', obj, function(resp, obj){});
-											instanceMongoQueries.insertOne('facebook_messages', objUser, function(resp,obj){});
+											instanceMongoQueries.insertOne('facebook_messages', objUser, function(resp, obj){});
 											var total = {text : response[0].value, type : response[0].type, intent : response[0].key};
 											if(total.type == 'listTemplate'){
 												var listTemplate = new ListTemplate(total.text);
@@ -365,20 +404,25 @@ var facebookclass= class FacebookBotClass {
 													bot.sendMessage(payload.sender.id, carouselTemplateFunc(carousel.createListCarousel()), function(resp){
 														console.log(resp);
 													});
-
 											}else if (total.type == 'quickReply'){
 													var quickReply = new QuickReply(total.text);
-													bot.sendMessage(payload.sender.id,quickReplyFunc(quickReply.createListQuickReply()) , function(resp){
+													bot.sendMessage(payload.sender.id,quickReplyFunc(quickReply.createListQuickReply()), function(resp){
 														console.log(resp);
 													});
-
 											}else if (total.type == 'genericButtons'){
 													var genericButtons = new GenericButtons(total.text);
-													bot.sendMessage(payload.sender.id,buttonGenericsFunc(genericButtons.createGenericButtons()) , function(resp){
+													bot.sendMessage(payload.sender.id,buttonGenericsFunc(genericButtons.createGenericButtons()), function(resp){
 														console.log(resp);
 													});
-											}else{
-												var text= total.text;
+											}
+											else if (total.type == 'attachment'){
+													var attachment = new Attachment(total.text);
+													bot.sendMessage(payload.sender.id,attachmentFunc(attachment.createAttachment()), function(resp){
+														console.log(resp);
+													});
+											}
+											else{
+												var text = total.text;
 												reply({text}, function(err){
 														console.log(err);
 												});
@@ -401,7 +445,7 @@ var facebookclass= class FacebookBotClass {
 								});
 							});
 						}else{
-							var random = Math.floor(Math.random() * (global.responseList.length - 1));
+							var random = Math.floor(Math.random() * (global.responseList.length));
 							var text = global.responseList[random];
 							var transaction = new Date().getTime();
 							var objUser = {'transaction' : transaction, 'message' : {text : text}, 'user_id' : payload.sender.id, 'created_date' : new Date()};
@@ -433,17 +477,6 @@ var facebookclass= class FacebookBotClass {
 		client.post('https://graph.facebook.com/v2.6/me/thread_settings?access_token=' + this.token, args, function(resp){});
 	}
 
-	imagevideo(obj){
-		return {
-			'attachment': {
-				'type' : 'image',
-				'payload' : {
-					'is_reusable' : true,
-					'url' : obj.url
-				}
-			}
-		}
-	}
 
 	location(loc){
 		return {
@@ -477,6 +510,44 @@ var facebookclass= class FacebookBotClass {
 	  };
 	}
 
+	attachment(obj){
+		var url = "";
+		if(obj.elements[0] && obj.elements[0].buttons[0]){
+      url = obj.elements[0].buttons[0].url;
+		}
+		if(url.indexOf('png') != -1 || url.indexOf("jpg") != -1 || url.indexOf('jpeg') != -1){
+			return {
+				'attachment' : {
+					'type' : 'image',
+					'payload' : {
+						'is_reusable' : false,
+						'url' : url
+					}
+				}
+			}
+		}else if(url.indexOf('avi') != -1 || url.indexOf('wmv') != -1 || url.indexOf('mov') != -1){
+			return {
+        'attachment' : {
+					'type' : 'video',
+					'payload' : {
+						'is_reusable' : false,
+						'url' : url
+					}
+				}
+			}
+		}else{
+			return {
+        'attachment' : {
+					'type' : 'file',
+					'payload' : {
+						'is_reusable' : false,
+						'url' : url
+		      }
+				}
+			}
+		}
+	}
+
 	buttonGenerics(obj){
 		var elements = [];
 		for(var i = 0; i < obj.elements.length; i++){
@@ -489,9 +560,9 @@ var facebookclass= class FacebookBotClass {
 					button['url'] = obj.elements[i].buttons[j].url;
 					button['webview_height_ratio'] = 'full';
 					button['messenger_extensions'] =  true;
-					button['fallback_url'] =  obj.elements[i].buttons[j].url;
+					button['fallback_url'] = obj.elements[i].buttons[j].url;
 				}else{
-					button['payload'] =  obj.elements[i].buttons[j].payload;
+					button['payload'] = obj.elements[i].buttons[j].payload;
 				}
 				buttons.push(button);
 			}
@@ -499,7 +570,7 @@ var facebookclass= class FacebookBotClass {
 			elements.push(mainObject);
 		}
 		return {
-			'attachment': {
+			'attachment' : {
 				'type' : 'template',
 				'payload' : {
 					'template_type' : 'generic',
@@ -531,9 +602,9 @@ var facebookclass= class FacebookBotClass {
 					button['url'] = obj.elements[i].buttons[j].url;
 					button['webview_height_ratio'] = 'full';
 					button['messenger_extensions'] =  true;
-					button['fallback_url'] =  obj.elements[i].buttons[j].url;
+					button['fallback_url'] = obj.elements[i].buttons[j].url;
 				}else{
-					button['payload'] =  obj.elements[i].buttons[j].payload;
+					button['payload'] = obj.elements[i].buttons[j].payload;
 				}
 				buttons.push(button);
 			}
@@ -607,17 +678,18 @@ var facebookclass= class FacebookBotClass {
 			elements.push(mainObject);
 		}
 		return {
-			'attachment': {
+			'attachment' : {
 				'type' : 'template',
 				'payload' : {
-					'template_type': 'list',
-					'top_element_style' : 'compact',
+					'template_type' : 'list',
+					'top_element_style' : 'large',
 					'elements' : elements,
 					'buttons' : mainbutton
 				}
 			}
 		};
 	}
+
 
 };
 
