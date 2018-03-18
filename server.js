@@ -359,7 +359,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
   }
   //Emoji var mı
   var searchedItem = req.body.obj.message.text.replace(/(<img\s[^>]*?src\s*=\s*['\"]([^'\"]*?)['\"][^>]*?>)/g,"");
-  instanceMongoQueries.findByQuery('emoji_relation', {'source.text' : searchedItem},function(resppp){
+  instanceMongoQueries.findByQuery('emoji_relation', {'source.text' : searchedItem}, function(resppp){
       if(resppp.length > 0){
         //Emoji var!!
         var msg = {text : resppp[0].target, type : 'emoji'};
@@ -392,7 +392,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                 }
                 console.log("Max cofidence threshold geçiyor mu?");
                 if(maxFirst < global.threshold){
-                    console.log("Witai threshold dusuk geldi. ai search with subject  obj : "+ encodeURIComponent(req.session.subject[0].subject + ' ' + searchedItem));
+                    console.log("Witai threshold dusuk geldi. ai search with subject  obj : " + encodeURIComponent(req.session.subject[0].subject + ' ' + searchedItem));
                     client.get('https://api.wit.ai/message?q=' + encodeURIComponent(req.session.subject[0].subject + ' ' + searchedItem), wit, function(response){
                         if(response.entities && response.entities.intent && response.entities.intent.length > 0){
                           console.log("Wit ai intent buldu.");
@@ -426,7 +426,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                             return;
                           }
                           console.log("Answer tablosunda cevap var mı ?");
-                          instanceMongoQueries.findByQuery('answers', {'key' : maxValueFirst }, function(response){
+                          instanceMongoQueries.findByQuery('answers', {'key' : maxValueFirst}, function(response){
                             if(response.length > 0){
                                 if(req.body.obj){
                                   console.log("Answer tablosunda cevap var");
@@ -720,13 +720,13 @@ app.post('/view/create/quickReply', cors(), function(req, res){
 });
 
 app.post('/view/get/quickReply', cors(), function(req, res){
-  instanceMongoQueries.findByQuery('answers', {'key' : req.body.intent }, function(resp){
+  instanceMongoQueries.findByQuery('answers', {'key' : req.body.intent}, function(resp){
       res.send(resp[0]);
   });
 });
 
 app.post('/view/get/emoji', cors(), function(req, res){
-  instanceMongoQueries.findByQuery('answers', {'key' : req.body.intent }, function(resp){
+  instanceMongoQueries.findByQuery('answers', {'key' : req.body.intent}, function(resp){
       res.send(resp[0]);
   });
 });
@@ -735,7 +735,7 @@ app.post('/view/create/emoji', cors(), function(req, res){
 
 });
 
-app.get('/mongo/emojiRelation/get',cors(),function(req,res){
+app.get('/mongo/emojiRelation/get', cors(), function(req, res){
   instanceMongoQueries.findByQuery('emoji_relation', {}, function(resp){
     res.send(resp);
   });
@@ -747,7 +747,7 @@ app.get('/mongo/emoji/get', cors(), function(req, res){
   });
 });
 
-app.delete('/delete/emoji/relation',cors(),function(req,res){
+app.delete('/delete/emoji/relation', cors(), function(req, res){
   instanceMongoQueries.deleteOne('emoji_relation', {'source.text' : req.body.text}, function(resp){
     res.send({ resp : 'OK'});
   });
@@ -780,7 +780,7 @@ app.post('/view/create/listTemplate', cors(), function(req, res){
 });
 
 app.post('/view/get/listTemplate', cors(), function(req, res){
-  instanceMongoQueries.findByQuery('answers', {'key' : req.body.intent }, function(resp){
+  instanceMongoQueries.findByQuery('answers', {'key' : req.body.intent}, function(resp){
       res.send(resp[0]);
   });
 });
@@ -797,7 +797,7 @@ app.post('/view/create/genericButtons', cors(), function(req, res){
 });
 
 app.post('/view/get/genericButtons', cors(), function(req, res){
-  instanceMongoQueries.findByQuery('answers', {'key' : req.body.intent }, function(resp){
+  instanceMongoQueries.findByQuery('answers', {'key' : req.body.intent}, function(resp){
       res.send(resp[0]);
   });
 });
@@ -829,7 +829,7 @@ app.get('/facebook/get', cors(), function (req, res) {
 // angular facebook deploy post
 app.post('/facebook/post', cors(), function (req, res) {
   console.log(req.body.facebookDeployment);
-  instanceMongoQueries.updateOne('configuration', {}, { $set : {facebookDeployment : req.body.facebookDeployment}}, function(err, resp){
+  instanceMongoQueries.updateOne('configuration', {}, {$set : {facebookDeployment : req.body.facebookDeployment}}, function(err, resp){
     global.facebookDeployment = req.body.facebookDeployment;
   });
 	var facebookClass = new FaceBookClass(
@@ -882,7 +882,7 @@ app.post('/witai/validate', function(req, res){
 
 app.get('/change/threshold/:threshold', function(req, res){
   global.threshold = req.params.threshold;
-  instanceMongoQueries.updateOne('configuration', {}, {$set : {threshold : req.params.threshold }}, function(err, resp){
+  instanceMongoQueries.updateOne('configuration', {}, {$set : {threshold : req.params.threshold}}, function(err, resp){
     res.send(resp);
   });
 });

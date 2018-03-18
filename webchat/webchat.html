@@ -52,24 +52,22 @@
 					var request = $.ajax({
 						url : "/get/threshold/",
 						method : "GET",
-						data : {
-
-						},
-						dataType: "json"
+						data : {},
+						dataType : "json"
 					});
 					request.done(function( msg ) {
 							if(msg && msg.length > 0 && msg[0].persistentMenu){
-								var html = '<ul class="custom-drop-down">'
-									for(var i = 0 ; i < msg[0].persistentMenu.length;i++){
+								var html = '<ul class="custom-drop-down">';
+									for(var i = 0; i < msg[0].persistentMenu.length; i++){
 										if(msg[0].persistentMenu[i].text.indexOf("http") != -1){
-											html += '<li><a target="_blank" href="'+msg[0].persistentMenu[i].text+'">'+msg[0].persistentMenu[i].name+'</a></li>'
+											html += '<li><a target="_blank" href="' + msg[0].persistentMenu[i].text +'">' + msg[0].persistentMenu[i].name + '</a></li>';
 											html += '<li role="separator" class="divider"></li>';
 										}else{
-											html += '<li><a href="javascript:sendMessagePersistentMenu(\''+msg[0].persistentMenu[i].text+'\')">'+msg[0].persistentMenu[i].text+'</a></li>'
+											html += '<li><a href="javascript:sendMessagePersistentMenu(\'' + msg[0].persistentMenu[i].text + '\')">' + msg[0].persistentMenu[i].text + '</a></li>';
 											html += '<li role="separator" class="divider"></li>';
 										}
 									}
-									html += "</ul>"
+									html += "</ul>";
 									$(".persistentMenu").html(html);
 							}
 					});
@@ -128,7 +126,7 @@
 							var li = "";
 						for(var i = 0; i < obj.text.length; i++){
 						 li += '<li>'
-								+'<img max-width="300px" height="150px" class="img_border" src="' + obj.text[i].imgUrl + '"/>'
+								+'<img width="300px" max-height="150px" class="img-responsive img_border" src="' + obj.text[i].imgUrl + '"/>'
 									+'<div class="slider-title">' + obj.text[i].title + '</div>'
 								+'<div class="slider-subtitle">' + obj.text[i].subtitle + '</div>';
 								var buttons = "";
@@ -145,7 +143,7 @@
 					var listTemplate = '<div class="list-view">'
 						for(var i = 0; i < obj.text.list.length; i++){
 								listTemplate += '<div class="list-item">'
-								+'<div><span class="title"><b>' + obj.text.list[i].title + '</b></span><img max-width="80px"  src="' + obj.text.list[i].imgUrl + '"/></div>'
+								+'<div><span class="title"><b>' + obj.text.list[i].title + '</b></span><img max-width="80px" src="' + obj.text.list[i].imgUrl + '"/></div>'
 								+'<div class="subtitle"><span >' + obj.text.list[i].subTitle + '</span></div>';
 								var buttons = "";
 								for(var j = 0; j < obj.text.list[i].buttons.length; j++){
@@ -156,7 +154,7 @@
 									}
 								}
 								listTemplate += buttons;
-								listTemplate +='</div>'
+								listTemplate += '</div>';
 						}
 						listTemplate += '<div class="list-item list-item-last">'
 							+'<div class="text-center"><a target="_blank" href="' + obj.text.viewMoreButtonUrl + '" type="button">' + obj.text.viewMoreButtonName + '</a></div>'
