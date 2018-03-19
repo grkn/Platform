@@ -530,8 +530,14 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                 }
             }else{
               console.log(req.session);
-              console.log("Wit ai subject plus content obj : "+encodeURIComponent(req.session.subject.subject + ' ' + searchedItem));
-              client.get('https://api.wit.ai/message?q=' + encodeURIComponent(req.session.subject.subject + ' ' + searchedItem), wit, function(response){
+              var subjectLocal = req.session.subject;
+              if(req.session.subject[0]){
+                subjectLocal = req.session.subject[0].subject;
+              }else{
+                subjectLocal = req.session.subject.subject
+              }
+              console.log("Wit ai subject plus content obj : "+encodeURIComponent(subjectLocal + ' ' + searchedItem));
+              client.get('https://api.wit.ai/message?q=' + encodeURIComponent(subjectLocal + ' ' + searchedItem), wit, function(response){
                   if(response.entities && response.entities.intent && response.entities.intent.length > 0){
                     maxFirst = -1;
                     maxValueFirst = '';
