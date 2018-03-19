@@ -348,6 +348,7 @@ app.post('/witaiCreateApp/post', cors(), function(req, res){
 
 // WEB API for wit.ai
 app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
+  try{
   var wit = {
     data : {
       parameters : {}
@@ -529,8 +530,8 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                 }
             }else{
               console.log(req.session);
-              console.log("Wit ai subject plus content obj : "+encodeURIComponent(req.session.subject[0].subject + ' ' + searchedItem));
-              client.get('https://api.wit.ai/message?q=' + encodeURIComponent(req.session.subject[0].subject + ' ' + searchedItem), wit, function(response){
+              console.log("Wit ai subject plus content obj : "+encodeURIComponent(req.session.subject.subject + ' ' + searchedItem));
+              client.get('https://api.wit.ai/message?q=' + encodeURIComponent(req.session.subject.subject + ' ' + searchedItem), wit, function(response){
                   if(response.entities && response.entities.intent && response.entities.intent.length > 0){
                     maxFirst = -1;
                     maxValueFirst = '';
@@ -688,6 +689,9 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
         }
       }
   });
+}catch(err){res.send({resp :err})}
+
+
 });
 
 
