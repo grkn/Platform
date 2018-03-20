@@ -511,7 +511,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                         }else{
                             console.log("Answer tablosunda cevap yok");
                           var text = "";
-                          if(req.session.subject[0].response){
+                          if(req.session.subject[0] && req.session.subject[0].response){
                             var random = Math.floor(Math.random() * (req.session.subject[0].response.length - 1));
                             text = req.session.subject[0].response[random];
                           }else {
