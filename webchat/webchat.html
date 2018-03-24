@@ -147,10 +147,12 @@
 								+'<div class="subtitle"><span >' + obj.text.list[i].subTitle + '</span></div>';
 								var buttons = "";
 								for(var j = 0; j < obj.text.list[i].buttons.length; j++){
-									if(obj.text.list[i].buttons[j].text){
-										buttons += '<div><a target="_blank" href="' + obj.text.list[i].buttons[j].url + '" onclick="buttonWrite(\'' + obj.text.list[i].buttons[j].text + '\')" type="button" class="listbtn btn">' + obj.text.list[i].buttons[j].name + '</a></div>'
-									}else{
-										buttons += '<div><a target="_blank" href="' + obj.text.list[i].buttons[j].url + '" type="button" class="listbtn btn">' + obj.text.list[i].buttons[j].name + '</a></div>'
+									if(obj.text.list[i].buttons[j].url && obj.text.list[i].buttons[j].url != "null"){
+										if(obj.text.list[i].buttons[j].text){
+											buttons += '<div><a target="_blank" href="' + obj.text.list[i].buttons[j].url + '" onclick="buttonWrite(\'' + obj.text.list[i].buttons[j].text + '\')" type="button" class="listbtn btn">' + obj.text.list[i].buttons[j].name + '</a></div>'
+										}else{
+											buttons += '<div><a target="_blank" href="' + obj.text.list[i].buttons[j].url + '" type="button" class="listbtn btn">' + obj.text.list[i].buttons[j].name + '</a></div>'
+										}
 									}
 								}
 								listTemplate += buttons;
@@ -210,9 +212,9 @@
 											if(obj.text[0].buttons[i].text && obj.text[0].buttons[i].url){
 												buttons += '<a target="_blank" href="' + obj.text[0].buttons[i].url + '" onclick="buttonWrite(\'' + obj.text[0].buttons[i].text + '\')" >' + obj.text[0].buttons[i].name + '</a>';
 											}else if(!obj.text[0].buttons[i].text && obj.text[0].buttons[i].url){
-												buttons += '<div class="divide"></div><a target="_blank" href="' + obj.text[0].buttons[i].url + '" >' + obj.text[0].buttons[i].name + '</a>';
+												buttons += '<a target="_blank" href="' + obj.text[0].buttons[i].url + '" >' + obj.text[0].buttons[i].name + '</a>';
 											}else if(obj.text[0].buttons[i].text && !obj.text[0].buttons[i].url){
-												buttons += '<div class="divide"></div><a onclick="buttonWrite(\'' + obj.text[0].buttons[i].text + '\')">' + obj.text[0].buttons[i].name + '</a>';
+												buttons += '<a onclick="buttonWrite(\'' + obj.text[0].buttons[i].text + '\')">' + obj.text[0].buttons[i].name + '</a>';
 											}
 										}
 							attachment += buttons;
