@@ -22,17 +22,9 @@ var facebookclass = class FacebookBotClass {
 			this.token = pageToken;
 			this.authorization = authorization;
 			this.global = globals;
+			console.log(globals);
 			this.instanceMongoQueries = instanceMongoQueries;
-			if(this.global[this.authorization] && this.global[this.authorization].persistentMenu){
-				var array = [];
-				for(var i = 0; i < this.global[this.authorization].persistentMenu.length; i++){
-					if(this.global[this.authorization].persistentMenu[i].text.indexOf('http') != -1){
-						array.push({title : this.global[this.authorization].persistentMenu[i].name, type : 'web_url', url : this.global[this.authorization].persistentMenu[i].text, 'webview_height_ratio' : 'full'});
-					}else{
-						array.push({title : this.global[this.authorization].persistentMenu[i].text, type : 'postback', payload : this.global[this.authorization].persistentMenu[i].text});
-					}
-				}
-			}else if(this.global.persistentMenu){
+			if(this.global.persistentMenu){
 				var array = [];
 				for(var i = 0; i < this.global.persistentMenu.length; i++){
 					if(this.global.persistentMenu[i].text.indexOf('http') != -1){
@@ -93,9 +85,6 @@ var facebookclass = class FacebookBotClass {
 			});
 		});*/
 		var globals = this.global;
-		if(this.authorization){
-				globals = this.global[this.authorization];
-		}
 		var wit = {
 			data : {
 				parameters : {}

@@ -925,13 +925,13 @@ app.post('/facebook/post', cors(), function (req, res) {
     global.facebookDeployment = req.body.facebookDeployment;
   });
 
-  instanceMongoQueries.distinct(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'configuration', req.headers.authorization.split(" ")[1].toString()).then(function(resp){
+  instanceMongoQueries.find(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'configuration',function(resp){
     var facebookClass = new FaceBookClass(
       req.body.facebookDeployment.pageId,
       req.body.facebookDeployment.appId,
       req.body.facebookDeployment.appSecret,
       req.body.facebookDeployment.accessToken,
-      req.body.facebookDeployment.verifyToken, resp, instanceMongoQueries,req.headers.authorization.split(" ")[1]);
+      req.body.facebookDeployment.verifyToken, resp[0], instanceMongoQueries,req.headers.authorization.split(" ")[1]);
     facebookClass.botListen();
     res.send({data : 'OK'});
   });
