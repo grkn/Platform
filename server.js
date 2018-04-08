@@ -924,14 +924,17 @@ app.post('/facebook/post', cors(), function (req, res) {
   instanceMongoQueries.updateOne(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'configuration', {}, {$set : {facebookDeployment : req.body.facebookDeployment}}, function(err, resp){
     global.facebookDeployment = req.body.facebookDeployment;
   });
-	var facebookClass = new FaceBookClass(
-    req.body.facebookDeployment.pageId,
-    req.body.facebookDeployment.appId,
-    req.body.facebookDeployment.appSecret,
-    req.body.facebookDeployment.accessToken,
-    req.body.facebookDeployment.verifyToken, global, instanceMongoQueries,req.headers.authorization.split(" ")[1]);
-	facebookClass.botListen();
-	res.send({data : 'OK'});
+
+  instanceMongoQueries.distinct(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'configuration', req.headers.authorization.split(" ")[1].toString()).then(function(resp){
+    var facebookClass = new FaceBookClass(
+      req.body.facebookDeployment.pageId,
+      req.body.facebookDeployment.appId,
+      req.body.facebookDeployment.appSecret,
+      req.body.facebookDeployment.accessToken,
+      req.body.facebookDeployment.verifyToken, resp, instanceMongoQueries,req.headers.authorization.split(" ")[1]);
+    facebookClass.botListen();
+    res.send({data : 'OK'});
+  });
 });
 
 app.post('/witaiDeploy/post', cors(), function (req, res) {
@@ -942,6 +945,7 @@ app.post('/witaiDeploy/post', cors(), function (req, res) {
       resp[0].defaultAuthorizationToken = req.body.witDeployment;
       global[req.headers.authorization.split(" ")[1]] = resp[0];
       instanceMongoQueries.updateOne("platform", 'configuration', {}, global, function(resp){});
+      res.send({data : req.body.witDeployment});
     }else{
       global[req.headers.authorization.split(" ")[1]] = {
         threshold : 0.7,
@@ -953,14 +957,19 @@ app.post('/witaiDeploy/post', cors(), function (req, res) {
         createdDate : new Date()
       }
       instanceMongoQueries.updateOne("platform", 'configuration',{}, global, function(resp){});
+      res.send({data : req.body.witDeployment});
     }
   });
-  res.send({data : 'OK'});
 });
 
 app.get('/witaiDeploy/get', cors(), function (req, res) {
-  instanceMongoQueries.find(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'configuration', function(resp){
-    res.send(resp);
+  console.log(req.headers.authorization);
+  instanceMongoQueries.find("platform","configuration",function(resp){
+    console.log(resp);
+    if(resp && resp[0] && resp[0][req.headers.authorization.split(" ")[1]]){
+      res.send(resp[0][req.headers.authorization.split(" ")[1]]);
+    }else
+    res.send(resp[0]);
   });
 });
 
@@ -990,13 +999,16 @@ app.post('/witai/validate', function(req, res){
 });
 
 app.get('/change/threshold/:threshold', function(req, res){
+  console.log(req.headers.authorization);
   if(req.headers.authorization && global[req.headers.authorization.split(" ")[1]]){
-    global[req.headers.authorization.split(" ")[1]].threshold = req.params.threshold;
-    instanceMongoQueries.distinct("platform","configuration",req.headers.authorization.split(" ")[1].toString()).then(function(resp){
+    instanceMongoQueries.find(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken,"configuration",function(resp){
       console.log(resp);
       if(resp && resp[0]){
-        resp[0].threshold = req.params.threshold;
-        instanceMongoQueries.updateOne("platform", 'configuration', {}, global, function(err, respp){
+        instanceMongoQueries.updateOne(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'configuration', {},{$set :{"threshold" : req.params.threshold}}, function(err, respp){
+          res.send(respp);
+        });
+      }else{
+        instanceMongoQueries.insertOne(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'configuration', global, function(err, respp){
           res.send(respp);
         });
       }
@@ -1011,11 +1023,7 @@ app.get('/change/threshold/:threshold', function(req, res){
 
 app.get('/get/threshold/', function(req, res){
   if(req.headers.authorization && global[req.headers.authorization.split(" ")[1]]){
-    instanceMongoQueries.distinct("platform", 'configuration', req.headers.authorization.split(" ")[1].toString()).then(function(resp){
-      res.send(resp);
-    });
-  }else{
-    instanceMongoQueries.distinct("platform", 'configuration','').then(function(resp){
+    instanceMongoQueries.find(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'configuration',function(resp){
       res.send(resp);
     });
   }
@@ -1023,38 +1031,25 @@ app.get('/get/threshold/', function(req, res){
 
 app.get('/add/responseList/:response', function(req, res){
   if(req.headers.authorization && global[req.headers.authorization.split(" ")[1]]){
-    global[req.headers.authorization.split(" ")[1]].responseList.push(req.params.response);
-    instanceMongoQueries.updateOne("platform", 'configuration', {}, global, function(err, respp){
+    instanceMongoQueries.updateOne(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'configuration', {}, {$push : {"responseList" :  req.params.response} }, function(err, respp){
       res.send(respp);
-    });
-  }else{
-    instanceMongoQueries.updateOne('platform', 'configuration', {}, {$push : {responseList : req.params.response}}, function(err, resp){
-      res.send(resp);
     });
   }
 });
 
 app.delete('/delete/responseList/:response', function(req, res){
   if(req.headers.authorization && global[req.headers.authorization.split(" ")[1]]){
-    global[req.headers.authorization.split(" ")[1]].responseList.splice(global[req.headers.authorization.split(" ")[1]].responseList.indexOf(req.params.response), 1);
-    instanceMongoQueries.updateOne("platform", 'configuration', {}, global, function(err, respp){
+    instanceMongoQueries.updateOne(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'configuration', {}, {$pull : {"responseList" : req.params.response}}, function(err, respp){
       res.send(respp);
-    });
-  }else{
-    instanceMongoQueries.updateOne("platform", 'configuration', {}, {$pull : {responseList : req.params.response}}, function(err, resp){
-      res.send(resp);
     });
   }
 });
 
 app.post('/add/persistentMenu', cors(), function(req, res){
   if(req.headers.authorization && global[req.headers.authorization.split(" ")[1]]){
-    global[req.headers.authorization.split(" ")[1]].persistentMenu =  req.body.persistentMenuList;
-    instanceMongoQueries.updateOne("platform", 'configuration', {}, global, function(err, respp){
+    instanceMongoQueries.updateOne(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'configuration', {},{$set : {"persistentMenu" : req.body.persistentMenuList}}, function(err, respp){
       res.send(respp);
     });
-  }else{
-    instanceMongoQueries.updateOne("platform", 'configuration', {}, {$set : {persistentMenu : req.body.persistentMenuList}}, function(err, resp){});
   }
 });
 
