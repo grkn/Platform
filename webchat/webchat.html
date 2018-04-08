@@ -237,7 +237,6 @@
 						dataType : "json"
 					});
 					request.done(function( msg ) {
-
 						for(var i= msg.length-1; 0 <= i; i--){
 							if(msg[i].user_id.indexOf('BOT') >= 0){
 								if(msg[i].message.type && msg[i].message.type == 'carousel'){
@@ -276,7 +275,6 @@
 					request.fail(function( jqXHR, textStatus ) {
 						alert( "Request failed: " + textStatus );
 					});
-
 					persistentMenu.load();
 				}
 			};
@@ -296,7 +294,6 @@
 				//load all messages at mongodb
 				load.load();
 				//Key press enter after writing message triggers this function
-
 				$("#container").on("shown.bs.collapse", function(){
 			  	$('html, body').animate({ scrollTop: $('html, body').height()});
 			  });
@@ -325,6 +322,11 @@
 	  <script src="lib/js/jquery.emojiarea.js"></script>
 	  <script src="lib/js/emoji-picker.js"></script>
 		<script>
+
+			function get(name){
+				 if(name=(new RegExp('[?&]'+encodeURIComponent(name)+'=([^&]*)')).exec(location.search))
+						return decodeURIComponent(name[1]);
+			}
 
       $(function() {
         // Initializes and creates emoji set from sprite sheet
@@ -355,7 +357,7 @@
 								}
 
 								var request = $.ajax({
-								  url : "/api/getMessage/witai/messages",
+								  url : "/api/getMessage/witai/messages?accessToken="+get("accessToken")+"&authorization="+get("authorization"),
 								  method : "POST",
 								  data : {
 										"obj" :

@@ -72,6 +72,9 @@ var mongoQueries = class MongoQueries {
       callback(res);
     });
   }
+  distinct(dbName,collectionName,key){
+    return this.db.db(dbName).collection(collectionName).distinct(key);
+  }
 }
 
 module.exports = mongoQueries;

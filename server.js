@@ -4,26 +4,26 @@ var cors = require('cors');
 var mongo = require('mongodb').MongoClient;
 var bodyParser = require('body-parser');
 var FaceBookClass = require('./facebook/facebook');
-var MongoQueries = require('./mongo/mongoQueries');
 var SkypeClass = require('./skype/skypeClass');
+var MongoQueries = require('./mongo/mongoQueries');
 var Client = require('node-rest-client').Client;
-var Carousel = require('./views/carousel');
 var Chatbase = require('./chatbase/chatbase');
 const queryString = require('query-string');
 var uuid = require('uuid-random');
-var cookieSession = require('cookie-session');
-var cookieParser = require('cookie-parser');
+var CookieSession = require('cookie-session');
+var CookieParser = require('cookie-parser');
+
 var path = require('path');
 var client = new Client();
-
-
 var url = 'mongodb://localhost:27017/platform';
+
 let instanceMongoQueries;
 
-let global = { defaultAuthorizationToken :  'DSWRM5DAQVXBGOH7BQWO455ERSGWRNR6' }
-app.use(cookieParser())
+let global = {defaultAuthorizationToken : 'DSWRM5DAQVXBGOH7BQWO455ERSGWRNR6'};
 
-app.use(cookieSession({
+app.use(CookieParser());
+
+app.use(CookieSession({
   name : 'session',
   keys : [uuid(), uuid()],
   maxAge : 365 * 24 * 60 * 60 * 1000
@@ -38,31 +38,33 @@ app.use(function (req, res, next) {
 mongo.connect(url, function(err, db) {
   if (err) throw err;
   instanceMongoQueries = new MongoQueries(db);
-  instanceMongoQueries.find(global.defaultAuthorizationToken,'configuration', function(resp){
+  instanceMongoQueries.find("platform", 'configuration', function(resp){
     console.log(resp);
     if(resp && resp.length > 0){
-      global = resp[0];
+      global= resp[0];
     }else{
       global = {
         threshold : 0.7,
         responseList : [],
         persistentMenu : [],
-        defaultAuthorizationToken : 'DSWRM5DAQVXBGOH7BQWO455ERSGWRNR6',
+        defaultAuthorizationToken : global.defaultAuthorizationToken,
         facebookDeployment : {},
         chatbaseAppSecret : '',
         createdDate : new Date()
       }
-      instanceMongoQueries.insertOne(global.defaultAuthorizationToken,'configuration', global, function(resp){});
+      instanceMongoQueries.insertOne("platform", 'configuration', global, function(resp){});
     }
   })
 });
 
+
+
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extended : true }));
-app.use(function (req, res, next) {
+app.use(bodyParser.urlencoded({extended : true}));
+app.use(function (req, res, next){
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
-    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With, content-type');
     res.setHeader('Access-Control-Allow-Credentials', true);
     next();
 });
@@ -81,78 +83,78 @@ app.get('/asset/js/messages.js', function(req, res){res.sendFile(__dirname + '/a
 app.get('/asset/js/index.js', function(req, res){res.sendFile(__dirname + '/asset/js/index.js');});
 
 app.get('/mongo/createCollection/:collectionName', function(req, res){
-  instanceMongoQueries.createCollection(global.defaultAuthorizationToken,req.params.collectionName, function(resp, err){
+  instanceMongoQueries.createCollection(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, req.params.collectionName, function(resp, err){
     res.send({resp : 'OK'});
   });
 });
 
 app.post('/mongo/insert/:collectionName', function(req, res){
   if(req.body.obj && Array.isArray(req.body.obj)){
-    instanceMongoQueries.insertMany(global.defaultAuthorizationToken,req.params.collectionName, req.body.obj, function(resp, obj){
+    instanceMongoQueries.insertMany(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, req.params.collectionName, req.body.obj, function(resp, obj){
       res.send(resp);
     });
   }
   if(req.body.obj && !Array.isArray(req.body.obj)){
-    instanceMongoQueries.insertOne(global.defaultAuthorizationToken,req.params.collectionName, req.body.obj, function(resp, obj){
+    instanceMongoQueries.insertOne(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, req.params.collectionName, req.body.obj, function(resp, obj){
       res.send(resp);
     });
   }
 });
 
 app.get('/mongo/find/:collectionName', function(req, res){
-  instanceMongoQueries.find(global.defaultAuthorizationToken,req.params.collectionName, function(result){
+  instanceMongoQueries.find("platform", req.params.collectionName, function(result){
     res.send(result);
   });
 });
 
 app.get('/mongo/findByLimitTen/:collectionName', function(req, res){
-  instanceMongoQueries.findWithLimit(global.defaultAuthorizationToken,req.params.collectionName, function(result){
+  instanceMongoQueries.findWithLimit(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, req.params.collectionName, function(result){
     res.send(result);
   });
 });
 
 app.post('/mongo/findByQuery/:collectionName', function(req, res){
-  instanceMongoQueries.findByQuery(global.defaultAuthorizationToken,req.params.collectionName, req.body.query, function(result){
+  instanceMongoQueries.findByQuery(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, req.params.collectionName, req.body.query, function(result){
     res.send(result);
   });
 });
 
 app.post('/mongo/findByQueryForMessages', function(req, res){
-  instanceMongoQueries.findByQuerySort(global.defaultAuthorizationToken,'messages', req.body.query, function(result){
+  instanceMongoQueries.findByQuerySort(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'messages', req.body.query, function(result){
     res.send(result);
   });
 });
 
 app.get('/mongo/delete/:collectionName', function(req, res){
-  instanceMongoQueries.deleteCollection(global.defaultAuthorizationToken,req.params.collectionName);
+  instanceMongoQueries.deleteCollection("platform", req.params.collectionName);
   res.send({resp : 'OK'});
 });
 
 // wit e intent olusturyor
 app.delete('/delete/intent', cors(), function(req, res){
   var wit = {
-    data : { },
+    data : {},
     headers : {
-      'Authorization' : 'Bearer ' + global.defaultAuthorizationToken,
-      'Content-Type': 'application/json'
+      'Authorization' : 'Bearer ' + (req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken),
+      'Content-Type' : 'application/json'
     }
   }
   client.delete('https://api.wit.ai/entities/intent/values/' + encodeURIComponent(req.body.value), wit, function(response){
-    instanceMongoQueries.deleteOne(global.defaultAuthorizationToken,'subject_intent_relation', {intent : req.body.value}, function(resp){});
-    instanceMongoQueries.deleteOne(global.defaultAuthorizationToken,'answers', {'key' :  req.body.value}, function(resp){
+    instanceMongoQueries.deleteOne(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'subject_intent_relation', {intent : req.body.value}, function(resp){});
+    instanceMongoQueries.deleteOne(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'answers', {'key' :  req.body.value}, function(resp){
       res.send({resp : 'OK'});
     });
   });
 });
 
 app.post('/mongo/post/subjectRelation', cors(), function(req, res){
-  instanceMongoQueries.findByQuery(global.defaultAuthorizationToken,'subject_intent_relation', {intent : req.body.intent}, function(response){
+  instanceMongoQueries.findByQuery(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'subject_intent_relation', {intent : req.body.intent}, function(response){
     if(response.length == 0){
-      instanceMongoQueries.insertOne(global.defaultAuthorizationToken,'subject_intent_relation', {intent : req.body.intent, subject : req.body.subject, createdDate : new Date()}, function(resp){
+      instanceMongoQueries.insertOne(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'subject_intent_relation', {intent : req.body.intent, subject : req.body.subject, createdDate : new Date()}, function(resp){
         res.send({resp : 'OK'});
       });
     }else{
-      instanceMongoQueries.updateOne(global.defaultAuthorizationToken,'subject_intent_relation', {intent : req.body.intent}, {intent: req.body.intent, subject : req.body.subject ,  updatedDate : new Date()}, function(resp){
+      instanceMongoQueries.updateOne(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'subject_intent_relation', {intent : req.body.intent}, {intent: req.body.intent, subject : req.body.subject , updatedDate : new Date()}, function(resp){
         res.send({resp : 'OK'});
       });
     }
@@ -160,57 +162,54 @@ app.post('/mongo/post/subjectRelation', cors(), function(req, res){
 });
 
 app.delete('/mongo/delete/subjectRelation', cors(), function(req, res){
-    instanceMongoQueries.deleteOne(global.defaultAuthorizationToken,'subject_intent_relation', {intent : req.body.intent, subject : req.body.subject}, function(resp){
+    instanceMongoQueries.deleteOne(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'subject_intent_relation', {intent : req.body.intent, subject : req.body.subject}, function(resp){
         res.send(resp);
     });
 });
 
 app.get('/mongo/get/subjects', cors(), function(req, res){
-  instanceMongoQueries.findByQuery(global.defaultAuthorizationToken,'subject', {}, function(resp){
+  instanceMongoQueries.findByQuery(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'subject', {}, function(resp){
     res.send(resp);
   });
 });
 
 app.post('/mongo/get/subject', cors(), function(req, res){
-  instanceMongoQueries.findByQuery(global.defaultAuthorizationToken,'subject_intent_relation', {intent :  req.body.intent}, function(resp){
+  instanceMongoQueries.findByQuery(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'subject_intent_relation', {intent :  req.body.intent}, function(resp){
     res.send(resp);
   });
 });
 
-app.post('/add/persistentMenu', cors(),function(req,res){
-  instanceMongoQueries.updateOne(global.defaultAuthorizationToken,'configuration', {}, { $set : {persistentMenu : req.body.persistentMenuList}}, function(err, resp){});
-})
 
 app.delete('/mongo/delete/subject', cors(), function(req, res){
   if(req.body.fallback && req.body.fallback.subject){
-    instanceMongoQueries.updateOne(global.defaultAuthorizationToken,'subject', {subject : req.body.fallback.subject }, {$pull :  {'response' : req.body.fallback.selectedResponse}}, function(resp){
+    instanceMongoQueries.updateOne(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'subject', {subject : req.body.fallback.subject}, {$pull :  {'response' : req.body.fallback.selectedResponse}}, function(resp){
       res.send(resp);
     });
   }else{
-    instanceMongoQueries.deleteOne(global.defaultAuthorizationToken,'subject', {subject : req.body.subject.toLowerCase()}, function(resp){
+    instanceMongoQueries.deleteOne(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'subject', {subject : req.body.subject.toLowerCase()}, function(resp){
       res.send(resp);
     });
-    instanceMongoQueries.deleteMany(global.defaultAuthorizationToken,'subject_intent_relation', {subject : req.body.subject.toLowerCase()}, function(resp){});
+    instanceMongoQueries.deleteMany(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'subject_intent_relation', {subject : req.body.subject.toLowerCase()}, function(resp){});
   }
 });
 
 app.post('/mongo/post/subject', cors(), function(req, res){
   console.log(req.body.fallback);
   if(req.body.fallback && req.body.fallback.subject){
-    instanceMongoQueries.findByQuery(global.defaultAuthorizationToken,'subject', {subject : req.body.fallback.subject.toLowerCase()}, function(resp){
+    instanceMongoQueries.findByQuery(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'subject', {subject : req.body.fallback.subject.toLowerCase()}, function(resp){
       if(resp.length == 0){
         req.body.fallback.subject = req.body.fallback.subject.toLowerCase();
-        instanceMongoQueries.insertOne(global.defaultAuthorizationToken,'subject', {subject : req.body.fallback.subject, response : req.body.fallback.response}, function(response){});
+        instanceMongoQueries.insertOne(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'subject', {subject : req.body.fallback.subject, response : req.body.fallback.response}, function(response){});
       }else{
         req.body.fallback.subject = req.body.fallback.subject.toLowerCase();
-        instanceMongoQueries.updateOne(global.defaultAuthorizationToken,'subject', {subject : req.body.fallback.subject}, {$push : { response : req.body.fallback.response}}, function(response){});
+        instanceMongoQueries.updateOne(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'subject', {subject : req.body.fallback.subject}, {$push : {response : req.body.fallback.response}}, function(response){});
       }
       res.send({resp : 'OK'});
     });
   }else{
-    instanceMongoQueries.findByQuery(global.defaultAuthorizationToken,'subject', {subject : req.body.subject.toLowerCase()}, function(resp){
+    instanceMongoQueries.findByQuery(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'subject', {subject : req.body.subject.toLowerCase()}, function(resp){
       if(resp.length == 0){
-        instanceMongoQueries.insertOne(global.defaultAuthorizationToken,'subject', {subject : req.body.subject.toLowerCase(), createdDate : new Date()}, function(response){});
+        instanceMongoQueries.insertOne(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'subject', {subject : req.body.subject.toLowerCase(), createdDate : new Date()}, function(response){});
       }
       res.send({resp : 'OK'});
     });
@@ -225,12 +224,12 @@ app.post('/create/intent', cors(), function(req, res){
       'expressions' : []
     },
     headers : {
-      'Authorization' : 'Bearer ' + global.defaultAuthorizationToken,
+      'Authorization' : 'Bearer ' + (req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken),
       'Content-Type' : 'application/json'
     }
   }
   client.post('https://api.wit.ai/entities/intent/values', wit, function(response){
-    instanceMongoQueries.insertOne(global.defaultAuthorizationToken,'subject_intent_relation', {intent : req.body.value, subject : req.body.subject}, function(resp){});
+    instanceMongoQueries.insertOne(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'subject_intent_relation', {intent : req.body.value, subject : req.body.subject}, function(resp){});
     res.send(response);
   });
 });
@@ -239,13 +238,13 @@ app.post('/create/intent', cors(), function(req, res){
 app.get('/get/witai/entities', function(req, res){
   var wit = {
     data : {
-      parameters: {}
+      parameters : {}
     },
     headers : {
-      'Authorization' : 'Bearer ' + global.defaultAuthorizationToken,
+      'Authorization' : 'Bearer ' +  (req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken) ,
       'Content-Type' : 'application/json'
     }
-  }
+  };
   client.get('https://api.wit.ai/entities/intent', wit, function(response){
     res.send(response);
   });
@@ -260,10 +259,10 @@ app.post('/post/intent/expressions', function(req, res){
   		expressions : req.body.expressions
     },
     headers : {
-      'Authorization' : 'Bearer ' + global.defaultAuthorizationToken,
+      'Authorization' : 'Bearer ' + (req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken),
       'Content-Type' : 'application/json'
     }
-  }
+  };
   client.post('https://api.wit.ai/entities/intent/values', wit, function(response){
     res.send(response);
   });
@@ -273,9 +272,9 @@ app.post('/post/intent/expressions', function(req, res){
 app.delete('/delete/intent/expressions', function(req, res){
   console.log(req.body.expression);
 	var wit = {
-		data : { },
+		data : {},
 		headers : {
-		  'Authorization' : 'Bearer ' + global.defaultAuthorizationToken,
+		  'Authorization' : 'Bearer ' + (req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken),
 		  'Content-Type' : 'application/json'
 		}
 	}
@@ -286,27 +285,27 @@ app.delete('/delete/intent/expressions', function(req, res){
 
 // intent icin cevap ekleme
 app.post('/send/meaningful/sentence', cors(), function (req, res) {
-  instanceMongoQueries.findByQuery(global.defaultAuthorizationToken,'answers', {'key' :  req.body.intent}, function(resp){
+  instanceMongoQueries.findByQuery(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'answers', {'key' :  req.body.intent}, function(resp){
     console.log(resp);
     if(resp.length > 0){
-      instanceMongoQueries.updateOne(global.defaultAuthorizationToken,'answers', {'key' : req.body.intent }, {$set : {'key' : req.body.intent, 'value' : req.body.message, 'type' : 'text'}}, function(resp){});
+      instanceMongoQueries.updateOne(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'answers', {'key' : req.body.intent}, {$set : {'key' : req.body.intent, 'value' : req.body.message, 'type' : 'text'}}, function(resp){});
     }else{
-      instanceMongoQueries.insertOne(global.defaultAuthorizationToken,'answers', {'key' : req.body.intent, 'value' : req.body.message, 'type' : 'text'} , function(resp){});
+      instanceMongoQueries.insertOne(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'answers', {'key' : req.body.intent, 'value' : req.body.message, 'type' : 'text'} , function(resp){});
     }
   });
-  res.send({ resp : 'OK'});
+  res.send({resp : 'OK'});
 });
 
 // intent icin cevap getirme
 app.get('/get/meaningful/sentence', cors(), function (req, res) {
-  instanceMongoQueries.findByQuery(global.defaultAuthorizationToken,'answers', {'key' :  queryString.parse(req.query()).intent}, function(resp){
+  instanceMongoQueries.findByQuery(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'answers', {'key' :  queryString.parse(req.query()).intent}, function(resp){
       res.send(resp[0]);
   });
 });
 
 // intent icin cevap silme
 app.delete('/delete/meaningful/sentence', cors(), function (req, res) {
-  instanceMongoQueries.deleteOne(global.defaultAuthorizationToken,'answers', {'key' :  queryString.parse(req.query()).intent}, function(resp){
+  instanceMongoQueries.deleteOne(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'answers', {'key' :  queryString.parse(req.query()).intent}, function(resp){
     res.send({resp : 'OK'});
   });
 });
@@ -331,6 +330,7 @@ app.get('/api/getMessage/dialogFlow', cors(), function(req, res){
   });
 });
 
+// WEB API create app
 app.post('/witaiCreateApp/post', cors(), function(req, res){
     console.log(req.body.application);
     var wit = {
@@ -341,7 +341,7 @@ app.post('/witaiCreateApp/post', cors(), function(req, res){
         'desc' : req.body.application.description
       },
       headers : {
-        'Authorization' : 'Bearer ' + global.defaultAuthorizationToken,
+        'Authorization' : 'Bearer ' + (req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken),
         'Content-Type' : 'application/json'
       }
     }
@@ -352,35 +352,34 @@ app.post('/witaiCreateApp/post', cors(), function(req, res){
 
 // WEB API for wit.ai
 app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
+  var authorization = queryString.parse(req.query()).authorization;
+  console.log(authorization);
   try{
-  var wit = {
-    data : {
-      parameters : {}
-    },
-    headers : {
-      'Authorization' : 'Bearer ' + global.defaultAuthorizationToken,
-      'Content-Type' : 'application/json'
-    }
-  }
-  //Emoji var mı
-  var searchedItem = req.body.obj.message.text.replace(/(<img\s[^>]*?src\s*=\s*['\"]([^'\"]*?)['\"][^>]*?>)/g,"");
-  instanceMongoQueries.findByQuery(global.defaultAuthorizationToken,'emoji_relation', {'source.text' : searchedItem}, function(resppp){
+    var wit = {
+      data : {
+        parameters : {}
+      },
+      headers : {
+        'Authorization' : 'Bearer ' +  queryString.parse(req.query()).accessToken,
+        'Content-Type' : 'application/json'
+      }
+    };
+    //Emoji var mı
+    var searchedItem = req.body.obj.message.text.replace(/(<img\s[^>]*?src\s*=\s*['\"]([^'\"]*?)['\"][^>]*?>)/g,"");
+    instanceMongoQueries.findByQuery(queryString.parse(req.query()).accessToken, 'emoji_relation', {'source.text' : searchedItem}, function(resppp){
       if(resppp.length > 0){
         //Emoji var!!
         var msg = {text : resppp[0].target, type : 'emoji'};
         var obj = {'transaction' : req.body.obj.transaction, 'message' : {text : resppp[0].source, type : 'emoji'}, 'user_id' : req.cookies.user_id, 'created_date' : new Date()};
-
-        var chatbase = new Chatbase(''+ resppp[0].source, req.cookies.user_id,'user',global,'emoji');
+        var chatbase = new Chatbase('' + resppp[0].source, req.cookies.user_id, 'user', global, 'emoji');
         chatbase.sendMessage();
-        instanceMongoQueries.insertOne(global.defaultAuthorizationToken,req.params.collectionName, obj, function(resp,obj){
-            res.send({text : resppp[0].target, type : 'emoji'});
+        instanceMongoQueries.insertOne(queryString.parse(req.query()).accessToken, req.params.collectionName, obj, function(resp, obj){
+          res.send({text : resppp[0].target, type : 'emoji'});
         });
-
-
         obj = {'transaction' : req.body.obj.transaction, 'message' : {text : resppp[0].target, type : 'emoji'}, 'user_id' : req.cookies.user_id + '_BOT', 'created_date' : new Date(obj.created_date.getTime() + 1)};
-        var chatbase = new Chatbase(''+ resppp[0].source, req.cookies.user_id,'agent',global,'emoji');
+        var chatbase = new Chatbase('' +  resppp[0].source, req.cookies.user_id, 'agent', global, 'emoji');
         chatbase.sendMessage();
-        instanceMongoQueries.insertOne(global.defaultAuthorizationToken,req.params.collectionName, obj, function(resp, obj){});
+        instanceMongoQueries.insertOne(queryString.parse(req.query()).accessToken, req.params.collectionName, obj, function(resp, obj){});
       }else{
         //Emoji yok
         console.log(req.session.subject);
@@ -393,7 +392,6 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
           client.get('https://api.wit.ai/message?q=' + encodeURIComponent(searchedItem), wit, function(response){
             if(response.entities && response.entities.intent && response.entities.intent.length > 0){
               console.log("Wit ai intent buldu.");
-
                 var maxFirst = -1;
                 var maxValueFirst = '';
                 for(var i = 0; i < response.entities.intent.length; i++){
@@ -404,8 +402,14 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                 }
                 console.log("Max cofidence threshold geçiyor mu?");
                 if(maxFirst < global.threshold){
-                    console.log("Witai threshold dusuk geldi. ai search with subject  obj : " + encodeURIComponent(req.session.subject[0].subject + ' ' + searchedItem));
-                    client.get('https://api.wit.ai/message?q=' + encodeURIComponent(req.session.subject[0].subject + ' ' + searchedItem), wit, function(response){
+                  var subjectLocal = req.session.subject;
+                  if(req.session.subject[0]){
+                    subjectLocal = req.session.subject[0].subject;
+                  }else{
+                    subjectLocal = req.session.subject.subject;
+                  }
+                    console.log("Witai threshold dusuk geldi. ai search with subject  obj : " + encodeURIComponent(subjectLocal + ' ' + searchedItem));
+                    client.get('https://api.wit.ai/message?q=' + encodeURIComponent(subjectLocal + ' ' + searchedItem), wit, function(response){
                         if(response.entities && response.entities.intent && response.entities.intent.length > 0){
                           console.log("Wit ai intent buldu.");
                           maxFirst = -1;
@@ -417,57 +421,47 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                             }
                           }
                           if(maxFirst < global.threshold){
-                            console.log("Witai threshold dusuk geldi. ai search with subject ");
+                            console.log("Witai threshold dusuk geldi. ai search with subject");
                             var text = "";
                             if(req.session.subject[0].response){
                               var random = Math.floor(Math.random() * (req.session.subject[0].response.length - 1));
                               text = req.session.subject[0].response[random];
-                              var chatbase = new Chatbase(text, req.cookies.user_id,'agent',global,req.session.subject[0].subject + '_fallback',false);
+                              var chatbase = new Chatbase(text, req.cookies.user_id, 'agent', global, req.session.subject[0].subject + '_fallback', false);
                               chatbase.sendMessage();
                             }else {
-                              var random = Math.floor(Math.random() * (global.responseList.length - 1));
-                              text = global.responseList[random];
-                              var chatbase = new Chatbase(text, req.cookies.user_id,'agent',global,'general_fallback',false);
+                              var random = Math.floor(Math.random() * (global[authorization].responseList.length - 1));
+                              text = global[authorization].responseList[random];
+                              var chatbase = new Chatbase(text, req.cookies.user_id, 'agent', global, 'general_fallback', false);
                               chatbase.sendMessage();
                             }
-
-
-
                             req.body.obj.created_date = new Date();
                             var obj = {'transaction' : req.body.obj.transaction, 'message' : {text : text}, 'user_id' : req.body.obj.user_id + '_BOT', 'created_date' : new Date(req.body.obj.created_date.getTime() + 1)};
-                            instanceMongoQueries.insertOne(global.defaultAuthorizationToken,req.params.collectionName, obj, function(resp, obj){});
-                            instanceMongoQueries.insertOne(global.defaultAuthorizationToken,req.params.collectionName, req.body.obj, function(resp, obj){});
-
-                            var chatbase = new Chatbase(req.body.obj.message.text, req.cookies.user_id,'user',global,maxValueFirst,true);
+                            instanceMongoQueries.insertOne(queryString.parse(req.query()).accessToken, req.params.collectionName, obj, function(resp, obj){});
+                            instanceMongoQueries.insertOne(queryString.parse(req.query()).accessToken, req.params.collectionName, req.body.obj, function(resp, obj){});
+                            var chatbase = new Chatbase(req.body.obj.message.text, req.cookies.user_id, 'user', global, maxValueFirst, true);
                             chatbase.sendMessage();
-
                             req.body.obj.confidenceLevel = maxFirst;
                             req.body.obj.intentName = maxValueFirst;
-                            instanceMongoQueries.insertOne(global.defaultAuthorizationToken,'training_messages', req.body.obj, function(resp, obj){});
+                            instanceMongoQueries.insertOne(queryString.parse(req.query()).accessToken, 'training_messages', req.body.obj, function(resp, obj){});
                             console.log("Fallback basıldı");
                             res.send({text : text});
                             return;
                           }
                           console.log("Answer tablosunda cevap var mı ?");
-                          instanceMongoQueries.findByQuery(global.defaultAuthorizationToken,'answers', {'key' : maxValueFirst}, function(response){
+                          instanceMongoQueries.findByQuery(queryString.parse(req.query()).accessToken, 'answers', {'key' : maxValueFirst}, function(response){
                             if(response.length > 0){
                                 if(req.body.obj){
                                   console.log("Answer tablosunda cevap var");
                                   req.body.obj.created_date = new Date();
                                   req.body.obj.confidenceLevel = maxFirst;
                                   req.body.obj.intentName = maxValueFirst;
-
-                                  var chatbase = new Chatbase(req.body.obj.message.text, req.cookies.user_id,'user',global,maxValueFirst,false);
+                                  var chatbase = new Chatbase(req.body.obj.message.text, req.cookies.user_id, 'user', global, maxValueFirst, false);
                                   chatbase.sendMessage();
-
-                                  var chatbase = new Chatbase(''+response[0].value, req.cookies.user_id,'agent',global,maxValueFirst,false);
+                                  var chatbase = new Chatbase('' + response[0].value, req.cookies.user_id, 'agent', global, maxValueFirst, false);
                                   chatbase.sendMessage();
-
-
                                   var obj = {'transaction' : req.body.obj.transaction, 'message' : {text : response[0].value, type : response[0].type, intent : response[0].key}, 'user_id' : req.body.obj.user_id + '_BOT', 'created_date' : new Date(req.body.obj.created_date.getTime() + 1)};
-                                  instanceMongoQueries.insertOne(global.defaultAuthorizationToken,req.params.collectionName, obj, function(resp, obj){});
-                                  instanceMongoQueries.insertOne(global.defaultAuthorizationToken,req.params.collectionName, req.body.obj, function(resp,obj){
-                                  });
+                                  instanceMongoQueries.insertOne(queryString.parse(req.query()).accessToken, req.params.collectionName, obj, function(resp, obj){});
+                                  instanceMongoQueries.insertOne(queryString.parse(req.query()).accessToken, req.params.collectionName, req.body.obj, function(resp, obj){});
                                   console.log(response[0].value);
                                   res.send({text : response[0].value, type : response[0].type, intent : response[0].key, subject : ''});
                                 }
@@ -477,24 +471,22 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                                 if(req.session.subject[0].response){
                                   var random = Math.floor(Math.random() * (req.session.subject[0].response.length - 1));
                                   text = req.session.subject[0].response[random];
-                                  var chatbase = new Chatbase(text, req.cookies.user_id,'agent',global,req.session.subject[0].subject + '_fallback',false);
-                                    chatbase.sendMessage();
+                                  var chatbase = new Chatbase(text, req.cookies.user_id, 'agent', global, req.session.subject[0].subject + '_fallback', false);
+                                  chatbase.sendMessage();
                                 }else {
-                                  var random = Math.floor(Math.random() * (global.responseList.length - 1));
-                                  text = global.responseList[random];
-                                  var chatbase = new Chatbase(text, req.cookies.user_id,'agent',global,'general_fallback',false);
-                                    chatbase.sendMessage();
+                                  var random = Math.floor(Math.random() * (global[authorization].responseList.length - 1));
+                                  text = global[authorization].responseList[random];
+                                  var chatbase = new Chatbase(text, req.cookies.user_id, 'agent', global, 'general_fallback', false);
+                                  chatbase.sendMessage();
                                 }
-
                                 req.body.obj.created_date = new Date();
                                 var obj = {'transaction' : req.body.obj.transaction, 'message' : {text : text}, 'user_id' : req.body.obj.user_id + '_BOT', 'created_date' : new Date(req.body.obj.created_date.getTime() + 1)};
-                                instanceMongoQueries.insertOne(global.defaultAuthorizationToken,req.params.collectionName, obj, function(resp, obj){});
-                                instanceMongoQueries.insertOne(global.defaultAuthorizationToken,req.params.collectionName, req.body.obj, function(resp, obj){});
-                                instanceMongoQueries.insertOne(global.defaultAuthorizationToken,'training_messages', req.body.obj, function(resp, obj){});
-
-                                var chatbase = new Chatbase(req.body.obj.message.text, req.cookies.user_id,'user',global,maxValueFirst,true);
+                                instanceMongoQueries.insertOne(queryString.parse(req.query()).accessToken, req.params.collectionName, obj, function(resp, obj){});
+                                instanceMongoQueries.insertOne(queryString.parse(req.query()).accessToken, req.params.collectionName, req.body.obj, function(resp, obj){});
+                                instanceMongoQueries.insertOne(queryString.parse(req.query()).accessToken, 'training_messages', req.body.obj, function(resp, obj){});
+                                var chatbase = new Chatbase(req.body.obj.message.text, req.cookies.user_id, 'user', global, maxValueFirst, true);
                                 chatbase.sendMessage();
-                                  console.log("Fallback basıldı");
+                                console.log("Fallback basıldı");
                                 res.send({text : text});
                               }
                           });
@@ -504,45 +496,40 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                           if(req.session.subject[0].response){
                             var random = Math.floor(Math.random() * (req.session.subject[0].response.length - 1));
                             text = req.session.subject[0].response[random];
-                            var chatbase = new Chatbase(text, req.cookies.user_id,'agent',global,req.session.subject[0].subject + '_fallback',false);
+                            var chatbase = new Chatbase(text, req.cookies.user_id, 'agent', global, req.session.subject[0].subject + '_fallback', false);
                             chatbase.sendMessage();
                           }else {
-                            var random = Math.floor(Math.random() * (global.responseList.length - 1));
-                            text = global.responseList[random];
-                            var chatbase = new Chatbase(text, req.cookies.user_id,'agent',global,'general_fallback',false);
+                            var random = Math.floor(Math.random() * (global[authorization].responseList.length - 1));
+                            text = global[authorization].responseList[random];
+                            var chatbase = new Chatbase(text, req.cookies.user_id, 'agent', global, 'general_fallback', false);
                             chatbase.sendMessage();
                           }
-
-
-
                           req.body.obj.created_date = new Date();
                           var obj = {'transaction' : req.body.obj.transaction, 'message' : {text : text}, 'user_id' : req.body.obj.user_id + '_BOT', 'created_date' : new Date(req.body.obj.created_date.getTime() + 1)};
-                          instanceMongoQueries.insertOne(global.defaultAuthorizationToken,req.params.collectionName, obj, function(resp, obj){});
-                          instanceMongoQueries.insertOne(global.defaultAuthorizationToken,req.params.collectionName, req.body.obj, function(resp, obj){});
-                          instanceMongoQueries.insertOne(global.defaultAuthorizationToken,'training_messages', req.body.obj, function(resp, obj){});
-
-                          var chatbase = new Chatbase(req.body.obj.message.text, req.cookies.user_id,'user',global,maxValueFirst,true);
+                          instanceMongoQueries.insertOne(queryString.parse(req.query()).accessToken, req.params.collectionName, obj, function(resp, obj){});
+                          instanceMongoQueries.insertOne(queryString.parse(req.query()).accessToken, req.params.collectionName, req.body.obj, function(resp, obj){});
+                          instanceMongoQueries.insertOne(queryString.parse(req.query()).accessToken, 'training_messages', req.body.obj, function(resp, obj){});
+                          var chatbase = new Chatbase(req.body.obj.message.text, req.cookies.user_id, 'user', global, maxValueFirst, true);
                           chatbase.sendMessage();
-
-                            console.log("Fallback basildi.");
+                          console.log("Fallback basildi.");
                           res.send({text : text});
                         }
                     });
                   return;
                 }else{
                   console.log("Find subject . Subject intent relation tablosunda subject var mı ?");
-                  instanceMongoQueries.findByQuery(global.defaultAuthorizationToken,'subject_intent_relation', {intent : maxValueFirst}, function(sResponse){
+                  instanceMongoQueries.findByQuery(queryString.parse(req.query()).accessToken, 'subject_intent_relation', {intent : maxValueFirst}, function(sResponse){
                     console.log(sResponse);
                     if(sResponse.length > 0){
                         console.log("Subject intent relation tablosunda subject var.Subject güncelle");
                       req.session.subject = sResponse[0];
-                      instanceMongoQueries.findByQuery(global.defaultAuthorizationToken,'subject', {subject : req.session.subject.subject }, function(r){
+                      instanceMongoQueries.findByQuery(queryString.parse(req.query()).accessToken, 'subject', {subject : req.session.subject.subject}, function(r){
                         console.log(r);
                         req.session.subject = r;
                       });
                     }
                     console.log("Answer tablosunda cevap var mı ?");
-                    instanceMongoQueries.findByQuery(global.defaultAuthorizationToken,'answers', {'key' : maxValueFirst }, function(response){
+                    instanceMongoQueries.findByQuery(queryString.parse(req.query()).accessToken, 'answers', {'key' : maxValueFirst}, function(response){
                       if(response.length > 0){
                         console.log("Answer tablosunda cevap var");
                           if(req.body.obj){
@@ -550,13 +537,12 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                             req.body.obj.confidenceLevel = maxFirst;
                             req.body.obj.intentName = maxValueFirst;
                             var obj = {'transaction' : req.body.obj.transaction, 'message' : {text : response[0].value, type : response[0].type, intent : response[0].key}, 'user_id' : req.body.obj.user_id + '_BOT', 'created_date' : new Date(req.body.obj.created_date.getTime() + 1)};
-                            instanceMongoQueries.insertOne(global.defaultAuthorizationToken,req.params.collectionName, obj, function(resp, obj){});
-                            instanceMongoQueries.insertOne(global.defaultAuthorizationToken,req.params.collectionName, req.body.obj, function(resp,obj){});
+                            instanceMongoQueries.insertOne(queryString.parse(req.query()).accessToken, req.params.collectionName, obj, function(resp, obj){});
+                            instanceMongoQueries.insertOne(queryString.parse(req.query()).accessToken, req.params.collectionName, req.body.obj, function(resp, obj){});
 
-
-                            var chatbase = new Chatbase(req.body.obj.message.text, req.cookies.user_id,'user',global,maxValueFirst,false);
+                            var chatbase = new Chatbase(req.body.obj.message.text, req.cookies.user_id, 'user', global, maxValueFirst, false);
                             chatbase.sendMessage();
-                            var chatbase = new Chatbase(''+response[0].value, req.cookies.user_id,'agent',global,maxValueFirst,false);
+                            var chatbase = new Chatbase('' + response[0].value, req.cookies.user_id, 'agent', global, maxValueFirst, false);
                             chatbase.sendMessage();
 
 
@@ -564,29 +550,29 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                             res.send({text : response[0].value, type : response[0].type, intent : response[0].key, subject : ''});
                           }
                         }else{
-                            console.log("Answer tablosunda cevap yok");
+                          console.log("Answer tablosunda cevap yok");
                           var text = "";
                           if(req.session.subject[0] && req.session.subject[0].response){
                             var random = Math.floor(Math.random() * (req.session.subject[0].response.length - 1));
                             text = req.session.subject[0].response[random];
-                            var chatbase = new Chatbase(text, req.cookies.user_id,'agent',global,req.session.subject[0].subject + '_fallback',false);
+                            var chatbase = new Chatbase(text, req.cookies.user_id, 'agent', global, req.session.subject[0].subject + '_fallback', false);
                             chatbase.sendMessage();
                           }else {
-                            var random = Math.floor(Math.random() * (global.responseList.length - 1));
-                            text = global.responseList[random];
-                            var chatbase = new Chatbase(text, req.cookies.user_id,'agent',global,'general_fallback',false);
+                            var random = Math.floor(Math.random() * (global[authorization].responseList.length - 1));
+                            text = global[authorization].responseList[random];
+                            var chatbase = new Chatbase(text, req.cookies.user_id, 'agent', global, 'general_fallback', false);
                             chatbase.sendMessage();
                           }
 
                           req.body.obj.created_date = new Date();
                           var obj = {'transaction' : req.body.obj.transaction, 'message' : {text : text}, 'user_id' : req.body.obj.user_id + '_BOT', 'created_date' : new Date(req.body.obj.created_date.getTime() + 1)};
-                          instanceMongoQueries.insertOne(global.defaultAuthorizationToken,req.params.collectionName, obj, function(resp, obj){});
-                          instanceMongoQueries.insertOne(global.defaultAuthorizationToken,req.params.collectionName, req.body.obj, function(resp, obj){});
+                          instanceMongoQueries.insertOne(queryString.parse(req.query()).accessToken, req.params.collectionName, obj, function(resp, obj){});
+                          instanceMongoQueries.insertOne(queryString.parse(req.query()).accessToken, req.params.collectionName, req.body.obj, function(resp, obj){});
 
-                          var chatbase = new Chatbase(req.body.obj.message.text, req.cookies.user_id,'user',global,maxValueFirst,true);
+                          var chatbase = new Chatbase(req.body.obj.message.text, req.cookies.user_id,'user', global, maxValueFirst, true);
                           chatbase.sendMessage();
 
-                          instanceMongoQueries.insertOne(global.defaultAuthorizationToken,'training_messages', req.body.obj, function(resp, obj){});
+                          instanceMongoQueries.insertOne(queryString.parse(req.query()).accessToken, 'training_messages', req.body.obj, function(resp, obj){});
                           res.send({text : text});
                         }
                     });
@@ -598,9 +584,9 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
               if(req.session.subject[0]){
                 subjectLocal = req.session.subject[0].subject;
               }else{
-                subjectLocal = req.session.subject.subject
+                subjectLocal = req.session.subject.subject;
               }
-              console.log("Wit ai subject plus content obj : "+encodeURIComponent(subjectLocal + ' ' + searchedItem));
+              console.log("Wit ai subject plus content obj : " + encodeURIComponent(subjectLocal + ' ' + searchedItem));
               client.get('https://api.wit.ai/message?q=' + encodeURIComponent(subjectLocal + ' ' + searchedItem), wit, function(response){
                   if(response.entities && response.entities.intent && response.entities.intent.length > 0){
                     maxFirst = -1;
@@ -617,46 +603,39 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                       if(req.session.subject[0] && req.session.subject[0].response){
                         var random = Math.floor(Math.random() * (req.session.subject[0].response.length - 1));
                         text = req.session.subject[0].response[random];
-                        var chatbase = new Chatbase(text, req.cookies.user_id,'agent',global,req.session.subject[0].subject + '_fallback',false);
+                        var chatbase = new Chatbase(text, req.cookies.user_id, 'agent', global, req.session.subject[0].subject + '_fallback', false);
                         chatbase.sendMessage();
                       }else {
-                        var random = Math.floor(Math.random() * (global.responseList.length - 1));
-                        text = global.responseList[random];
-                        var chatbase = new Chatbase(text, req.cookies.user_id,'agent',global,'general_fallback',false);
+                        var random = Math.floor(Math.random() * (global[authorization].responseList.length - 1));
+                        text = global[authorization].responseList[random];
+                        var chatbase = new Chatbase(text, req.cookies.user_id, 'agent', global, 'general_fallback', false);
                         chatbase.sendMessage();
                       }
-
-
                       req.body.obj.created_date = new Date();
                       var obj = {'transaction' : req.body.obj.transaction, 'message' : {text : text}, 'user_id' : req.body.obj.user_id + '_BOT', 'created_date' : new Date(req.body.obj.created_date.getTime() + 1)};
-                      instanceMongoQueries.insertOne(global.defaultAuthorizationToken,req.params.collectionName, obj, function(resp, obj){});
-                      instanceMongoQueries.insertOne(global.defaultAuthorizationToken,req.params.collectionName, req.body.obj, function(resp, obj){});
-
-                      var chatbase = new Chatbase(req.body.obj.message.text, req.cookies.user_id,'user',global,maxValueFirst,true);
+                      instanceMongoQueries.insertOne(queryString.parse(req.query()).accessToken, req.params.collectionName, obj, function(resp, obj){});
+                      instanceMongoQueries.insertOne(queryString.parse(req.query()).accessToken, req.params.collectionName, req.body.obj, function(resp, obj){});
+                      var chatbase = new Chatbase(req.body.obj.message.text, req.cookies.user_id, 'user', global, maxValueFirst, true);
                       chatbase.sendMessage();
-
                       req.body.obj.confidenceLevel = maxFirst;
                       req.body.obj.intentName = maxValueFirst;
-                      instanceMongoQueries.insertOne(global.defaultAuthorizationToken,'training_messages', req.body.obj, function(resp, obj){});
+                      instanceMongoQueries.insertOne(queryString.parse(req.query()).accessToken, 'training_messages', req.body.obj, function(resp, obj){});
                       res.send({text : text});
                       return;
                     }
-                    instanceMongoQueries.findByQuery(global.defaultAuthorizationToken,'answers', {'key' : maxValueFirst }, function(response){
+                    instanceMongoQueries.findByQuery(queryString.parse(req.query()).accessToken, 'answers', {'key' : maxValueFirst}, function(response){
                       if(response.length > 0){
                           if(req.body.obj){
                             req.body.obj.created_date = new Date();
                             req.body.obj.confidenceLevel = maxFirst;
                             req.body.obj.intentName = maxValueFirst;
                             var obj = {'transaction' : req.body.obj.transaction, 'message' : {text : response[0].value, type : response[0].type, intent : response[0].key}, 'user_id' : req.body.obj.user_id + '_BOT', 'created_date' : new Date(req.body.obj.created_date.getTime() + 1)};
-                            instanceMongoQueries.insertOne(global.defaultAuthorizationToken,req.params.collectionName, obj, function(resp, obj){});
-                            instanceMongoQueries.insertOne(global.defaultAuthorizationToken,req.params.collectionName, req.body.obj, function(resp,obj){});
-
-
-                            var chatbase = new Chatbase(req.body.obj.message.text, req.cookies.user_id,'user',global,maxValueFirst,false);
+                            instanceMongoQueries.insertOne(queryString.parse(req.query()).accessToken, req.params.collectionName, obj, function(resp, obj){});
+                            instanceMongoQueries.insertOne(queryString.parse(req.query()).accessToken, req.params.collectionName, req.body.obj, function(resp, obj){});
+                            var chatbase = new Chatbase(req.body.obj.message.text, req.cookies.user_id, 'user', global, maxValueFirst, false);
                             chatbase.sendMessage();
-                            var chatbase = new Chatbase(''+response[0].value, req.cookies.user_id,'agent',global,maxValueFirst,false);
+                            var chatbase = new Chatbase('' + response[0].value, req.cookies.user_id, 'agent', global, maxValueFirst, false);
                             chatbase.sendMessage();
-
                             console.log(response[0].value);
                             res.send({text : response[0].value, type : response[0].type, intent : response[0].key, subject : ''});
                           }
@@ -665,25 +644,21 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                           if(req.session.subject[0] && req.session.subject[0].response){
                             var random = Math.floor(Math.random() * (req.session.subject[0].response.length - 1));
                             text = req.session.subject[0].response[random];
-                              var chatbase = new Chatbase(text, req.cookies.user_id,'agent',global,req.session.subject[0].subject + '_fallback',false);
-                              chatbase.sendMessage();
+                            var chatbase = new Chatbase(text, req.cookies.user_id, 'agent', global, req.session.subject[0].subject + '_fallback', false);
+                            chatbase.sendMessage();
                           }else {
-                            var random = Math.floor(Math.random() * (global.responseList.length - 1));
-                            text = global.responseList[random];
-                              var chatbase = new Chatbase(text, req.cookies.user_id,'agent',global,'general_fallback',false);
-                              chatbase.sendMessage();
+                            var random = Math.floor(Math.random() * (global[authorization].responseList.length - 1));
+                            text = global[authorization].responseList[random];
+                            var chatbase = new Chatbase(text, req.cookies.user_id, 'agent', global, 'general_fallback', false);
+                            chatbase.sendMessage();
                           }
-
-
                           req.body.obj.created_date = new Date();
                           var obj = {'transaction' : req.body.obj.transaction, 'message' : {text : text}, 'user_id' : req.body.obj.user_id + '_BOT', 'created_date' : new Date(req.body.obj.created_date.getTime() + 1)};
-                          instanceMongoQueries.insertOne(global.defaultAuthorizationToken,req.params.collectionName, obj, function(resp, obj){});
-                          instanceMongoQueries.insertOne(global.defaultAuthorizationToken,req.params.collectionName, req.body.obj, function(resp, obj){});
-                          instanceMongoQueries.insertOne(global.defaultAuthorizationToken,'training_messages', req.body.obj, function(resp, obj){});
-
-                          var chatbase = new Chatbase(req.body.obj.message.text, req.cookies.user_id,'user',global,maxValueFirst,true);
+                          instanceMongoQueries.insertOne(queryString.parse(req.query()).accessToken, req.params.collectionName, obj, function(resp, obj){});
+                          instanceMongoQueries.insertOne(queryString.parse(req.query()).accessToken, req.params.collectionName, req.body.obj, function(resp, obj){});
+                          instanceMongoQueries.insertOne(queryString.parse(req.query()).accessToken, 'training_messages', req.body.obj, function(resp, obj){});
+                          var chatbase = new Chatbase(req.body.obj.message.text, req.cookies.user_id, 'user', global, maxValueFirst, true);
                           chatbase.sendMessage();
-
                           res.send({text : text});
                         }
                     });
@@ -692,21 +667,20 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                     if(req.session.subject[0] && req.session.subject[0].response){
                       var random = Math.floor(Math.random() * (req.session.subject[0].response.length - 1));
                       text = req.session.subject[0].response[random];
-                      var chatbase = new Chatbase(text, req.cookies.user_id,'agent',global,req.session.subject[0].subject + '_fallback',false);
+                      var chatbase = new Chatbase(text, req.cookies.user_id, 'agent', global, req.session.subject[0].subject + '_fallback', false);
                       chatbase.sendMessage();
                     }else {
-                      var random = Math.floor(Math.random() * (global.responseList.length - 1));
-                      text = global.responseList[random];
-                      var chatbase = new Chatbase(text, req.cookies.user_id,'agent',global,'general_fallback',false);
+                      var random = Math.floor(Math.random() * (global[authorization].responseList.length - 1));
+                      text = global[authorization].responseList[random];
+                      var chatbase = new Chatbase(text, req.cookies.user_id, 'agent', global, 'general_fallback', false);
                       chatbase.sendMessage();
                     }
-
                     req.body.obj.created_date = new Date();
                     var obj = {'transaction' : req.body.obj.transaction, 'message' : {text : text}, 'user_id' : req.body.obj.user_id + '_BOT', 'created_date' : new Date(req.body.obj.created_date.getTime() + 1)};
-                    instanceMongoQueries.insertOne(global.defaultAuthorizationToken,req.params.collectionName, obj, function(resp, obj){});
-                    instanceMongoQueries.insertOne(global.defaultAuthorizationToken,req.params.collectionName, req.body.obj, function(resp, obj){});
-                    instanceMongoQueries.insertOne(global.defaultAuthorizationToken,'training_messages', req.body.obj, function(resp, obj){});
-                    var chatbase = new Chatbase(req.body.obj.message.text, req.cookies.user_id,'user',global,maxValueFirst,true);
+                    instanceMongoQueries.insertOne(queryString.parse(req.query()).accessToken, req.params.collectionName, obj, function(resp, obj){});
+                    instanceMongoQueries.insertOne(queryString.parse(req.query()).accessToken, req.params.collectionName, req.body.obj, function(resp, obj){});
+                    instanceMongoQueries.insertOne(queryString.parse(req.query()).accessToken, 'training_messages', req.body.obj, function(resp, obj){});
+                    var chatbase = new Chatbase(req.body.obj.message.text, req.cookies.user_id, 'user', global, maxValueFirst, true);
                     chatbase.sendMessage();
                     res.send({text : text});
                   }
@@ -725,48 +699,44 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                 }
               }
               if(maxFirst < global.threshold){
-                var random = Math.floor(Math.random() * (global.responseList.length - 1));
-                var text = global.responseList[random];
+                var random = Math.floor(Math.random() * (global[authorization].responseList.length - 1));
+                var text = global[authorization].responseList[random];
                 req.body.obj.created_date = new Date();
-
-                var chatbase = new Chatbase(text, req.cookies.user_id,'agent',global,'general_fallback',false);
+                var chatbase = new Chatbase(text, req.cookies.user_id, 'agent', global, 'general_fallback', false);
                 chatbase.sendMessage();
-
                 var obj = {'transaction' : req.body.obj.transaction, 'message' : {text : text}, 'user_id' : req.body.obj.user_id + '_BOT', 'created_date' : new Date(req.body.obj.created_date.getTime() + 1)};
-                instanceMongoQueries.insertOne(global.defaultAuthorizationToken,req.params.collectionName, obj, function(resp, obj){});
-                instanceMongoQueries.insertOne(global.defaultAuthorizationToken,req.params.collectionName, req.body.obj, function(resp, obj){});
+                instanceMongoQueries.insertOne(queryString.parse(req.query()).accessToken, req.params.collectionName, obj, function(resp, obj){});
+                instanceMongoQueries.insertOne(queryString.parse(req.query()).accessToken, req.params.collectionName, req.body.obj, function(resp, obj){});
                 req.body.obj.confidenceLevel = maxFirst;
                 req.body.obj.intentName = maxValueFirst;
-                instanceMongoQueries.insertOne(global.defaultAuthorizationToken,'training_messages', req.body.obj, function(resp, obj){});
-
-                var chatbase = new Chatbase(req.body.obj.message.text, req.cookies.user_id,'user',global,maxValueFirst,true);
+                instanceMongoQueries.insertOne(queryString.parse(req.query()).accessToken, 'training_messages', req.body.obj, function(resp, obj){});
+                var chatbase = new Chatbase(req.body.obj.message.text, req.cookies.user_id, 'user', global, maxValueFirst, true);
                 chatbase.sendMessage();
                 res.send({text : text});
                 return;
               }
-              instanceMongoQueries.findByQuery(global.defaultAuthorizationToken,'subject_intent_relation', {intent : maxValueFirst}, function(sResponse){
+              instanceMongoQueries.findByQuery(queryString.parse(req.query()).accessToken, 'subject_intent_relation', {intent : maxValueFirst}, function(sResponse){
                 console.log(sResponse);
                 if(sResponse.length > 0){
                   req.session.subject = sResponse[0];
-                  instanceMongoQueries.findByQuery(global.defaultAuthorizationToken,'subject', {subject : req.session.subject.subject}, function(r){
+                  instanceMongoQueries.findByQuery(queryString.parse(req.query()).accessToken, 'subject', {subject : req.session.subject.subject}, function(r){
                     console.log(r);
                     req.session.subject = r;
                   });
                 }
-                instanceMongoQueries.findByQuery(global.defaultAuthorizationToken,'answers', {'key' : maxValueFirst}, function(response){
+                instanceMongoQueries.findByQuery(queryString.parse(req.query()).accessToken, 'answers', {'key' : maxValueFirst}, function(response){
                   if(response.length > 0){
                       if(req.body.obj){
                         req.body.obj.created_date = new Date();
                         req.body.obj.confidenceLevel = maxFirst;
                         req.body.obj.intentName = maxValueFirst;
                         var obj = {'transaction' : req.body.obj.transaction, 'message' : {text : response[0].value, type : response[0].type, intent : response[0].key}, 'user_id' : req.body.obj.user_id + '_BOT', 'created_date' : new Date(req.body.obj.created_date.getTime() + 1)};
-                        instanceMongoQueries.insertOne(global.defaultAuthorizationToken,req.params.collectionName, obj, function(resp, obj){});
-                        instanceMongoQueries.insertOne(global.defaultAuthorizationToken,req.params.collectionName, req.body.obj, function(resp,obj){});
-                        var chatbase = new Chatbase(req.body.obj.message.text, req.cookies.user_id,'user',global,maxValueFirst,false);
+                        instanceMongoQueries.insertOne(queryString.parse(req.query()).accessToken, req.params.collectionName, obj, function(resp, obj){});
+                        instanceMongoQueries.insertOne(queryString.parse(req.query()).accessToken, req.params.collectionName, req.body.obj, function(resp, obj){});
+                        var chatbase = new Chatbase(req.body.obj.message.text, req.cookies.user_id, 'user', global, maxValueFirst, false);
                         chatbase.sendMessage();
-                        var chatbase = new Chatbase(''+response[0].value, req.cookies.user_id,'agent',global,maxValueFirst,false);
+                        var chatbase = new Chatbase('' + response[0].value, req.cookies.user_id, 'agent', global, maxValueFirst, false);
                         chatbase.sendMessage();
-
                         console.log(response[0].value);
                         res.send({text : response[0].value, type : response[0].type, intent : response[0].key, subject : ''});
                       }
@@ -775,122 +745,115 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                       if(req.session.subject && req.session.subject[0] && req.session.subject[0].response){
                         var random = Math.floor(Math.random() * (req.session.subject[0].response.length - 1));
                         text = req.session.subject[0].response[random];
-                        var chatbase = new Chatbase(text, req.cookies.user_id,'agent',global,req.session.subject[0].subject + '_fallback',false);
+                        var chatbase = new Chatbase(text, req.cookies.user_id, 'agent', global, req.session.subject[0].subject + '_fallback', false);
                         chatbase.sendMessage();
                       }else {
-                        var random = Math.floor(Math.random() * (global.responseList.length - 1));
-                        text = global.responseList[random];
-                        var chatbase = new Chatbase(text, req.cookies.user_id,'agent','general_fallback',false);
+
+                        var random = Math.floor(Math.random() * (global[authorization].responseList.length - 1));
+                        text = global[authorization].responseList[random];
+                        var chatbase = new Chatbase(text, req.cookies.user_id, 'agent', 'general_fallback', false);
                         chatbase.sendMessage();
                       }
                       req.body.obj.created_date = new Date();
                       var obj = {'transaction' : req.body.obj.transaction, 'message' : {text : text}, 'user_id' : req.body.obj.user_id + '_BOT', 'created_date' : new Date(req.body.obj.created_date.getTime() + 1)};
-                      instanceMongoQueries.insertOne(global.defaultAuthorizationToken,req.params.collectionName, obj, function(resp, obj){});
-
-                      instanceMongoQueries.insertOne(global.defaultAuthorizationToken,req.params.collectionName, req.body.obj, function(resp, obj){});
-
-                      instanceMongoQueries.insertOne(global.defaultAuthorizationToken,'training_messages', req.body.obj, function(resp, obj){});
-
-                      var chatbase = new Chatbase(req.body.obj.message.text, req.cookies.user_id,'user',global,maxValueFirst,true);
+                      instanceMongoQueries.insertOne(queryString.parse(req.query()).accessToken, req.params.collectionName, obj, function(resp, obj){});
+                      instanceMongoQueries.insertOne(queryString.parse(req.query()).accessToken, req.params.collectionName, req.body.obj, function(resp, obj){});
+                      instanceMongoQueries.insertOne(queryString.parse(req.query()).accessToken, 'training_messages', req.body.obj, function(resp, obj){});
+                      var chatbase = new Chatbase(req.body.obj.message.text, req.cookies.user_id, 'user', global, maxValueFirst, true);
                       chatbase.sendMessage();
-
                       res.send({text : text});
                     }
                 });
               });
             }else{
-              var random = Math.floor(Math.random() * (global.responseList.length - 1));
-              var text = global.responseList[random];
-              var chatbase = new Chatbase(text, req.cookies.user_id,'agent',global,'general_fallback',false);
+              var random = Math.floor(Math.random() * (global[authorization].responseList.length - 1));
+              var text = global[authorization].responseList[random];
+              var chatbase = new Chatbase(text, req.cookies.user_id, 'agent', global, 'general_fallback', false);
               chatbase.sendMessage();
               req.body.obj.created_date = new Date();
               var obj = {'transaction' : req.body.obj.transaction, 'message' : {text : text}, 'user_id' : req.body.obj.user_id + '_BOT', 'created_date' : new Date(req.body.obj.created_date.getTime() + 1)};
-              instanceMongoQueries.insertOne(global.defaultAuthorizationToken,req.params.collectionName, obj, function(resp, obj){});
-              instanceMongoQueries.insertOne(global.defaultAuthorizationToken,req.params.collectionName, req.body.obj, function(resp, obj){});
-              instanceMongoQueries.insertOne(global.defaultAuthorizationToken,'training_messages', req.body.obj, function(resp, obj){});
-
-              var chatbase = new Chatbase(req.body.obj.message.text, req.cookies.user_id,'user',global,maxValueFirst,true);
+              instanceMongoQueries.insertOne(queryString.parse(req.query()).accessToken, req.params.collectionName, obj, function(resp, obj){});
+              instanceMongoQueries.insertOne(queryString.parse(req.query()).accessToken, req.params.collectionName, req.body.obj, function(resp, obj){});
+              instanceMongoQueries.insertOne(queryString.parse(req.query()).accessToken, 'training_messages', req.body.obj, function(resp, obj){});
+              var chatbase = new Chatbase(req.body.obj.message.text, req.cookies.user_id, 'user', global, maxValueFirst, true);
               chatbase.sendMessage();
-
               res.send({text : text});
             }
           });
         }
       }
   });
-}catch(err){res.send({resp :err})}
-
-
+  }catch(err){res.send({resp : err})}
 });
 
 
 app.post('/view/create/carousel', cors(), function(req, res){
-  instanceMongoQueries.findByQuery(global.defaultAuthorizationToken,'answers', {'key' : req.body.intent}, function(resp){
+  instanceMongoQueries.findByQuery(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'answers', {'key' : req.body.intent}, function(resp){
       if(resp.length > 0){
-        instanceMongoQueries.updateOne(global.defaultAuthorizationToken,'answers', {'key' : req.body.intent}, {$set : {'key' : req.body.intent, 'value' : req.body.obj, 'type' : 'carousel','updatedDate' : new Date() }}, function(resp){});
+        instanceMongoQueries.updateOne(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'answers', {'key' : req.body.intent}, {$set : {'key' : req.body.intent, 'value' : req.body.obj, 'type' : 'carousel','updatedDate' : new Date()}}, function(resp){});
       }else{
-        instanceMongoQueries.insertOne(global.defaultAuthorizationToken,'answers', {'key' : req.body.intent, 'value' : req.body.obj, 'type' : 'carousel' , 'createdDate' : new Date()} , function(resp){});
+        instanceMongoQueries.insertOne(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'answers', {'key' : req.body.intent, 'value' : req.body.obj, 'type' : 'carousel' , 'createdDate' : new Date()} , function(resp){});
       }
-        res.send({ resp : 'OK'});
+        res.send({resp : 'OK'});
     });
 });
 
 app.post('/view/get/carousel', cors(), function(req, res){
-  instanceMongoQueries.findByQuery(global.defaultAuthorizationToken,'answers', {'key' : req.body.intent}, function(resp){
+  instanceMongoQueries.findByQuery(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'answers', {'key' : req.body.intent}, function(resp){
       res.send(resp[0]);
   });
 });
 
 app.post('/view/create/quickReply', cors(), function(req, res){
-  instanceMongoQueries.findByQuery(global.defaultAuthorizationToken,'answers', {'key' : req.body.intent}, function(resp){
+  instanceMongoQueries.findByQuery(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'answers', {'key' : req.body.intent}, function(resp){
       if(resp.length > 0){
-        instanceMongoQueries.updateOne(global.defaultAuthorizationToken,'answers', {'key' : req.body.intent}, {$set : {'key' : req.body.intent, 'value' : req.body.quickReply, 'type' : 'quickReply','updatedDate' : new Date()}}, function(resp){});
+        instanceMongoQueries.updateOne(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'answers', {'key' : req.body.intent}, {$set : {'key' : req.body.intent, 'value' : req.body.quickReply, 'type' : 'quickReply','updatedDate' : new Date()}}, function(resp){});
       }else{
-        instanceMongoQueries.insertOne(global.defaultAuthorizationToken,'answers', {'key' : req.body.intent, 'value' : req.body.quickReply, 'type' : 'quickReply', 'createdDate' : new Date()}, function(resp){});
+        instanceMongoQueries.insertOne(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'answers', {'key' : req.body.intent, 'value' : req.body.quickReply, 'type' : 'quickReply', 'createdDate' : new Date()}, function(resp){});
       }
-        res.send({ resp : 'OK'});
+      res.send({resp : 'OK'});
     });
 });
 
 app.post('/view/get/quickReply', cors(), function(req, res){
-  instanceMongoQueries.findByQuery(global.defaultAuthorizationToken,'answers', {'key' : req.body.intent}, function(resp){
-      res.send(resp[0]);
+  instanceMongoQueries.findByQuery(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'answers', {'key' : req.body.intent}, function(resp){
+    res.send(resp[0]);
   });
 });
 
 app.post('/view/get/emoji', cors(), function(req, res){
-  instanceMongoQueries.findByQuery(global.defaultAuthorizationToken,'answers', {'key' : req.body.intent}, function(resp){
-      res.send(resp[0]);
+  instanceMongoQueries.findByQuery(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'answers', {'key' : req.body.intent}, function(resp){
+    res.send(resp[0]);
   });
 });
 
 app.get('/mongo/emojiRelation/get', cors(), function(req, res){
-  instanceMongoQueries.findByQuery(global.defaultAuthorizationToken,'emoji_relation', {}, function(resp){
+  instanceMongoQueries.findByQuery(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'emoji_relation', {}, function(resp){
     res.send(resp);
   });
 });
 
 app.get('/mongo/emoji/get', cors(), function(req, res){
-  instanceMongoQueries.findByQuery(global.defaultAuthorizationToken,'emoji', {}, function(resp){
+  instanceMongoQueries.findByQuery(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'emoji', {}, function(resp){
     res.send(resp);
   });
 });
 
 app.delete('/delete/emoji/relation', cors(), function(req, res){
-  instanceMongoQueries.deleteOne(global.defaultAuthorizationToken,'emoji_relation', {'source.text' : req.body.text}, function(resp){
-    res.send({ resp : 'OK'});
+  instanceMongoQueries.deleteOne(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'emoji_relation', {'source.text' : req.body.text}, function(resp){
+    res.send({resp : 'OK'});
   });
 });
 
 app.post('/save/emoji/relation', cors(), function(req, res){
   //req.body.emoji , req.body.intent
-  instanceMongoQueries.findByQuery(global.defaultAuthorizationToken,'emoji_relation', {source : req.body.source}, function(resp){
+  instanceMongoQueries.findByQuery(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'emoji_relation', {source : req.body.source}, function(resp){
       if(resp.length > 0 ){
-        instanceMongoQueries.updateOne(global.defaultAuthorizationToken,'emoji_relation', {source : req.body.source}, {source : req.body.source, target : req.body.target, updatedDate : new Date()}, function(resp){
+        instanceMongoQueries.updateOne(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'emoji_relation', {source : req.body.source}, {source : req.body.source, target : req.body.target, updatedDate : new Date()}, function(resp){
           res.send(resp);
         });
       }else{
-        instanceMongoQueries.insertOne(global.defaultAuthorizationToken,'emoji_relation', {source : req.body.source, target : req.body.target ,  createdDate : new Date()}, function(resp){
+        instanceMongoQueries.insertOne(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'emoji_relation', {source : req.body.source, target : req.body.target, createdDate : new Date()}, function(resp){
           res.send(resp);
         });
       }
@@ -898,67 +861,67 @@ app.post('/save/emoji/relation', cors(), function(req, res){
 });
 
 app.post('/view/create/listTemplate', cors(), function(req, res){
-  instanceMongoQueries.findByQuery(global.defaultAuthorizationToken,'answers', {'key' : req.body.intent}, function(resp){
+  instanceMongoQueries.findByQuery(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'answers', {'key' : req.body.intent}, function(resp){
       if(resp.length > 0){
-        instanceMongoQueries.updateOne(global.defaultAuthorizationToken,'answers', {'key' : req.body.intent}, {$set : {'key' : req.body.intent, 'value' : req.body.listTemplate, 'type' : 'listTemplate', 'updatedDate' : new Date()}}, function(resp){});
+        instanceMongoQueries.updateOne(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'answers', {'key' : req.body.intent}, {$set : {'key' : req.body.intent, 'value' : req.body.listTemplate, 'type' : 'listTemplate', 'updatedDate' : new Date()}}, function(resp){});
       }else{
-        instanceMongoQueries.insertOne(global.defaultAuthorizationToken,'answers', {'key' : req.body.intent, 'value' : req.body.listTemplate, 'type' : 'listTemplate', 'createdDate' : new Date()}, function(resp){});
+        instanceMongoQueries.insertOne(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'answers', {'key' : req.body.intent, 'value' : req.body.listTemplate, 'type' : 'listTemplate', 'createdDate' : new Date()}, function(resp){});
       }
-        res.send({ resp : 'OK'});
+        res.send({resp : 'OK'});
     });
 });
 
 app.post('/view/get/listTemplate', cors(), function(req, res){
-  instanceMongoQueries.findByQuery(global.defaultAuthorizationToken,'answers', {'key' : req.body.intent}, function(resp){
+  instanceMongoQueries.findByQuery(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'answers', {'key' : req.body.intent}, function(resp){
       res.send(resp[0]);
   });
 });
 
 app.post('/view/create/genericButtons', cors(), function(req, res){
-    instanceMongoQueries.findByQuery(global.defaultAuthorizationToken,'answers', {'key' : req.body.intent}, function(resp){
+    instanceMongoQueries.findByQuery(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'answers', {'key' : req.body.intent}, function(resp){
       if(resp.length > 0){
-        instanceMongoQueries.updateOne(global.defaultAuthorizationToken,'answers', {'key' : req.body.intent}, {$set : {'key' : req.body.intent, 'value' : req.body.genericButtons, 'type' : 'genericButtons', 'updatedDate' : new Date()}}, function(resp){});
+        instanceMongoQueries.updateOne(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'answers', {'key' : req.body.intent}, {$set : {'key' : req.body.intent, 'value' : req.body.genericButtons, 'type' : 'genericButtons', 'updatedDate' : new Date()}}, function(resp){});
       }else{
-        instanceMongoQueries.insertOne(global.defaultAuthorizationToken,'answers', {'key' : req.body.intent, 'value' : req.body.genericButtons, 'type' : 'genericButtons', 'createdDate' : new Date()}, function(resp){});
+        instanceMongoQueries.insertOne(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'answers', {'key' : req.body.intent, 'value' : req.body.genericButtons, 'type' : 'genericButtons', 'createdDate' : new Date()}, function(resp){});
       }
-        res.send({ resp : 'OK'});
+        res.send({resp : 'OK'});
     });
 });
 
 app.post('/view/get/genericButtons', cors(), function(req, res){
-  instanceMongoQueries.findByQuery(global.defaultAuthorizationToken,'answers', {'key' : req.body.intent}, function(resp){
-      res.send(resp[0]);
+  instanceMongoQueries.findByQuery(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'answers', {'key' : req.body.intent}, function(resp){
+    res.send(resp[0]);
   });
 });
 
 app.post('/view/create/attachment', cors(), function(req, res){
-  instanceMongoQueries.findByQuery(global.defaultAuthorizationToken,'answers', {'key' : req.body.intent}, function(resp){
+  instanceMongoQueries.findByQuery(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'answers', {'key' : req.body.intent}, function(resp){
     if(resp.length > 0){
-      instanceMongoQueries.updateOne(global.defaultAuthorizationToken,'answers', {'key' : req.body.intent}, {$set : {'key' : req.body.intent, 'value' : req.body.attachments, 'type' : 'attachment', 'updatedDate' : new Date()}}, function(resp){});
+      instanceMongoQueries.updateOne(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'answers', {'key' : req.body.intent}, {$set : {'key' : req.body.intent, 'value' : req.body.attachments, 'type' : 'attachment', 'updatedDate' : new Date()}}, function(resp){});
     }else{
-      instanceMongoQueries.insertOne(global.defaultAuthorizationToken,'answers', {'key' : req.body.intent, 'value' : req.body.attachments, 'type' : 'attachment' , 'createdDate' : new Date()}, function(resp){});
+      instanceMongoQueries.insertOne(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'answers', {'key' : req.body.intent, 'value' : req.body.attachments, 'type' : 'attachment' , 'createdDate' : new Date()}, function(resp){});
     }
-      res.send({ resp : 'OK'});
+      res.send({resp : 'OK'});
   });
 });
 
 app.post('/view/get/attachment', cors(), function(req, res){
-  instanceMongoQueries.findByQuery(global.defaultAuthorizationToken,'answers', {'key' : req.body.intent }, function(resp){
-      res.send(resp[0]);
+  instanceMongoQueries.findByQuery(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'answers', {'key' : req.body.intent}, function(resp){
+    res.send(resp[0]);
   });
 });
 
 // angular facebook deploy get
 app.get('/facebook/get', cors(), function (req, res) {
-  instanceMongoQueries.find(global.defaultAuthorizationToken,'configuration', function(resp){
+  instanceMongoQueries.find(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'configuration', function(resp){
     res.send(resp);
-  })
+  });
 });
 
 // angular facebook deploy post
 app.post('/facebook/post', cors(), function (req, res) {
   console.log(req.body.facebookDeployment);
-  instanceMongoQueries.updateOne(global.defaultAuthorizationToken,'configuration', {}, {$set : {facebookDeployment : req.body.facebookDeployment}}, function(err, resp){
+  instanceMongoQueries.updateOne(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'configuration', {}, {$set : {facebookDeployment : req.body.facebookDeployment}}, function(err, resp){
     global.facebookDeployment = req.body.facebookDeployment;
   });
 	var facebookClass = new FaceBookClass(
@@ -966,19 +929,21 @@ app.post('/facebook/post', cors(), function (req, res) {
     req.body.facebookDeployment.appId,
     req.body.facebookDeployment.appSecret,
     req.body.facebookDeployment.accessToken,
-    req.body.facebookDeployment.verifyToken, global, instanceMongoQueries);
+    req.body.facebookDeployment.verifyToken, global, instanceMongoQueries,req.headers.authorization.split(" ")[1]);
 	facebookClass.botListen();
 	res.send({data : 'OK'});
 });
 
 app.post('/witaiDeploy/post', cors(), function (req, res) {
-  global.defaultAuthorizationToken = req.body.witDeployment;
-  instanceMongoQueries.find(global.defaultAuthorizationToken,'configuration', function(resp){
-    console.log(resp);
-    if(resp && resp.length > 0){
-      global = resp[0];
+  var value = instanceMongoQueries.distinct("platform", 'configuration',req.headers.authorization.split(" ")[1]);
+  console.log(value);
+  value.then(function(resp){
+    if(resp && resp[0]){
+      resp[0].defaultAuthorizationToken = req.body.witDeployment;
+      global[req.headers.authorization.split(" ")[1]] = resp[0];
+      instanceMongoQueries.updateOne("platform", 'configuration', {}, global, function(resp){});
     }else{
-      global = {
+      global[req.headers.authorization.split(" ")[1]] = {
         threshold : 0.7,
         responseList : [],
         persistentMenu : [],
@@ -987,21 +952,21 @@ app.post('/witaiDeploy/post', cors(), function (req, res) {
         chatbaseAppSecret : '',
         createdDate : new Date()
       }
-      instanceMongoQueries.insertOne(global.defaultAuthorizationToken,'configuration', global, function(resp){});
+      instanceMongoQueries.updateOne("platform", 'configuration',{}, global, function(resp){});
     }
-  })
+  });
   res.send({data : 'OK'});
 });
 
 app.get('/witaiDeploy/get', cors(), function (req, res) {
-  instanceMongoQueries.find(global.defaultAuthorizationToken,'configuration', function(resp){
+  instanceMongoQueries.find(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'configuration', function(resp){
     res.send(resp);
   });
 });
 
 // angular project info deploy get bunları silsek mi? sileyim ama sildikten sonra 5 dfakka mola :Dok
 app.post('/witai/delete', function(req, res){
-  instanceMongoQueries.deleteFromTrainingMessage(global.defaultAuthorizationToken,req.body.message, function(resp){
+  instanceMongoQueries.deleteFromTrainingMessage(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, req.body.message, function(resp){
     res.send(resp);
   });
 });
@@ -1013,53 +978,94 @@ app.post('/witai/validate', function(req, res){
   		expressions : [req.body.message]
     },
     headers : {
-      'Authorization' : 'Bearer ' + global.defaultAuthorizationToken,
+      'Authorization' : 'Bearer ' + (req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken),
       'Content-Type' : 'application/json'
     }
-  }
+  };
   client.post('https://api.wit.ai/entities/intent/values', wit, function(response){
-    instanceMongoQueries.deleteFromTrainingMessage(global.defaultAuthorizationToken,req.body.message, function(resp){
+    instanceMongoQueries.deleteFromTrainingMessage(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, req.body.message, function(resp){
       res.send(resp);
     });
   });
 });
 
 app.get('/change/threshold/:threshold', function(req, res){
-  global.threshold = req.params.threshold;
-  instanceMongoQueries.updateOne(global.defaultAuthorizationToken,'configuration', {}, {$set : {threshold : req.params.threshold}}, function(err, resp){
-    res.send(resp);
-  });
+  if(req.headers.authorization && global[req.headers.authorization.split(" ")[1]]){
+    global[req.headers.authorization.split(" ")[1]].threshold = req.params.threshold;
+    instanceMongoQueries.distinct("platform","configuration",req.headers.authorization.split(" ")[1].toString()).then(function(resp){
+      console.log(resp);
+      if(resp && resp[0]){
+        resp[0].threshold = req.params.threshold;
+        instanceMongoQueries.updateOne("platform", 'configuration', {}, global, function(err, respp){
+          res.send(respp);
+        });
+      }
+    });
+  }else{
+    global.threshold = req.params.threshold;
+    instanceMongoQueries.updateOne("platform", 'configuration', {}, {$set : {"threshold" : req.params.threshold}}, function(err, resp){
+      res.send(resp);
+    });
+  }
 });
 
 app.get('/get/threshold/', function(req, res){
-  instanceMongoQueries.find(global.defaultAuthorizationToken,'configuration', function(resp){
-    res.send(resp);
-  });
+  if(req.headers.authorization && global[req.headers.authorization.split(" ")[1]]){
+    instanceMongoQueries.distinct("platform", 'configuration', req.headers.authorization.split(" ")[1].toString()).then(function(resp){
+      res.send(resp);
+    });
+  }else{
+    instanceMongoQueries.distinct("platform", 'configuration','').then(function(resp){
+      res.send(resp);
+    });
+  }
 });
 
 app.get('/add/responseList/:response', function(req, res){
-  console.log(global.defaultAuthorizationToken);
-  console.log(req.params.response);
-  instanceMongoQueries.updateOne(global.defaultAuthorizationToken,'configuration', {}, {$push : {responseList : req.params.response}}, function(err, resp){
-    res.send(resp);
-  });
+  if(req.headers.authorization && global[req.headers.authorization.split(" ")[1]]){
+    global[req.headers.authorization.split(" ")[1]].responseList.push(req.params.response);
+    instanceMongoQueries.updateOne("platform", 'configuration', {}, global, function(err, respp){
+      res.send(respp);
+    });
+  }else{
+    instanceMongoQueries.updateOne('platform', 'configuration', {}, {$push : {responseList : req.params.response}}, function(err, resp){
+      res.send(resp);
+    });
+  }
 });
 
 app.delete('/delete/responseList/:response', function(req, res){
-  instanceMongoQueries.updateOne(global.defaultAuthorizationToken,'configuration', {}, {$pull : {responseList : req.params.response}}, function(err, resp){
-    res.send(resp);
-  });
+  if(req.headers.authorization && global[req.headers.authorization.split(" ")[1]]){
+    global[req.headers.authorization.split(" ")[1]].responseList.splice(global[req.headers.authorization.split(" ")[1]].responseList.indexOf(req.params.response), 1);
+    instanceMongoQueries.updateOne("platform", 'configuration', {}, global, function(err, respp){
+      res.send(respp);
+    });
+  }else{
+    instanceMongoQueries.updateOne("platform", 'configuration', {}, {$pull : {responseList : req.params.response}}, function(err, resp){
+      res.send(resp);
+    });
+  }
+});
+
+app.post('/add/persistentMenu', cors(), function(req, res){
+  if(req.headers.authorization && global[req.headers.authorization.split(" ")[1]]){
+    global[req.headers.authorization.split(" ")[1]].persistentMenu =  req.body.persistentMenuList;
+    instanceMongoQueries.updateOne("platform", 'configuration', {}, global, function(err, respp){
+      res.send(respp);
+    });
+  }else{
+    instanceMongoQueries.updateOne("platform", 'configuration', {}, {$set : {persistentMenu : req.body.persistentMenuList}}, function(err, resp){});
+  }
 });
 
 app.post('/chatbase/post', cors(), function(req, res){
-  instanceMongoQueries.updateOne(global.defaultAuthorizationToken,'configuration', {}, {$set : {chatbaseAppSecret : req.body.chatbaseDeployment}}, function(err, resp){
-    global.chatbaseAppSecret = req.body.chatbaseDeployment;
+  instanceMongoQueries.updateOne(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'configuration', {}, {$set : {chatbaseAppSecret : req.body.chatbaseDeployment}}, function(err, resp){
     res.send(resp);
   });
 });
 
 app.get('/chatbase/get', cors(), function(req, res){
-  instanceMongoQueries.find(global.defaultAuthorizationToken,'configuration', function(resp){
+  instanceMongoQueries.find(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'configuration', function(resp){
     res.send(resp);
   });
 });

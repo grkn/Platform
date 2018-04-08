@@ -18,8 +18,8 @@ var skypeClass = class SkypeClass {
 
     // Create chat connector for communicating with the Bot Framework Service
     var connector = new builder.ChatConnector({
-        appId: this.appId,
-        appPassword: this.appPassword
+        appId : this.appId,
+        appPassword : this.appPassword
     });
 
     // Listen for messages from users
@@ -27,24 +27,25 @@ var skypeClass = class SkypeClass {
 
     // Receive messages from the user and respond by echoing each message back (prefixed with 'You said:')
     var bot = new builder.UniversalBot(connector, [
-    function (session) {
-        session.send('Welcome, here you can see attachment alternatives:');
-        builder.Prompts.choice(session, 'What sample option would you like to see?', Options, {
-            maxRetries: 3
-        });
-    },
-    function (session, results) {
-        var option = results.response ? results.response.entity : Inline;
-        switch (option) {
-            case Inline:
-                return sendInline(session, './images/big-image.png', 'image/png', 'BotFrameworkLogo.png');
-            case Upload:
-                return uploadFileAndSend(session, './images/big-image.png', 'image/png', 'BotFramework.png');
-            case External:
-                var url = 'https://docs.microsoft.com/en-us/bot-framework/media/how-it-works/architecture-resize.png';
-                return sendInternetUrl(session, url, 'image/png', 'BotFrameworkOverview.png');
-        }
-    }]);
+      function (session) {
+          session.send('Welcome, here you can see attachment alternatives:');
+          builder.Prompts.choice(session, 'What sample option would you like to see?', Options, {
+              maxRetries : 3
+          });
+      },
+      function (session, results) {
+          var option = results.response ? results.response.entity : Inline;
+          switch (option) {
+              case Inline:
+                  return sendInline(session, './images/big-image.png', 'image/png', 'BotFrameworkLogo.png');
+              case Upload:
+                  return uploadFileAndSend(session, './images/big-image.png', 'image/png', 'BotFramework.png');
+              case External:
+                  var url = 'https://docs.microsoft.com/en-us/bot-framework/media/how-it-works/architecture-resize.png';
+                  return sendInternetUrl(session, url, 'image/png', 'BotFrameworkOverview.png');
+          }
+      }
+    ]);
 
     var Inline = 'Show inline attachment';
     var Upload = 'Show uploaded attachment';
@@ -57,30 +58,23 @@ var skypeClass = class SkypeClass {
             if (err) {
                 return session.send('Oops. Error reading file.');
             }
-
             var base64 = Buffer.from(data).toString('base64');
-
             var msg = new builder.Message(session)
                 .addAttachment({
-                    contentUrl: util.format('data:%s;base64,%s', contentType, base64),
-                    contentType: contentType,
-                    name: attachmentFileName
+                    contentUrl : util.format('data:%s;base64,%s', contentType, base64),
+                    contentType : contentType,
+                    name : attachmentFileName
                 });
-
             session.send(msg);
         });
     }
 
     // Uploads a file using the Connector API and sends attachment
     function uploadFileAndSend(session, filePath, contentType, attachmentFileName) {
-
-        // read file content and upload
         fs.readFile(filePath, function (err, data) {
             if (err) {
                 return session.send('Oops. Error reading file.');
             }
-
-            // Upload file data using helper function
             uploadAttachment(
                 data,
                 contentType,
@@ -90,12 +84,11 @@ var skypeClass = class SkypeClass {
                 session.message.address.serviceUrl,
                 session.message.address.conversation.id)
                 .then(function (attachmentUrl) {
-                    // Send Message with Attachment obj using returned Url
                     var msg = new builder.Message(session)
                         .addAttachment({
-                            contentUrl: attachmentUrl,
-                            contentType: contentType,
-                            name: attachmentFileName
+                            contentUrl : attachmentUrl,
+                            contentType : contentType,
+                            name : attachmentFileName
                         });
 
                     session.send(msg);
@@ -109,14 +102,13 @@ var skypeClass = class SkypeClass {
 
     // Sends attachment using an Internet url
     function sendInternetUrl(session, url, contentType, attachmentFileName) {
-    var msg = new builder.Message(session)
-        .addAttachment({
-            contentUrl: url,
-            contentType: contentType,
-            name: attachmentFileName
-        });
-
-        session.send(msg);
+      var msg = new builder.Message(session)
+          .addAttachment({
+              contentUrl : url,
+              contentType : contentType,
+              name : attachmentFileName
+          });
+          session.send(msg);
     }
 
 /* // carousel
