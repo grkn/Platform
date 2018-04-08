@@ -3,7 +3,7 @@ const Bot = require('messenger-bot');
 var Client = require('node-rest-client').Client;
 var ListTemplate = require('../views/listTemplate');
 var Carousel = require('../views/carousel');
-var QuickReply = require('../views/quickReply');
+var QuickReply = require('../views/quickreply');
 var GenericButtons = require('../views/genericButtons');
 var Attachment = require('../views/attachment');
 
