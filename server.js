@@ -422,30 +422,38 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                           }
                           if(maxFirst < global.threshold){
                             console.log("Witai threshold dusuk geldi. ai search with subject");
-                            var text = "";
-                            if(req.session.subject[0].response){
-                              var random = Math.floor(Math.random() * (req.session.subject[0].response.length - 1));
-                              text = req.session.subject[0].response[random];
-                              var chatbase = new Chatbase(text, req.cookies.user_id, 'agent', global, req.session.subject[0].subject + '_fallback', false);
+                            instanceMongoQueries.find(global[authorization].defaultAuthorizationToken, 'configuration', function(err, respp){
+                              var text = "";
+                              if(req.session.subject[0].response){
+                                var random = Math.floor(Math.random() * (req.session.subject[0].response.length - 1));
+                                text = req.session.subject[0].response[random];
+                                var chatbase = new Chatbase(text, req.cookies.user_id, 'agent', global, req.session.subject[0].subject + '_fallback', false);
+                                chatbase.sendMessage();
+                              }else {
+
+                                  if(respp && respp[0]){
+                                    var random = Math.floor(Math.random() * (respp[0].responseList.length - 1));
+                                    text = respp[0].responseList[random];
+                                    var chatbase = new Chatbase(text, req.cookies.user_id, 'agent', global, 'general_fallback', false);
+                                    chatbase.sendMessage();
+                                  }
+
+
+
+                              }
+                              req.body.obj.created_date = new Date();
+                              var obj = {'transaction' : req.body.obj.transaction, 'message' : {text : text}, 'user_id' : req.body.obj.user_id + '_BOT', 'created_date' : new Date(req.body.obj.created_date.getTime() + 1)};
+                              instanceMongoQueries.insertOne(queryString.parse(req.query()).accessToken, req.params.collectionName, obj, function(resp, obj){});
+                              instanceMongoQueries.insertOne(queryString.parse(req.query()).accessToken, req.params.collectionName, req.body.obj, function(resp, obj){});
+                              var chatbase = new Chatbase(req.body.obj.message.text, req.cookies.user_id, 'user', global, maxValueFirst, true);
                               chatbase.sendMessage();
-                            }else {
-                              var random = Math.floor(Math.random() * (global[authorization].responseList.length - 1));
-                              text = global[authorization].responseList[random];
-                              var chatbase = new Chatbase(text, req.cookies.user_id, 'agent', global, 'general_fallback', false);
-                              chatbase.sendMessage();
-                            }
-                            req.body.obj.created_date = new Date();
-                            var obj = {'transaction' : req.body.obj.transaction, 'message' : {text : text}, 'user_id' : req.body.obj.user_id + '_BOT', 'created_date' : new Date(req.body.obj.created_date.getTime() + 1)};
-                            instanceMongoQueries.insertOne(queryString.parse(req.query()).accessToken, req.params.collectionName, obj, function(resp, obj){});
-                            instanceMongoQueries.insertOne(queryString.parse(req.query()).accessToken, req.params.collectionName, req.body.obj, function(resp, obj){});
-                            var chatbase = new Chatbase(req.body.obj.message.text, req.cookies.user_id, 'user', global, maxValueFirst, true);
-                            chatbase.sendMessage();
-                            req.body.obj.confidenceLevel = maxFirst;
-                            req.body.obj.intentName = maxValueFirst;
-                            instanceMongoQueries.insertOne(queryString.parse(req.query()).accessToken, 'training_messages', req.body.obj, function(resp, obj){});
-                            console.log("Fallback basıldı");
-                            res.send({text : text});
-                            return;
+                              req.body.obj.confidenceLevel = maxFirst;
+                              req.body.obj.intentName = maxValueFirst;
+                              instanceMongoQueries.insertOne(queryString.parse(req.query()).accessToken, 'training_messages', req.body.obj, function(resp, obj){});
+                              console.log("Fallback basıldı");
+                              res.send({text : text});
+                              return;
+                            });
                           }
                           console.log("Answer tablosunda cevap var mı ?");
                           instanceMongoQueries.findByQuery(queryString.parse(req.query()).accessToken, 'answers', {'key' : maxValueFirst}, function(response){
@@ -466,6 +474,8 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                                   res.send({text : response[0].value, type : response[0].type, intent : response[0].key, subject : ''});
                                 }
                               }else{
+                              instanceMongoQueries.find(global[authorization].defaultAuthorizationToken, 'configuration', function(err, respp){
+
                                 console.log("Answer tablosunda cevap yok");
                                 var text = "";
                                 if(req.session.subject[0].response){
@@ -474,8 +484,8 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                                   var chatbase = new Chatbase(text, req.cookies.user_id, 'agent', global, req.session.subject[0].subject + '_fallback', false);
                                   chatbase.sendMessage();
                                 }else {
-                                  var random = Math.floor(Math.random() * (global[authorization].responseList.length - 1));
-                                  text = global[authorization].responseList[random];
+                                  var random = Math.floor(Math.random() * (respp[0].responseList.length - 1));
+                                  text = respp[0].responseList[random];
                                   var chatbase = new Chatbase(text, req.cookies.user_id, 'agent', global, 'general_fallback', false);
                                   chatbase.sendMessage();
                                 }
@@ -488,10 +498,14 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                                 chatbase.sendMessage();
                                 console.log("Fallback basıldı");
                                 res.send({text : text});
+                                });
                               }
-                          });
+                            });
+
                         }else{
                           console.log("Wit ai intent bulamadi.");
+                          instanceMongoQueries.find(global[authorization].defaultAuthorizationToken, 'configuration', function(err, respp){
+
                           var text = "";
                           if(req.session.subject[0].response){
                             var random = Math.floor(Math.random() * (req.session.subject[0].response.length - 1));
@@ -499,8 +513,8 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                             var chatbase = new Chatbase(text, req.cookies.user_id, 'agent', global, req.session.subject[0].subject + '_fallback', false);
                             chatbase.sendMessage();
                           }else {
-                            var random = Math.floor(Math.random() * (global[authorization].responseList.length - 1));
-                            text = global[authorization].responseList[random];
+                            var random = Math.floor(Math.random() * (resp[0].responseList.length - 1));
+                            text = resp[0].responseList[random];
                             var chatbase = new Chatbase(text, req.cookies.user_id, 'agent', global, 'general_fallback', false);
                             chatbase.sendMessage();
                           }
@@ -513,7 +527,9 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                           chatbase.sendMessage();
                           console.log("Fallback basildi.");
                           res.send({text : text});
+                        });
                         }
+
                     });
                   return;
                 }else{
@@ -551,6 +567,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                           }
                         }else{
                           console.log("Answer tablosunda cevap yok");
+                          instanceMongoQueries.find(global[authorization].defaultAuthorizationToken, 'configuration', function(err, respp){
                           var text = "";
                           if(req.session.subject[0] && req.session.subject[0].response){
                             var random = Math.floor(Math.random() * (req.session.subject[0].response.length - 1));
@@ -558,8 +575,8 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                             var chatbase = new Chatbase(text, req.cookies.user_id, 'agent', global, req.session.subject[0].subject + '_fallback', false);
                             chatbase.sendMessage();
                           }else {
-                            var random = Math.floor(Math.random() * (global[authorization].responseList.length - 1));
-                            text = global[authorization].responseList[random];
+                            var random = Math.floor(Math.random() * (respp[0].responseList.length - 1));
+                            text = respp[0].responseList[random];
                             var chatbase = new Chatbase(text, req.cookies.user_id, 'agent', global, 'general_fallback', false);
                             chatbase.sendMessage();
                           }
@@ -574,6 +591,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
 
                           instanceMongoQueries.insertOne(queryString.parse(req.query()).accessToken, 'training_messages', req.body.obj, function(resp, obj){});
                           res.send({text : text});
+                        });
                         }
                     });
                   });
@@ -599,6 +617,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                     }
                     console.log("Max Confidence : " + maxFirst);
                     if(maxFirst < global.threshold){
+                      instanceMongoQueries.find(global[authorization].defaultAuthorizationToken, 'configuration', function(err, respp){
                       var text = "";
                       if(req.session.subject[0] && req.session.subject[0].response){
                         var random = Math.floor(Math.random() * (req.session.subject[0].response.length - 1));
@@ -606,8 +625,8 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                         var chatbase = new Chatbase(text, req.cookies.user_id, 'agent', global, req.session.subject[0].subject + '_fallback', false);
                         chatbase.sendMessage();
                       }else {
-                        var random = Math.floor(Math.random() * (global[authorization].responseList.length - 1));
-                        text = global[authorization].responseList[random];
+                        var random = Math.floor(Math.random() * (respp[0].responseList.length - 1));
+                        text = respp[0].responseList[random];
                         var chatbase = new Chatbase(text, req.cookies.user_id, 'agent', global, 'general_fallback', false);
                         chatbase.sendMessage();
                       }
@@ -622,6 +641,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                       instanceMongoQueries.insertOne(queryString.parse(req.query()).accessToken, 'training_messages', req.body.obj, function(resp, obj){});
                       res.send({text : text});
                       return;
+                      });
                     }
                     instanceMongoQueries.findByQuery(queryString.parse(req.query()).accessToken, 'answers', {'key' : maxValueFirst}, function(response){
                       if(response.length > 0){
@@ -640,6 +660,8 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                             res.send({text : response[0].value, type : response[0].type, intent : response[0].key, subject : ''});
                           }
                         }else{
+                          instanceMongoQueries.find(global[authorization].defaultAuthorizationToken, 'configuration', function(err, respp){
+
                           var text = "";
                           if(req.session.subject[0] && req.session.subject[0].response){
                             var random = Math.floor(Math.random() * (req.session.subject[0].response.length - 1));
@@ -647,8 +669,8 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                             var chatbase = new Chatbase(text, req.cookies.user_id, 'agent', global, req.session.subject[0].subject + '_fallback', false);
                             chatbase.sendMessage();
                           }else {
-                            var random = Math.floor(Math.random() * (global[authorization].responseList.length - 1));
-                            text = global[authorization].responseList[random];
+                            var random = Math.floor(Math.random() * (respp[0].responseList.length - 1));
+                            text = respp[0].responseList[random];
                             var chatbase = new Chatbase(text, req.cookies.user_id, 'agent', global, 'general_fallback', false);
                             chatbase.sendMessage();
                           }
@@ -660,9 +682,12 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                           var chatbase = new Chatbase(req.body.obj.message.text, req.cookies.user_id, 'user', global, maxValueFirst, true);
                           chatbase.sendMessage();
                           res.send({text : text});
+                          });
                         }
                     });
                   }else{
+                    instanceMongoQueries.find(global[authorization].defaultAuthorizationToken, 'configuration', function(err, respp){
+
                     var text = "";
                     if(req.session.subject[0] && req.session.subject[0].response){
                       var random = Math.floor(Math.random() * (req.session.subject[0].response.length - 1));
@@ -670,8 +695,8 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                       var chatbase = new Chatbase(text, req.cookies.user_id, 'agent', global, req.session.subject[0].subject + '_fallback', false);
                       chatbase.sendMessage();
                     }else {
-                      var random = Math.floor(Math.random() * (global[authorization].responseList.length - 1));
-                      text = global[authorization].responseList[random];
+                      var random = Math.floor(Math.random() * (respp[0].responseList.length - 1));
+                      text = respp[0].responseList[random];
                       var chatbase = new Chatbase(text, req.cookies.user_id, 'agent', global, 'general_fallback', false);
                       chatbase.sendMessage();
                     }
@@ -683,6 +708,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                     var chatbase = new Chatbase(req.body.obj.message.text, req.cookies.user_id, 'user', global, maxValueFirst, true);
                     chatbase.sendMessage();
                     res.send({text : text});
+                  });
                   }
               });
             }
@@ -699,8 +725,10 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                 }
               }
               if(maxFirst < global.threshold){
-                var random = Math.floor(Math.random() * (global[authorization].responseList.length - 1));
-                var text = global[authorization].responseList[random];
+                instanceMongoQueries.find(global[authorization].defaultAuthorizationToken, 'configuration', function(err, respp){
+
+                var random = Math.floor(Math.random() * (respp[0].responseList.length - 1));
+                var text = respp[0].responseList[random];
                 req.body.obj.created_date = new Date();
                 var chatbase = new Chatbase(text, req.cookies.user_id, 'agent', global, 'general_fallback', false);
                 chatbase.sendMessage();
@@ -714,6 +742,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                 chatbase.sendMessage();
                 res.send({text : text});
                 return;
+              });
               }
               instanceMongoQueries.findByQuery(queryString.parse(req.query()).accessToken, 'subject_intent_relation', {intent : maxValueFirst}, function(sResponse){
                 console.log(sResponse);
@@ -741,6 +770,8 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                         res.send({text : response[0].value, type : response[0].type, intent : response[0].key, subject : ''});
                       }
                     }else{
+                      instanceMongoQueries.find(global[authorization].defaultAuthorizationToken, 'configuration', function(err, respp){
+
                       var text = "";
                       if(req.session.subject && req.session.subject[0] && req.session.subject[0].response){
                         var random = Math.floor(Math.random() * (req.session.subject[0].response.length - 1));
@@ -749,8 +780,8 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                         chatbase.sendMessage();
                       }else {
 
-                        var random = Math.floor(Math.random() * (global[authorization].responseList.length - 1));
-                        text = global[authorization].responseList[random];
+                        var random = Math.floor(Math.random() * (respp[0].responseList.length - 1));
+                        text = respp[0].responseList[random];
                         var chatbase = new Chatbase(text, req.cookies.user_id, 'agent', 'general_fallback', false);
                         chatbase.sendMessage();
                       }
@@ -762,12 +793,15 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                       var chatbase = new Chatbase(req.body.obj.message.text, req.cookies.user_id, 'user', global, maxValueFirst, true);
                       chatbase.sendMessage();
                       res.send({text : text});
+                    });
                     }
                 });
               });
             }else{
-              var random = Math.floor(Math.random() * (global[authorization].responseList.length - 1));
-              var text = global[authorization].responseList[random];
+              instanceMongoQueries.find(global[authorization].defaultAuthorizationToken, 'configuration', function(err, respp){
+
+              var random = Math.floor(Math.random() * (respp[0].responseList.length - 1));
+              var text = respp[0].responseList[random];
               var chatbase = new Chatbase(text, req.cookies.user_id, 'agent', global, 'general_fallback', false);
               chatbase.sendMessage();
               req.body.obj.created_date = new Date();
@@ -778,6 +812,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
               var chatbase = new Chatbase(req.body.obj.message.text, req.cookies.user_id, 'user', global, maxValueFirst, true);
               chatbase.sendMessage();
               res.send({text : text});
+            });
             }
           });
         }
