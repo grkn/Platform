@@ -1029,8 +1029,11 @@ app.get('/get/threshold/', function(req, res){
   }
 });
 
+
+
 app.get('/add/responseList/:response', function(req, res){
   if(req.headers.authorization && global[req.headers.authorization.split(" ")[1]]){
+    global[req.headers.authorization.split(" ")[1]].responseList.push(req.params.response);
     instanceMongoQueries.updateOne(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'configuration', {}, {$push : {"responseList" :  req.params.response} }, function(err, respp){
       res.send(respp);
     });
@@ -1039,6 +1042,7 @@ app.get('/add/responseList/:response', function(req, res){
 
 app.delete('/delete/responseList/:response', function(req, res){
   if(req.headers.authorization && global[req.headers.authorization.split(" ")[1]]){
+    global[req.headers.authorization.split(" ")[1]].responseList.push(global[req.headers.authorization.split(" ")[1]].responseList.indexOf(req.params.response),1);
     instanceMongoQueries.updateOne(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'configuration', {}, {$pull : {"responseList" : req.params.response}}, function(err, respp){
       res.send(respp);
     });
