@@ -120,7 +120,7 @@ app.post('/mongo/findByQuery/:collectionName', function(req, res){
 });
 
 app.post('/mongo/findByQueryForMessages', function(req, res){
-  instanceMongoQueries.findByQuerySort(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'messages', req.body.query, function(result){
+  instanceMongoQueries.findByQuerySort(global[req.params.authorization].defaultAuthorizationToken, 'messages', req.body.query, function(result){
     res.send(result);
   });
 });
@@ -1024,6 +1024,10 @@ app.get('/change/threshold/:threshold', function(req, res){
 app.get('/get/threshold/', function(req, res){
   if(req.headers.authorization && global[req.headers.authorization.split(" ")[1]]){
     instanceMongoQueries.find(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'configuration',function(resp){
+      res.send(resp);
+    });
+  }else{
+    instanceMongoQueries.find(global[req.params.authorization].defaultAuthorizationToken , 'configuration',function(resp){
       res.send(resp);
     });
   }

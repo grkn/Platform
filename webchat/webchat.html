@@ -50,7 +50,7 @@
 				},
 				load : function(){
 					var request = $.ajax({
-						url : "/get/threshold/",
+						url : "/get/threshold?authorization="+get("authorization"),
 						method : "GET",
 						data : {},
 						dataType : "json"
@@ -229,7 +229,7 @@
 			var load = {
 				load : function(){
 					var request = $.ajax({
-						url : "/mongo/findByQueryForMessages/",
+						url : "/mongo/findByQueryForMessages?authorization="+get("authorization"),
 						method : "POST",
 						data : {
 							query : {user_id : {$regex: getCookie("user_id")}}
