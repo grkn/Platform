@@ -2,77 +2,77 @@ var mongoQueries = class MongoQueries {
   constructor(db){
     this.db = db;
   }
-  createCollection(dbName,collectionName, callback){
+  createCollection(dbName, collectionName, callback){
     this.db.db(dbName).createCollection(collectionName, function(err, res) {
       if (err) throw err;
       callback(res, err);
     });
   }
-  insertMany(dbName,collectionName, obj, callback){
+  insertMany(dbName, collectionName, obj, callback){
     this.db.db(dbName).collection(collectionName).insertMany(obj, function(err, res) {
       if (err) throw err;
       callback({res : 'OK'}, obj);
     });
   }
-  insertOne(dbName,collectionName, obj, callback){
+  insertOne(dbName, collectionName, obj, callback){
     this.db.db(dbName).collection(collectionName).insertOne(obj, function(err, res) {
       if (err) throw err;
       callback({res : 'OK'}, obj);
     });
   }
-  find(dbName,collectionName, callback){
+  find(dbName, collectionName, callback){
     this.db.db(dbName).collection(collectionName).find({}).toArray(function(err, res) {
      if (err) throw err;
-      callback(res);
+     callback(res);
     });
   }
-  findWithLimit(dbName,collectionName, callback){
+  findWithLimit(dbName, collectionName, callback){
     this.db.db(dbName).collection(collectionName).find({}).limit(10).toArray(function(err, res) {
      if (err) throw err;
-      callback(res);
+     callback(res);
     });
   }
-  findByQuery(dbName,collectionName, query, callback){
+  findByQuery(dbName, collectionName, query, callback){
     this.db.db(dbName).collection(collectionName).find(query).toArray(function(err, res) {
      if (err) throw err;
-      callback(res);
+     callback(res);
     });
   }
-  findByQuerySort(dbName,collectionName, query, callback){
+  findByQuerySort(dbName, collectionName, query, callback){
     this.db.db(dbName).collection(collectionName).find(query).sort({'created_date' : -1}).limit(100).toArray(function(err, res) {
      if (err) throw err;
-      callback(res);
+     callback(res);
     });
   }
-  deleteCollection(dbName,collectionName){
-      this.db.db(dbName).collection(collectionName).drop();
+  deleteCollection(dbName, collectionName){
+    this.db.db(dbName).collection(collectionName).drop();
   }
-  deleteFromTrainingMessage(dbName,message, callback){
+  deleteFromTrainingMessage(dbName, message, callback){
     var myquery = {'message' : {'text' : message}};
-      this.db.db(dbName).collection('training_messages').deleteMany(myquery, function(err, obj) {
-    if (err) throw err;
+    this.db.db(dbName).collection('training_messages').deleteMany(myquery, function(err, obj) {
+      if (err) throw err;
       callback(obj);
     });
   }
-  deleteOne(dbName,collectionName,query, callback){
+  deleteOne(dbName, collectionName, query, callback){
     this.db.db(dbName).collection(collectionName).deleteOne(query, function(err, obj) {
       if (err) throw err;
       callback(obj);
     });
   }
-  deleteMany(dbName,collectionName,query, callback){
+  deleteMany(dbName, collectionName, query, callback){
     this.db.db(dbName).collection(collectionName).deleteMany(query, function(err, obj) {
       if (err) throw err;
       callback(obj);
     });
   }
-  updateOne(dbName,collectionName, query, newValues, callback){
+  updateOne(dbName, collectionName, query, newValues, callback){
     this.db.db(dbName).collection(collectionName).update(query, newValues, function(err, res) {
      if (err) throw err;
       callback(res);
     });
   }
-  distinct(dbName,collectionName,key){
+  distinct(dbName, collectionName, key){
     return this.db.db(dbName).collection(collectionName).distinct(key);
   }
 }
