@@ -153,6 +153,8 @@
 										}else{
 											buttons += '<div><a target="_blank" href="' + obj.text.list[i].buttons[j].url + '" type="button" class="listbtn btn">' + obj.text.list[i].buttons[j].name + '</a></div>'
 										}
+									}else if(obj.text.list[i].buttons[j].text){
+										buttons += '<div><a target="_blank" onclick="buttonWrite(\'' + obj.text.list[i].buttons[j].text + '\')" type="button" class="listbtn btn">' + obj.text.list[i].buttons[j].name + '</a></div>'
 									}
 								}
 								listTemplate += buttons;
