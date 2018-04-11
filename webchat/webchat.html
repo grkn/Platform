@@ -272,7 +272,7 @@
 								}
 							}
 						}
-						$('html, body').animate({ scrollTop: ($('html, body').height() +1000)});
+						setTimeout(function(){$('html, body').animate({ scrollTop: $('html, body').height()})},500)
 					});
 					request.fail(function( jqXHR, textStatus ) {
 						alert( "Request failed: " + textStatus );
@@ -297,7 +297,7 @@
 				load.load();
 				//Key press enter after writing message triggers this function
 				$("#container").on("shown.bs.collapse", function(){
-			  	$('html, body').animate({ scrollTop: ($('html, body').height() +1000)});
+			  	setTimeout(function(){$('html, body').animate({ scrollTop: $('html, body').height()})},500)
 			  });
 			});
 		</script>
@@ -345,7 +345,7 @@
 								//user write
 								var el = event.target.innerHTML;
 								$('#container .main-ul').append('<li class="user"><div class="text"><span>' + el + '</span></div><br/></li>');
-								$('html, body').animate({ scrollTop: ($('html, body').height() +1000)});
+								$('html, body').animate({ scrollTop: $('html, body').height()});
 								var text = "";
 
 								if(el.match(/(<img\s[^>]*?src\s*=\s*['\"]([^'\"]*?)['\"][^>]*?>)/g) && el.match(/(<img\s[^>]*?src\s*=\s*['\"]([^'\"]*?)['\"][^>]*?>)/g).length <= 1){
@@ -392,7 +392,7 @@
 											else{
 												$('#container .main-ul').append('<li class="bot"><div class="text"><span>' + msg.text + '</span></div><br/></li>');
 											}
-											$('html, body').animate({ scrollTop: ($('html, body').height() +1000)});
+											$('html, body').animate({ scrollTop: $('html, body').height()});
 								});
 								request.fail(function( jqXHR, textStatus) {
 								  alert("Request failed : " + textStatus);
