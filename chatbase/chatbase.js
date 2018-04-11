@@ -2,7 +2,7 @@ var Client = require('node-rest-client').Client;
 var client = new Client();
 
 var chatbase = class Chatbase {
-  constructor(message, user_id, type, global, intent, handled){
+  constructor(message, user_id, type, secret, intent, handled){
     this.message = message;
     this.user_id = user_id;
     this.type = type;
@@ -10,7 +10,7 @@ var chatbase = class Chatbase {
     this.handled = handled;
     this.body = {
       data : {
-        "api_key" : global.chatbaseAppSecret,
+        "api_key" : secret,
         "type" : this.type,
         "platform" : "chatbotpanel",
         "message" : this.message,
