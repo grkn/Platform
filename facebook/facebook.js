@@ -53,12 +53,12 @@ var facebookclass = class FacebookBotClass {
 		this.bot.on('message', (payload, reply) => {
 			this.botPrepareResponse(payload,reply,subjectArray)
 		});
-		var privateKey = fs.readFileSync( 'privatekey.pem' );
-		var certificate = fs.readFileSync( 'certificate.pem' );
+		var privateKey = fs.readFileSync( 'private.pem' );
+		var certificate = fs.readFileSync( 'cert.pem' );
 		https.createServer({
 		    key: privateKey,
 		    cert: certificate
-		}, this.bot.middleware()).listen(8081);		
+		}, this.bot.middleware()).listen(8081);
 	}
 
 	botPrepareResponse(payload,reply,subjectArray){
