@@ -1,4 +1,5 @@
 const http = require('http');
+const https = require('https');
 const Bot = require('messenger-bot');
 var Client = require('node-rest-client').Client;
 var ListTemplate = require('../views/listTemplate');
@@ -6,7 +7,7 @@ var Carousel = require('../views/carousel');
 var QuickReply = require('../views/quickreply');
 var GenericButtons = require('../views/genericButtons');
 var Attachment = require('../views/attachment');
-
+var fs = require('fs');
 var client = new Client();
 
 
@@ -53,11 +54,12 @@ var facebookclass = class FacebookBotClass {
 		this.bot.on('message', (payload, reply) => {
 			this.botPrepareResponse(payload,reply,subjectArray)
 		});
-		var privateKey = fs.readFileSync( 'private.pem' );
-		var certificate = fs.readFileSync( 'cert.pem' );
+		var privateKey = fs.readFileSync( 'private.pem' ,'utf8');
+		var certificate = fs.readFileSync( 'cert.pem' ,'utf8');
 		https.createServer({
 		    key: privateKey,
-		    cert: certificate
+		    cert: certificate,
+				passphrase: 'ta78ta'
 		}, this.bot.middleware()).listen(8081);
 	}
 
