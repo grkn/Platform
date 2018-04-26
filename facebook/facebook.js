@@ -54,8 +54,8 @@ var facebookclass = class FacebookBotClass {
 		this.bot.on('message', (payload, reply) => {
 			this.botPrepareResponse(payload,reply,subjectArray)
 		});
-		var privateKey = fs.readFileSync( 'private.pem' ,'utf8');
-		var certificate = fs.readFileSync( 'cert.pem' ,'utf8');
+		var privateKey = fs.readFileSync('private.pem', 'utf8');
+		var certificate = fs.readFileSync('cert.pem', 'utf8');
 		https.createServer({
 		    key: privateKey,
 		    cert: certificate,
@@ -63,7 +63,7 @@ var facebookclass = class FacebookBotClass {
 		}, this.bot.middleware()).listen(8081);
 	}
 
-	botPrepareResponse(payload,reply,subjectArray){
+	botPrepareResponse(payload, reply, subjectArray){
 		console.log(payload);
 
 		/*var dialog = {
