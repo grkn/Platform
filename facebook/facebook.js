@@ -16,9 +16,9 @@ var facebookclass = class FacebookBotClass {
 
 	constructor(pageId, appId, appSecret, pageToken, verifyToken, globals, instanceMongoQueries,authorization) {
       this.bot  = new Bot({
+										app_secret : appSecret,
 									  token : pageToken,
-									  verify : verifyToken,
-									  app_secret : appSecret
+									  verify : verifyToken
 									});
 			this.token = pageToken;
 			this.authorization = authorization;
@@ -48,18 +48,17 @@ var facebookclass = class FacebookBotClass {
 		})
 		var subjectArray = {};
 		this.bot.on('postback', (payload, reply, actions) => {
-  		this.botPrepareResponse(payload,reply,subjectArray)
+  		this.botPrepareResponse(payload, reply, subjectArray)
 		});
 
 		this.bot.on('message', (payload, reply) => {
-			this.botPrepareResponse(payload,reply,subjectArray)
+			this.botPrepareResponse(payload, reply, subjectArray)
 		});
 		var privateKey = fs.readFileSync('private.pem', 'utf8');
 		var certificate = fs.readFileSync('cert.pem', 'utf8');
 		https.createServer({
 		    key: privateKey,
-		    cert: certificate,
-				passphrase: 'ta78ta'
+		    cert: certificate
 		}, this.bot.middleware()).listen(8081);
 	}
 
