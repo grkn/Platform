@@ -58,7 +58,12 @@ var facebookclass = class FacebookBotClass {
 		var certificate = fs.readFileSync('cert.pem', 'utf8');
 		https.createServer({
 		    key: privateKey,
-		    cert: certificate
+		    cert: certificate,
+				ca : [
+					fs.readFileSync('bundle1.pem', 'utf8'),
+					fs.readFileSync('bundle2.pem', 'utf8'),
+					fs.readFileSync('bundle3.pem', 'utf8'),
+				]
 		}, this.bot.middleware()).listen(8081);
 	}
 
