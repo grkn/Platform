@@ -1,5 +1,6 @@
 const http = require('http');
 const https = require('https');
+var express = require('express');
 const Bot = require('messenger-bot');
 var Client = require('node-rest-client').Client;
 var ListTemplate = require('../views/listTemplate');
@@ -9,67 +10,184 @@ var GenericButtons = require('../views/genericButtons');
 var Attachment = require('../views/attachment');
 var fs = require('fs');
 var client = new Client();
+const url = require('url')
+const qs = require('querystring')
+const request = require('request')
+const crypto = require('crypto')
 
 
 'use strict'
 var facebookclass = class FacebookBotClass {
 
-	constructor(pageId, appId, appSecret, pageToken, verifyToken, globals, instanceMongoQueries,authorization) {
-      this.bot  = new Bot({
-										app_secret : appSecret,
-									  token : pageToken,
-									  verify : verifyToken
-									});
-			this.token = pageToken;
-			this.authorization = authorization;
-			this.global = globals;
-			console.log(globals);
-			this.instanceMongoQueries = instanceMongoQueries;
-			if(this.global.persistentMenu){
-				var array = [];
-				for(var i = 0; i < this.global.persistentMenu.length; i++){
-					if(this.global.persistentMenu[i].text.indexOf('http') != -1){
-						array.push({title : this.global.persistentMenu[i].name, type : 'web_url', url : this.global.persistentMenu[i].text, 'webview_height_ratio' : 'full'});
-					}else{
-						array.push({title : this.global.persistentMenu[i].text, type : 'postback', payload : this.global.persistentMenu[i].text});
-					}
-				}
-				//persistent menu
-				this.bot.setPersistentMenu (array, function(dt){
-					console.log(dt);
-				});
-			}
-  }
-
-	botListen(){
-		this.setWhitelist( ['https://b050986c.eu.ngrok.io']);
-		this.bot.on('error', (err) => {
-		  console.log(err.message)
-		})
-		var subjectArray = {};
-		this.bot.on('postback', (payload, reply, actions) => {
-  		this.botPrepareResponse(payload, reply, subjectArray)
-		});
-
-		this.bot.on('message', (payload, reply) => {
-			this.botPrepareResponse(payload, reply, subjectArray)
-		});
-		var privateKey = fs.readFileSync('private.pem', 'utf8');
-		var certificate = fs.readFileSync('cert.pem', 'utf8');
-		https.createServer({
-		    key: privateKey,
-		    cert: certificate,
-				ca : [
-					fs.readFileSync('bundle1.pem', 'utf8'),
-					fs.readFileSync('bundle2.pem', 'utf8'),
-					fs.readFileSync('bundle3.pem', 'utf8'),
-				]
-		}, this.bot.middleware()).listen(8081);
+	constructor(){
+		if(!this.configuration){
+			this.configuration = {};
+		}
 	}
 
-	botPrepareResponse(payload, reply, subjectArray){
-		console.log(payload);
+	setWebhook(webhook){
+		this.webhook = webhook;
+		this.configuration[this.webhook] = {};
+	}
 
+	setVerifyToken(verifyToken){
+		this.configuration[this.webhook].verifyToken = verifyToken;
+	}
+
+	setAppSecret(appSecret){
+		this.configuration[this.webhook].appSecret = appSecret;
+	}
+
+	setToken(pageToken){
+		this.configuration[this.webhook].token = pageToken;
+	}
+
+	setGlobal(gl){
+		this.configuration[this.webhook].global = gl;
+	}
+
+	setInstanceMongoQueries(instanceMongoQueries){
+		this.instanceMongoQueries = instanceMongoQueries;
+	}
+
+	setAuthorization(authorization){
+		this.authorization = authorization;
+	}
+
+	// constructor(pageId, appId, appSecret, pageToken, verifyToken, globals, instanceMongoQueries,authorization) {
+	//
+	// 		this.token = pageToken;
+	// 		this.authorization = authorization;
+	// 		this.global = globals;
+	// 		this.verifyToken = verifyToken;
+	// 		this.pageToken = pageToken;
+	// 		this.app_secret : appSecret;
+	//
+	// 		console.log(globals);
+	// 		this.instanceMongoQueries = instanceMongoQueries;
+	// 		// if(this.global.persistentMenu){
+	// 		// 	var array = [];
+	// 		// 	for(var i = 0; i < this.global.persistentMenu.length; i++){
+	// 		// 		if(this.global.persistentMenu[i].text.indexOf('http') != -1){
+	// 		// 			array.push({title : this.global.persistentMenu[i].name, type : 'web_url', url : this.global.persistentMenu[i].text, 'webview_height_ratio' : 'full'});
+	// 		// 		}else{
+	// 		// 			array.push({title : this.global.persistentMenu[i].text, type : 'postback', payload : this.global.persistentMenu[i].text});
+	// 		// 		}
+	// 		// 	}
+	// 		// 	//persistent menu
+	// 		// 	this.bot.setPersistentMenu (array, function(dt){
+	// 		// 		console.log(dt);
+	// 		// 	});
+	// 		// }
+  // }
+
+	sendMessage (recipient, payload, cb) {
+		if (!cb) cb = Function.prototype;
+
+		request({
+			method : 'POST',
+			uri : 'https://graph.facebook.com/v2.6/me/messages',
+			qs : {
+				access_token: this.configuration[this.webhook].token
+			},
+			json : {
+				recipient : { id : recipient },
+				message : payload
+			}
+		}, (err, res, body) => {
+			if (err) return cb(err)
+			if (body.error) return cb(body.error)
+
+			cb(null, body)
+		})
+	}
+
+
+	botListen(){
+		var subjectArray = {};
+		// this.setWhitelist( ['https://b050986c.eu.ngrok.io']);
+		// this.bot.on('error', (err) => {
+		//   console.log(err.message)
+		// })
+		//
+		// this.bot.on('postback', (payload, reply, actions, path) => {
+  	// 	this.botPrepareResponse(payload, reply, subjectArray,path)
+		// });
+		//
+		// this.bot.on('message', (payload, reply,actions, path) => {
+		// 	this.botPrepareResponse(payload, reply, subjectArray,path)
+		// });
+		// var privateKey = fs.readFileSync('private.pem', 'utf8');
+		// var certificate = fs.readFileSync('cert.pem', 'utf8');
+		// https.createServer({
+		//     key: privateKey,
+		//     cert: certificate,
+		// 		ca : [
+		// 			fs.readFileSync('bundle1.pem', 'utf8'),
+		// 			fs.readFileSync('bundle2.pem', 'utf8'),
+		// 			fs.readFileSync('bundle3.pem', 'utf8'),
+		// 		]
+		// }, this.bot.middleware()).listen(8081);
+		var botPrepareResponse = this.botPrepareResponse;
+		var _this = this;
+		http.createServer(function (req, res) {
+				res.writeHead(200, { 'Content-Type' : 'application/json' })
+				console.log(req.url)
+	      if (req.url === '/_status') return res.end(JSON.stringify({status : 'OK'}))
+	      if (_this.configuration[_this.webhook].verifyToken && req.method === 'GET') {
+					let query = qs.parse(url.parse(req.url).query);
+
+			    if (query['hub.verify_token'] === _this.configuration[_this.webhook].verifyToken) {
+			      res.end(query['hub.challenge']);
+			    }
+
+			    res.end('Error, wrong validation token');
+				}
+				let path = req.path();
+				let body = '';
+
+	      req.on('data', (chunk) => {
+	        body += chunk
+	      })
+
+	      req.on('end', () => {
+	        // check message integrity
+	        if (_this.appSecret) {
+	          let hmac = crypto.createHmac('sha1', _this.configuration[_this.webhook].appSecret);
+	          hmac.update(body);
+
+	          if (req.headers['x-hub-signature'] !== `sha1=${hmac.digest('hex')}`) {
+	            return res.end(JSON.stringify({status : 'not ok', error : 'Message integrity check failed'}))
+	          }
+	        }
+
+	        let entries = JSON.parse(body).entry;
+
+			    entries.forEach((entry) => {
+			      let events = entry.messaging;
+			      events.forEach((event) => {
+			        // handle inbound messages and echos
+			        if (event.message) {
+			          if (event.message.is_echo) {
+			          } else {
+			           botPrepareResponse(event, subjectArray, path, _this)
+			          }
+			        }
+			        // handle postbacks
+			        if (event.postback) {
+			           botPrepareResponse(event, subjectArray, path, _this)
+			        }
+			      })
+			    })
+	        res.end(JSON.stringify({status : 'OK'}))
+	      })
+			  res.end();
+		}).listen(8081);
+	}
+
+	botPrepareResponse(payload, subjectArray, path, _this){
+
+	console.log(payload);
 		/*var dialog = {
 			data : {
 								'contexts': [
@@ -91,11 +209,12 @@ var facebookclass = class FacebookBotClass {
 			console.log(response);
 			let text = response.result.fulfillment.speech;
 			console.log(text);
-			reply({text}, function(err){
+			this.sendMessage(payload.sender.id,{text}, function(err){
 					console.log(err);
 			});
 		});*/
-		var globals = this.global;
+		var globals = _this.configuration[_this.webhook].global;
+		console.log(this);
 		var wit = {
 			data : {
 				parameters : {}
@@ -106,15 +225,14 @@ var facebookclass = class FacebookBotClass {
 			}
 		};
 
-		var instanceMongoQueries = this.instanceMongoQueries;
+		var instanceMongoQueries = _this.instanceMongoQueries;
 
-
-		var bot = this.bot;
-		var listTemplateFunc = this.listtemplate;
-		var carouselTemplateFunc = this.carousel;
-		var quickReplyFunc = this.quickReply;
-		var buttonGenericsFunc = this.buttonGenerics;
-		var attachmentFunc = this.attachment;
+		var bot = _this.bot;
+		var listTemplateFunc = _this.listtemplate;
+		var carouselTemplateFunc = _this.carousel;
+		var quickReplyFunc = _this.quickReply;
+		var buttonGenericsFunc = _this.buttonGenerics;
+		var attachmentFunc = _this.attachment;
 		var searchedItem = "";
 		if(payload.message){
 				if(payload.message.quick_reply){
@@ -122,7 +240,6 @@ var facebookclass = class FacebookBotClass {
 				}else{
 						searchedItem = payload.message.text;
 				}
-
 		}else{
 				searchedItem = payload.postback.payload;
 		}
@@ -162,7 +279,7 @@ var facebookclass = class FacebookBotClass {
 													objUser.confidenceLevel = maxFirst;
 													objUser.intentName = maxValueFirst;
 													instanceMongoQueries.insertOne(globals.defaultAuthorizationToken, 'training_messages', objUser, function(resp, obj){});
-													reply({text}, function(err){
+													_this.sendMessage(payload.sender.id,{text}, function(err){
 														 console.log(err);
 													});
 													return;
@@ -177,32 +294,32 @@ var facebookclass = class FacebookBotClass {
 															var total = {text : response[0].value, type : response[0].type, intent : response[0].key};
 															if(total.type == 'listTemplate'){
 																var listTemplate = new ListTemplate(total.text);
-																bot.sendMessage(payload.sender.id, listTemplateFunc(listTemplate.createListTemplate()), function(resp){
+																_this.sendMessage(payload.sender.id, listTemplateFunc(listTemplate.createListTemplate()), function(resp){
 																	console.log(resp);
 																});
 															}else if (total.type == 'carousel'){
 																	var carousel = new Carousel(total.text);
-																	bot.sendMessage(payload.sender.id, carouselTemplateFunc(carousel.createListCarousel()), function(resp){
+																	_this.sendMessage(payload.sender.id, carouselTemplateFunc(carousel.createListCarousel()), function(resp){
 																		console.log(resp);
 																	});
 															}else if (total.type == 'quickReply'){
 																	var quickReply = new QuickReply(total.text);
-																	bot.sendMessage(payload.sender.id, quickReplyFunc(quickReply.createListQuickReply()), function(resp){
+																	_this.sendMessage(payload.sender.id, quickReplyFunc(quickReply.createListQuickReply()), function(resp){
 																		console.log(resp);
 																	});
 															}else if (total.type == 'genericButtons'){
 																	var genericButtons = new GenericButtons(total.text);
-																	bot.sendMessage(payload.sender.id, buttonGenericsFunc(genericButtons.createGenericButtons()), function(resp){
+																	_this.sendMessage(payload.sender.id, buttonGenericsFunc(genericButtons.createGenericButtons()), function(resp){
 																		console.log(resp);
 																	});
 															}else if (total.type == 'attachment'){
 																	var attachment = new Attachment(total.text);
-																	bot.sendMessage(payload.sender.id, attachmentFunc(attachment.createAttachment()), function(resp){
+																	_this.sendMessage(payload.sender.id, attachmentFunc(attachment.createAttachment()), function(resp){
 																		console.log(resp);
 																	});
 															}else{
 																var text = total.text;
-																reply({text}, function(err){
+																_this.sendMessage(payload.sender.id,{text}, function(err){
 																		console.log(err);
 																});
 															}
@@ -217,7 +334,7 @@ var facebookclass = class FacebookBotClass {
 															objUser.confidenceLevel = maxFirst;
 															objUser.intentName = maxValueFirst;
 															instanceMongoQueries.insertOne(globals.defaultAuthorizationToken, 'training_messages', objUser, function(resp, obj){});
-															reply({text}, function(err){
+															_this.sendMessage(payload.sender.id,{text}, function(err){
 																 console.log(err);
 															});
 														}
@@ -233,7 +350,7 @@ var facebookclass = class FacebookBotClass {
 												objUser.confidenceLevel = maxFirst;
 												objUser.intentName = maxValueFirst;
 												instanceMongoQueries.insertOne(globals.defaultAuthorizationToken, 'training_messages', objUser, function(resp, obj){});
-												reply({text}, function(err){
+												_this.sendMessage(payload.sender.id,{text}, function(err){
 													 console.log(err);
 												});
 											}
@@ -254,32 +371,32 @@ var facebookclass = class FacebookBotClass {
 												var total = {text : response[0].value, type : response[0].type, intent : response[0].key};
 												if(total.type == 'listTemplate'){
 													var listTemplate = new ListTemplate(total.text);
-													bot.sendMessage(payload.sender.id, listTemplateFunc(listTemplate.createListTemplate()), function(resp){
+													_this.sendMessage(payload.sender.id, listTemplateFunc(listTemplate.createListTemplate()), function(resp){
 														console.log(resp);
 													});
 												}else if (total.type == 'carousel'){
 														var carousel = new Carousel(total.text);
-														bot.sendMessage(payload.sender.id, carouselTemplateFunc(carousel.createListCarousel()), function(resp){
+														_this.sendMessage(payload.sender.id, carouselTemplateFunc(carousel.createListCarousel()), function(resp){
 															console.log(resp);
 														});
 												}else if (total.type == 'quickReply'){
 														var quickReply = new QuickReply(total.text);
-														bot.sendMessage(payload.sender.id, quickReplyFunc(quickReply.createListQuickReply()), function(resp){
+														_this.sendMessage(payload.sender.id, quickReplyFunc(quickReply.createListQuickReply()), function(resp){
 															console.log(resp);
 														});
 												}else if (total.type == 'genericButtons'){
 														var genericButtons = new GenericButtons(total.text);
-														bot.sendMessage(payload.sender.id, buttonGenericsFunc(genericButtons.createGenericButtons()), function(resp){
+														_this.sendMessage(payload.sender.id, buttonGenericsFunc(genericButtons.createGenericButtons()), function(resp){
 															console.log(resp);
 														});
 												}else if (total.type == 'attachment'){
 														var attachment = new Attachment(total.text);
-														bot.sendMessage(payload.sender.id, attachmentFunc(attachment.createAttachment()), function(resp){
+														_this.sendMessage(payload.sender.id, attachmentFunc(attachment.createAttachment()), function(resp){
 															console.log(resp);
 														});
 												}else{
 													var text = total.text;
-													reply({text}, function(err){
+													_this.sendMessage(payload.sender.id, {text}, function(err){
 															console.log(err);
 													});
 												}
@@ -294,7 +411,7 @@ var facebookclass = class FacebookBotClass {
 												objUser.confidenceLevel = maxFirst;
 												objUser.intentName = maxValueFirst;
 												instanceMongoQueries.insertOne(globals.defaultAuthorizationToken, globals.defaultAuthorizationToken, 'training_messages', objUser, function(resp, obj){});
-												reply({text}, function(err){
+												_this.sendMessage(payload.sender.id,{text}, function(err){
 													 console.log(err);
 												});
 											}
@@ -323,7 +440,7 @@ var facebookclass = class FacebookBotClass {
 										objUser.confidenceLevel = maxFirst;
 										objUser.intentName = maxValueFirst;
 										instanceMongoQueries.insertOne(globals.defaultAuthorizationToken, 'training_messages', objUser, function(resp, obj){});
-										reply({text}, function(err){
+										_this.sendMessage(payload.sender.id,{text}, function(err){
 											 console.log(err);
 										});
 										return;
@@ -338,32 +455,32 @@ var facebookclass = class FacebookBotClass {
 													var total = {text : response[0].value, type : response[0].type, intent : response[0].key};
 													if(total.type == 'listTemplate'){
 														var listTemplate = new ListTemplate(total.text);
-														bot.sendMessage(payload.sender.id, listTemplateFunc(listTemplate.createListTemplate()), function(resp){
+														_this.sendMessage(payload.sender.id, listTemplateFunc(listTemplate.createListTemplate()), function(resp){
 															console.log(resp);
 														});
 													}else if (total.type == 'carousel'){
 															var carousel = new Carousel(total.text);
-															bot.sendMessage(payload.sender.id, carouselTemplateFunc(carousel.createListCarousel()), function(resp){
+															_this.sendMessage(payload.sender.id, carouselTemplateFunc(carousel.createListCarousel()), function(resp){
 																console.log(resp);
 															});
 													}else if (total.type == 'quickReply'){
 															var quickReply = new QuickReply(total.text);
-															bot.sendMessage(payload.sender.id, quickReplyFunc(quickReply.createListQuickReply()), function(resp){
+															_this.sendMessage(payload.sender.id, quickReplyFunc(quickReply.createListQuickReply()), function(resp){
 																console.log(resp);
 															});
 													}else if (total.type == 'genericButtons'){
 															var genericButtons = new GenericButtons(total.text);
-															bot.sendMessage(payload.sender.id, buttonGenericsFunc(genericButtons.createGenericButtons()), function(resp){
+															_this.sendMessage(payload.sender.id, buttonGenericsFunc(genericButtons.createGenericButtons()), function(resp){
 																console.log(resp);
 															});
 													}else if (total.type == 'attachment'){
 															var attachment = new Attachment(total.text);
-															bot.sendMessage(payload.sender.id, attachmentFunc(attachment.createAttachment()), function(resp){
+															_this.sendMessage(payload.sender.id, attachmentFunc(attachment.createAttachment()), function(resp){
 																console.log(resp);
 															});
 													}else{
 														var text = total.text;
-														reply({text}, function(err){
+														_this.sendMessage(payload.sender.id,{text}, function(err){
 																console.log(err);
 														});
 													}
@@ -378,7 +495,7 @@ var facebookclass = class FacebookBotClass {
 												objUser.confidenceLevel = maxFirst;
 												objUser.intentName = maxValueFirst;
 												instanceMongoQueries.insertOne(globals.defaultAuthorizationToken, 'training_messages', objUser, function(resp, obj){});
-												reply({text}, function(err){
+												_this.sendMessage(payload.sender.id,{text}, function(err){
 													 console.log(err);
 												});
 											}
@@ -394,7 +511,7 @@ var facebookclass = class FacebookBotClass {
 									objUser.confidenceLevel = maxFirst;
 									objUser.intentName = maxValueFirst;
 									instanceMongoQueries.insertOne(globals.defaultAuthorizationToken, 'training_messages', objUser, function(resp, obj){});
-									reply({text}, function(err){
+									_this.sendMessage(payload.sender.id,{text}, function(err){
 										 console.log(err);
 									});
 								}
@@ -424,7 +541,7 @@ var facebookclass = class FacebookBotClass {
 							objUser.confidenceLevel = maxFirst;
 							objUser.intentName = maxValueFirst;
 							instanceMongoQueries.insertOne(globals.defaultAuthorizationToken, 'training_messages', objUser, function(resp, obj){});
-							reply({text}, function(err){
+							_this.sendMessage(payload.sender.id,{text}, function(err){
 								 console.log(err);
 							});
 							return;
@@ -444,32 +561,32 @@ var facebookclass = class FacebookBotClass {
 										var total = {text : response[0].value, type : response[0].type, intent : response[0].key};
 										if(total.type == 'listTemplate'){
 											var listTemplate = new ListTemplate(total.text);
-											bot.sendMessage(payload.sender.id, listTemplateFunc(listTemplate.createListTemplate()), function(resp){
+											_this.sendMessage(payload.sender.id, listTemplateFunc(listTemplate.createListTemplate()), function(resp){
 												console.log(resp);
 											});
 										}else if (total.type == 'carousel'){
 												var carousel = new Carousel(total.text);
-												bot.sendMessage(payload.sender.id, carouselTemplateFunc(carousel.createListCarousel()), function(resp){
+												_this.sendMessage(payload.sender.id, carouselTemplateFunc(carousel.createListCarousel()), function(resp){
 													console.log(resp);
 												});
 										}else if (total.type == 'quickReply'){
 												var quickReply = new QuickReply(total.text);
-												bot.sendMessage(payload.sender.id,quickReplyFunc(quickReply.createListQuickReply()), function(resp){
+												_this.sendMessage(payload.sender.id,quickReplyFunc(quickReply.createListQuickReply()), function(resp){
 													console.log(resp);
 												});
 										}else if (total.type == 'genericButtons'){
 												var genericButtons = new GenericButtons(total.text);
-												bot.sendMessage(payload.sender.id,buttonGenericsFunc(genericButtons.createGenericButtons()), function(resp){
+												_this.sendMessage(payload.sender.id,buttonGenericsFunc(genericButtons.createGenericButtons()), function(resp){
 													console.log(resp);
 												});
 										}else if (total.type == 'attachment'){
 												var attachment = new Attachment(total.text);
-												bot.sendMessage(payload.sender.id,attachmentFunc(attachment.createAttachment()), function(resp){
+												_this.sendMessage(payload.sender.id,attachmentFunc(attachment.createAttachment()), function(resp){
 													console.log(resp);
 												});
 										}else{
 											var text = total.text;
-											reply({text}, function(err){
+											_this.sendMessage(payload.sender.id,{text}, function(err){
 													console.log(err);
 											});
 										}
@@ -484,7 +601,7 @@ var facebookclass = class FacebookBotClass {
 										objUser.confidenceLevel = maxFirst;
 										objUser.intentName = maxValueFirst;
 										instanceMongoQueries.insertOne(globals.defaultAuthorizationToken, 'training_messages', objUser, function(resp, obj){});
-										reply({text}, function(err){
+										_this.sendMessage(payload.sender.id,{text}, function(err){
 											 console.log(err);
 										});
 									}
@@ -501,7 +618,7 @@ var facebookclass = class FacebookBotClass {
 						objUser.confidenceLevel = maxFirst;
 						objUser.intentName = maxValueFirst;
 						instanceMongoQueries.insertOne(globals.defaultAuthorizationToken, 'training_messages', objUser, function(resp, obj){});
-						reply({text}, function(err){
+						_this.sendMessage(payload.sender.id,{text}, function(err){
 							 console.log(err);
 						});
 					}

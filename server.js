@@ -31,9 +31,17 @@ app.use(CookieSession({
 
 app.use(function (req, res, next) {
     if(!req.cookies.user_id)
-      res.cookie('user_id', uuid(), {maxAge : 365 * 24 * 60 * 60 * 1000})
+      res.cookie('user_id', uuid(), {maxAge : 365 * 24 * 60 * 60 * 1000});
     next();
 });
+
+var facebookClass = new FaceBookClass(
+  // req.body.facebookDeployment.pageId,
+  // req.body.facebookDeployment.appId,
+  // req.body.facebookDeployment.appSecret,
+  // req.body.facebookDeployment.accessToken,
+  // req.body.facebookDeployment.verifyToken, resp[0], instanceMongoQueries,req.headers.authorization.split(" ")[1]
+);
 
 mongo.connect(url, function(err, db) {
   if (err) throw err;
@@ -948,14 +956,15 @@ app.post('/facebook/post', cors(), function (req, res) {
   instanceMongoQueries.updateOne(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'configuration', {}, {$set : {facebookDeployment : req.body.facebookDeployment}}, function(err, resp){
     global.facebookDeployment = req.body.facebookDeployment;
   });
+
   instanceMongoQueries.find(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'configuration', function(resp){
-    var facebookClass = new FaceBookClass(
-      req.body.facebookDeployment.pageId,
-      req.body.facebookDeployment.appId,
-      req.body.facebookDeployment.appSecret,
-      req.body.facebookDeployment.accessToken,
-      req.body.facebookDeployment.verifyToken, resp[0], instanceMongoQueries,req.headers.authorization.split(" ")[1]);
-    facebookClass.botListen();
+    facebookClass.setWebhook(req.body.facebookDeployment.guid);
+    facebookClass.setVerifyToken(req.body.facebookDeployment.verifyToken);
+    facebookClass.setAppSecret(req.body.facebookDeployment.appSecret);
+    facebookClass.setToken(req.body.facebookDeployment.accessToken);
+    facebookClass.setInstanceMongoQueries(instanceMongoQueries);
+    facebookClass.setGlobal(resp[0]);
+    facebookClass.setAuthorization(req.headers.authorization.split(" ")[1]);
     res.send({data : 'OK'});
   });
 });
@@ -1099,5 +1108,5 @@ app.post('/chatbase/post', cors(), function(req, res){
   });
 });
 
-
+facebookClass.botListen();
 app.listen(8000);
