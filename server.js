@@ -259,7 +259,7 @@ app.get('/get/witai/entities', function(req, res){
 });
 
 // wit intent ine cümle kaydediyor
-app.post('/post/intent/expressions', function(req, res){
+app.post('/post/intent/expressions', function(req,   res){
   console.log(req.body);
   var wit = {
     data : {
