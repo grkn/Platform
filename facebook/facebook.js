@@ -321,7 +321,7 @@ var facebookclass = class FacebookBotClass {
 																var text = total.text;
 																_this.sendMessage(payload.sender.id,{text}, function(err){
 																		console.log(err);
-																});
+																});  
 															}
 														}else{
 															var random = Math.floor(Math.random() * (globals.responseList.length - 1));
