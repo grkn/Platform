@@ -727,9 +727,11 @@ var facebookclass = class FacebookBotClass {
 				button['title']  = obj.elements[i].buttons[j].title;
 				if(obj.elements[i].buttons[j].type == 'web_url'){
 					button['url'] = obj.elements[i].buttons[j].url;
+					this.setWhitelist(obj.elements[i].buttons[j].url);
 					button['webview_height_ratio'] = 'full';
 					button['messenger_extensions'] =  true;
 					button['fallback_url'] = obj.elements[i].buttons[j].url;
+					this.setWhitelist(obj.elements[i].buttons[j].url);
 				}else{
 					console.log(obj.elements[i].buttons[j].payload);
 					button['payload'] = obj.elements[i].buttons[j].payload;
@@ -753,6 +755,7 @@ var facebookclass = class FacebookBotClass {
 	carousel(obj){
 		let elements = [];
 		for(var i = 0; i < obj.elements.length; i++){
+			this.setWhitelist(obj.elements[i].default_action.url);
 			var mainObject = {
 				'title' : obj.elements[i].title,
 				'image_url' : obj.elements[i].image_url,
@@ -770,9 +773,11 @@ var facebookclass = class FacebookBotClass {
 				button['title']  = obj.elements[i].buttons[j].title;
 				if(obj.elements[i].buttons[j].type == 'web_url'){
 					button['url'] = obj.elements[i].buttons[j].url;
+					this.setWhitelist(obj.elements[i].buttons[j].url);
 					button['webview_height_ratio'] = 'full';
 					button['messenger_extensions'] =  true;
 					button['fallback_url'] = obj.elements[i].buttons[j].url;
+					this.setWhitelist(obj.elements[i].buttons[j].url);
 				}else{
 					button['payload'] = obj.elements[i].buttons[j].payload;
 				}
@@ -810,6 +815,7 @@ var facebookclass = class FacebookBotClass {
 			};
 			if(obj.elements[i].image_url){
 				mainObject['image_url'] = obj.elements[i].image_url;
+				this.setWhitelist(obj.elements[i].image_url);
 			}
 			if(obj.elements[i].default_action){
 				var default_action = {
@@ -818,6 +824,7 @@ var facebookclass = class FacebookBotClass {
 						'messenger_extensions' : false,
 						'webview_height_ratio' : 'tall'
 					};
+					this.setWhitelist(obj.elements[i].default_action.url);
 					mainObject['default_action'] = default_action;
 			}
 			if(obj.elements[i].buttons){
@@ -832,6 +839,7 @@ var facebookclass = class FacebookBotClass {
 					}
 					if(obj.elements[i].buttons[j].url){
 						buttonsObject['url'] = obj.elements[i].buttons[j].url;
+						this.setWhitelist(obj.elements[i].buttons[j].url);
 					}
 					if(obj.elements[i].buttons[j].webview_height_ratio){
 						buttonsObject['webview_height_ratio'] = obj.elements[i].buttons[j].webview_height_ratio;
@@ -841,6 +849,7 @@ var facebookclass = class FacebookBotClass {
 					}
 					if(obj.elements[i].buttons[j].fallback_url){
 						buttonsObject['fallback_url'] = obj.elements[i].buttons[j].fallback_url;
+						this.setWhitelist(obj.elements[i].buttons[j].fallback_url);
 					}
 					buttons.push(buttonsObject);
 				}
