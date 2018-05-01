@@ -51,7 +51,7 @@ var facebookclass = class FacebookBotClass {
 	}
 
 	setAuthorization(authorization){
-		this.authorization = authorization;
+		this.configuration[this.webhook].authorization = authorization;
 	}
 
 	// constructor(pageId, appId, appSecret, pageToken, verifyToken, globals, instanceMongoQueries,authorization) {
@@ -211,7 +211,7 @@ var facebookclass = class FacebookBotClass {
 			});
 		});*/
 		var globals = _this.configuration[_this.webhook].global;
-		console.log(this);
+		console.log("Globals " +globals);
 		var wit = {
 			data : {
 				parameters : {}
