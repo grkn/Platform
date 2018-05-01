@@ -105,20 +105,9 @@ var facebookclass = class FacebookBotClass {
 
 	botListen(){
 		var subjectArray = {};
-		// this.setWhitelist( ['https://b050986c.eu.ngrok.io']);
-		// this.bot.on('error', (err) => {
-		//   console.log(err.message)
-		// })
-		//
-		// this.bot.on('postback', (payload, reply, actions, path) => {
-  	// 	this.botPrepareResponse(payload, reply, subjectArray,path)
-		// });
-		//
-		// this.bot.on('message', (payload, reply,actions, path) => {
-		// 	this.botPrepareResponse(payload, reply, subjectArray,path)
-		// });
-		// var privateKey = fs.readFileSync('private.pem', 'utf8');
-		// var certificate = fs.readFileSync('cert.pem', 'utf8');
+		
+		var privateKey = fs.readFileSync('private.pem', 'utf8');
+		var certificate = fs.readFileSync('cert.pem', 'utf8');
 		var botPrepareResponse = this.botPrepareResponse;
 		var _this = this;
 		https.createServer({
