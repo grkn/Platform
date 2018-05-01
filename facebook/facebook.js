@@ -123,6 +123,7 @@ var facebookclass = class FacebookBotClass {
 			console.log(req.url)
 			if (req.url === '/_status') return res.end(JSON.stringify({status : 'OK'}))
 			if(!_this.configuration[_this.webhook]){
+				console.log(this.configuration);
 				res.end('Error, wrong validation token');
 				return;
 			}
