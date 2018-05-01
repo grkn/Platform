@@ -309,7 +309,7 @@ var facebookclass = class FacebookBotClass {
 																});
 															}else if (total.type == 'carousel'){
 																	var carousel = new Carousel(total.text);
-																	_this.sendMessage(payload.sender.id, carouselTemplateFunc(carousel.createListCarousel()setWhiteList), function(resp){
+																	_this.sendMessage(payload.sender.id, carouselTemplateFunc(carousel.createListCarousel(),setWhiteList), function(resp){
 																		console.log(resp);
 																	});
 															}else if (total.type == 'quickReply'){
