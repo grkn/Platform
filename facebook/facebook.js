@@ -659,7 +659,7 @@ var facebookclass = class FacebookBotClass {
 			};
 	}
 
-	quickReply(obj,setWhiteList){
+	quickReply(obj,approve){
 		var quickReplyArray = [];
 		for(var i = 0; i < obj.quickReplyButtons.length; i++){
 				var mainObject = {content_type : obj.quickReplyButtons[i].contentType};
@@ -680,7 +680,7 @@ var facebookclass = class FacebookBotClass {
 	  };
 	}
 
-	attachment(obj,setWhiteList){
+	attachment(obj,approve){
 		var url = '';
 		if(obj.elements[0] && obj.elements[0].buttons[0]){
       url = obj.elements[0].buttons[0].url;
@@ -718,7 +718,7 @@ var facebookclass = class FacebookBotClass {
 		}
 	}
 
-	buttonGenerics(obj,setWhiteList){
+	buttonGenerics(obj,approve){
 		var elements = [];
 		for(var i = 0; i < obj.elements.length; i++){
 			var mainObject = {title : obj.elements[i].title};
@@ -728,11 +728,11 @@ var facebookclass = class FacebookBotClass {
 				button['title']  = obj.elements[i].buttons[j].title;
 				if(obj.elements[i].buttons[j].type == 'web_url'){
 					button['url'] = obj.elements[i].buttons[j].url;
-					setWhitelist(obj.elements[i].buttons[j].url);
+					approve(obj.elements[i].buttons[j].url);
 					button['webview_height_ratio'] = 'full';
 					button['messenger_extensions'] =  true;
 					button['fallback_url'] = obj.elements[i].buttons[j].url;
-					setWhitelist(obj.elements[i].buttons[j].url);
+					approve(obj.elements[i].buttons[j].url);
 				}else{
 					console.log(obj.elements[i].buttons[j].payload);
 					button['payload'] = obj.elements[i].buttons[j].payload;
@@ -753,10 +753,10 @@ var facebookclass = class FacebookBotClass {
 		};
 	}
 
-	carousel(obj,setWhiteList){
+	carousel(obj,approve){
 		let elements = [];
 		for(var i = 0; i < obj.elements.length; i++){
-			setWhitelist(obj.elements[i].default_action.url);
+			approve(obj.elements[i].default_action.url);
 			var mainObject = {
 				'title' : obj.elements[i].title,
 				'image_url' : obj.elements[i].image_url,
@@ -774,11 +774,11 @@ var facebookclass = class FacebookBotClass {
 				button['title']  = obj.elements[i].buttons[j].title;
 				if(obj.elements[i].buttons[j].type == 'web_url'){
 					button['url'] = obj.elements[i].buttons[j].url;
-					setWhitelist(obj.elements[i].buttons[j].url);
+					approve(obj.elements[i].buttons[j].url);
 					button['webview_height_ratio'] = 'full';
 					button['messenger_extensions'] =  true;
 					button['fallback_url'] = obj.elements[i].buttons[j].url;
-					setWhitelist(obj.elements[i].buttons[j].url);
+					approve(obj.elements[i].buttons[j].url);
 				}else{
 					button['payload'] = obj.elements[i].buttons[j].payload;
 				}
@@ -799,7 +799,7 @@ var facebookclass = class FacebookBotClass {
 		};
 	}
 
-	listtemplate(obj,setWhiteList){
+	listtemplate(obj,approve){
 		let elements = [];
 		let mainbutton = [];
 		for(var j = 0; j < obj.buttons.length; j++){
@@ -816,7 +816,7 @@ var facebookclass = class FacebookBotClass {
 			};
 			if(obj.elements[i].image_url){
 				mainObject['image_url'] = obj.elements[i].image_url;
-				setWhitelist(obj.elements[i].image_url);
+				approve(obj.elements[i].image_url);
 			}
 			if(obj.elements[i].default_action){
 				var default_action = {
@@ -825,7 +825,7 @@ var facebookclass = class FacebookBotClass {
 						'messenger_extensions' : false,
 						'webview_height_ratio' : 'tall'
 					};
-					setWhitelist(obj.elements[i].default_action.url);
+					approve(obj.elements[i].default_action.url);
 					mainObject['default_action'] = default_action;
 			}
 			if(obj.elements[i].buttons){
@@ -840,7 +840,7 @@ var facebookclass = class FacebookBotClass {
 					}
 					if(obj.elements[i].buttons[j].url){
 						buttonsObject['url'] = obj.elements[i].buttons[j].url;
-						setWhitelist(obj.elements[i].buttons[j].url);
+						approve(obj.elements[i].buttons[j].url);
 					}
 					if(obj.elements[i].buttons[j].webview_height_ratio){
 						buttonsObject['webview_height_ratio'] = obj.elements[i].buttons[j].webview_height_ratio;
@@ -850,7 +850,7 @@ var facebookclass = class FacebookBotClass {
 					}
 					if(obj.elements[i].buttons[j].fallback_url){
 						buttonsObject['fallback_url'] = obj.elements[i].buttons[j].fallback_url;
-						setWhitelist(obj.elements[i].buttons[j].fallback_url);
+						approve(obj.elements[i].buttons[j].fallback_url);
 					}
 					buttons.push(buttonsObject);
 				}
