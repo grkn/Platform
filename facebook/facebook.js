@@ -218,7 +218,7 @@ var facebookclass = class FacebookBotClass {
 				parameters : {}
 			},
 			headers : {
-				'Authorization' : 'Bearer ' + globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken,
+				'Authorization' : 'Bearer ' + globals[_this.configuration[_this.webhook].authorization]  ? globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken : globals.defaultAuthorizationToken,
 				'Content-Type' : 'application/json'
 			}
 		};
