@@ -640,7 +640,7 @@ var facebookclass = class FacebookBotClass {
 		var args = {
     		data : {
 				  'setting_type' : 'domain_whitelisting',
-				  'whitelisted_domains' : url,
+				  'whitelisted_domains' : [url],
 				  'domain_action_type' : 'add'
 					},
 		    headers : {'Content-Type' : 'application/json'}
