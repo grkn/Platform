@@ -645,7 +645,7 @@ var facebookclass = class FacebookBotClass {
 					},
 		    headers : {'Content-Type' : 'application/json'}
 		};
-		client.post('https://graph.facebook.com/v2.6/me/thread_settings?access_token=' + _this.configuration[this.webhook].token, args, function(resp){});
+		client.post('https://graph.facebook.com/v2.6/me/thread_settings?access_token=' + _this.configuration[_this.webhook].token, args, function(resp){});
 	}
 
 	location(loc){
