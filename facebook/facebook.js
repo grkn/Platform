@@ -121,7 +121,15 @@ var facebookclass = class FacebookBotClass {
 				]
 		}, function(req,res){
 			res.writeHead(200, { 'Content-Type' : 'application/json' })
-			console.log(req.url)
+			
+			let path = req.path();
+			for(var key in  _this.configuration){
+				if(key.indexOf(path) != -1){
+					_this.webhook = key;
+					break;
+				}
+			}
+
 			if (req.url === '/_status') return res.end(JSON.stringify({status : 'OK'}))
 			if(!_this.configuration[_this.webhook]){
 				console.log(this.configuration);
@@ -137,7 +145,7 @@ var facebookclass = class FacebookBotClass {
 				res.end('Error, wrong validation token');
 				return;
 			}
-			let path = req.path();
+
 			let body = '';
 
 			req.on('data', (chunk) => {
@@ -150,10 +158,10 @@ var facebookclass = class FacebookBotClass {
 					let hmac = crypto.createHmac('sha1', _this.configuration[_this.webhook].appSecret);
 					hmac.update(body);
 
-					// if (req.headers['x-hub-signature'] !== `sha1=${hmac.digest('hex')}`) {
-					// 	console.log("AAAA");
-					// 	return res.end(JSON.stringify({status : 'not ok', error : 'Message integrity check failed'}))
-					// }
+					if (req.headers['x-hub-signature'] !== `sha1=${hmac.digest('hex')}`) {
+						console.log("AAAA");
+						return res.end(JSON.stringify({status : 'not ok', error : 'Message integrity check failed'}))
+					}
 				}
 
 				let entries = JSON.parse(body).entry;
