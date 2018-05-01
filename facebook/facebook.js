@@ -129,12 +129,10 @@ var facebookclass = class FacebookBotClass {
 			}
 			if (_this.configuration[_this.webhook].verifyToken && req.method === 'GET') {
 				let query = qs.parse(url.parse(req.url).query);
-				console.log("CCCC");
 				if (query['hub.verify_token'] === _this.configuration[_this.webhook].verifyToken) {
 					res.end(query['hub.challenge']);
 					return;
 				}
-				console.log("DDDDD");
 				res.end('Error, wrong validation token');
 				return;
 			}
@@ -151,10 +149,6 @@ var facebookclass = class FacebookBotClass {
 					let hmac = crypto.createHmac('sha1', _this.configuration[_this.webhook].appSecret);
 					hmac.update(body);
 
-					if (req.headers['x-hub-signature'] !== `sha1=${hmac.digest('hex')}`) {
-						console.log("AAAA");
-						return res.end(JSON.stringify({status : 'not ok', error : 'Message integrity check failed'}))
-					}
 				}
 
 				let entries = JSON.parse(body).entry;
