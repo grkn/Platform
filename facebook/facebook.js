@@ -83,7 +83,8 @@ var facebookclass = class FacebookBotClass {
 
 	sendMessage (recipient, payload, cb) {
 		if (!cb) cb = Function.prototype;
-
+		console.log("Configuration");
+		console.log(this.configuration);
 		request({
 			method : 'POST',
 			uri : 'https://graph.facebook.com/v2.6/me/messages',
@@ -149,6 +150,10 @@ var facebookclass = class FacebookBotClass {
 					let hmac = crypto.createHmac('sha1', _this.configuration[_this.webhook].appSecret);
 					hmac.update(body);
 
+					// if (req.headers['x-hub-signature'] !== `sha1=${hmac.digest('hex')}`) {
+					// 	console.log("AAAA");
+					// 	return res.end(JSON.stringify({status : 'not ok', error : 'Message integrity check failed'}))
+					// }
 				}
 
 				let entries = JSON.parse(body).entry;
