@@ -129,12 +129,12 @@ var facebookclass = class FacebookBotClass {
 			}
 			if (_this.configuration[_this.webhook].verifyToken && req.method === 'GET') {
 				let query = qs.parse(url.parse(req.url).query);
-
+				console.log("CCCC");
 				if (query['hub.verify_token'] === _this.configuration[_this.webhook].verifyToken) {
 					res.end(query['hub.challenge']);
 					return;
 				}
-
+				console.log("DDDDD");
 				res.end('Error, wrong validation token');
 				return;
 			}
