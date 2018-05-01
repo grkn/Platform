@@ -152,6 +152,7 @@ var facebookclass = class FacebookBotClass {
 					hmac.update(body);
 
 					if (req.headers['x-hub-signature'] !== `sha1=${hmac.digest('hex')}`) {
+						console.log("AAAA");
 						return res.end(JSON.stringify({status : 'not ok', error : 'Message integrity check failed'}))
 					}
 				}
