@@ -146,7 +146,7 @@ var facebookclass = class FacebookBotClass {
 
 			req.on('end', () => {
 				// check message integrity
-				if (_this.appSecret) {
+				if (_this.configuration[_this.webhook].appSecret) {
 					let hmac = crypto.createHmac('sha1', _this.configuration[_this.webhook].appSecret);
 					hmac.update(body);
 
