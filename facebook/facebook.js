@@ -121,10 +121,12 @@ var facebookclass = class FacebookBotClass {
 				]
 		}, function(req,res){
 			res.writeHead(200, { 'Content-Type' : 'application/json' })
-			
+
 			let path = req.path();
 			for(var key in  _this.configuration){
+				console.log(key);
 				if(key.indexOf(path) != -1){
+					console.log("Found : " + key);
 					_this.webhook = key;
 					break;
 				}
