@@ -242,6 +242,7 @@ var facebookclass = class FacebookBotClass {
 		var quickReplyFunc = _this.quickReply;
 		var buttonGenericsFunc = _this.buttonGenerics;
 		var attachmentFunc = _this.attachment;
+		var setWhiteList = _this.setWhitelist;
 		var searchedItem = "";
 		if(payload.message){
 				if(payload.message.quick_reply){
@@ -303,27 +304,27 @@ var facebookclass = class FacebookBotClass {
 															var total = {text : response[0].value, type : response[0].type, intent : response[0].key};
 															if(total.type == 'listTemplate'){
 																var listTemplate = new ListTemplate(total.text);
-																_this.sendMessage(payload.sender.id, listTemplateFunc(listTemplate.createListTemplate()), function(resp){
+																_this.sendMessage(payload.sender.id, listTemplateFunc(listTemplate.createListTemplate(),setWhiteList), function(resp){
 																	console.log(resp);
 																});
 															}else if (total.type == 'carousel'){
 																	var carousel = new Carousel(total.text);
-																	_this.sendMessage(payload.sender.id, carouselTemplateFunc(carousel.createListCarousel()), function(resp){
+																	_this.sendMessage(payload.sender.id, carouselTemplateFunc(carousel.createListCarousel()setWhiteList), function(resp){
 																		console.log(resp);
 																	});
 															}else if (total.type == 'quickReply'){
 																	var quickReply = new QuickReply(total.text);
-																	_this.sendMessage(payload.sender.id, quickReplyFunc(quickReply.createListQuickReply()), function(resp){
+																	_this.sendMessage(payload.sender.id, quickReplyFunc(quickReply.createListQuickReply(),setWhiteList), function(resp){
 																		console.log(resp);
 																	});
 															}else if (total.type == 'genericButtons'){
 																	var genericButtons = new GenericButtons(total.text);
-																	_this.sendMessage(payload.sender.id, buttonGenericsFunc(genericButtons.createGenericButtons()), function(resp){
+																	_this.sendMessage(payload.sender.id, buttonGenericsFunc(genericButtons.createGenericButtons(),setWhiteList), function(resp){
 																		console.log(resp);
 																	});
 															}else if (total.type == 'attachment'){
 																	var attachment = new Attachment(total.text);
-																	_this.sendMessage(payload.sender.id, attachmentFunc(attachment.createAttachment()), function(resp){
+																	_this.sendMessage(payload.sender.id, attachmentFunc(attachment.createAttachment(),setWhiteList), function(resp){
 																		console.log(resp);
 																	});
 															}else{
@@ -380,27 +381,27 @@ var facebookclass = class FacebookBotClass {
 												var total = {text : response[0].value, type : response[0].type, intent : response[0].key};
 												if(total.type == 'listTemplate'){
 													var listTemplate = new ListTemplate(total.text);
-													_this.sendMessage(payload.sender.id, listTemplateFunc(listTemplate.createListTemplate()), function(resp){
+													_this.sendMessage(payload.sender.id, listTemplateFunc(listTemplate.createListTemplate(),setWhiteList), function(resp){
 														console.log(resp);
 													});
 												}else if (total.type == 'carousel'){
 														var carousel = new Carousel(total.text);
-														_this.sendMessage(payload.sender.id, carouselTemplateFunc(carousel.createListCarousel()), function(resp){
+														_this.sendMessage(payload.sender.id, carouselTemplateFunc(carousel.createListCarousel(),setWhiteList), function(resp){
 															console.log(resp);
 														});
 												}else if (total.type == 'quickReply'){
 														var quickReply = new QuickReply(total.text);
-														_this.sendMessage(payload.sender.id, quickReplyFunc(quickReply.createListQuickReply()), function(resp){
+														_this.sendMessage(payload.sender.id, quickReplyFunc(quickReply.createListQuickReply(),setWhiteList), function(resp){
 															console.log(resp);
 														});
 												}else if (total.type == 'genericButtons'){
 														var genericButtons = new GenericButtons(total.text);
-														_this.sendMessage(payload.sender.id, buttonGenericsFunc(genericButtons.createGenericButtons()), function(resp){
+														_this.sendMessage(payload.sender.id, buttonGenericsFunc(genericButtons.createGenericButtons(),setWhiteList), function(resp){
 															console.log(resp);
 														});
 												}else if (total.type == 'attachment'){
 														var attachment = new Attachment(total.text);
-														_this.sendMessage(payload.sender.id, attachmentFunc(attachment.createAttachment()), function(resp){
+														_this.sendMessage(payload.sender.id, attachmentFunc(attachment.createAttachment(),setWhiteList), function(resp){
 															console.log(resp);
 														});
 												}else{
@@ -464,27 +465,27 @@ var facebookclass = class FacebookBotClass {
 													var total = {text : response[0].value, type : response[0].type, intent : response[0].key};
 													if(total.type == 'listTemplate'){
 														var listTemplate = new ListTemplate(total.text);
-														_this.sendMessage(payload.sender.id, listTemplateFunc(listTemplate.createListTemplate()), function(resp){
+														_this.sendMessage(payload.sender.id, listTemplateFunc(listTemplate.createListTemplate(),setWhiteList), function(resp){
 															console.log(resp);
 														});
 													}else if (total.type == 'carousel'){
 															var carousel = new Carousel(total.text);
-															_this.sendMessage(payload.sender.id, carouselTemplateFunc(carousel.createListCarousel()), function(resp){
+															_this.sendMessage(payload.sender.id, carouselTemplateFunc(carousel.createListCarousel(),setWhiteList), function(resp){
 																console.log(resp);
 															});
 													}else if (total.type == 'quickReply'){
 															var quickReply = new QuickReply(total.text);
-															_this.sendMessage(payload.sender.id, quickReplyFunc(quickReply.createListQuickReply()), function(resp){
+															_this.sendMessage(payload.sender.id, quickReplyFunc(quickReply.createListQuickReply(),setWhiteList), function(resp){
 																console.log(resp);
 															});
 													}else if (total.type == 'genericButtons'){
 															var genericButtons = new GenericButtons(total.text);
-															_this.sendMessage(payload.sender.id, buttonGenericsFunc(genericButtons.createGenericButtons()), function(resp){
+															_this.sendMessage(payload.sender.id, buttonGenericsFunc(genericButtons.createGenericButtons(),setWhiteList), function(resp){
 																console.log(resp);
 															});
 													}else if (total.type == 'attachment'){
 															var attachment = new Attachment(total.text);
-															_this.sendMessage(payload.sender.id, attachmentFunc(attachment.createAttachment()), function(resp){
+															_this.sendMessage(payload.sender.id, attachmentFunc(attachment.createAttachment(),setWhiteList), function(resp){
 																console.log(resp);
 															});
 													}else{
@@ -570,27 +571,27 @@ var facebookclass = class FacebookBotClass {
 										var total = {text : response[0].value, type : response[0].type, intent : response[0].key};
 										if(total.type == 'listTemplate'){
 											var listTemplate = new ListTemplate(total.text);
-											_this.sendMessage(payload.sender.id, listTemplateFunc(listTemplate.createListTemplate()), function(resp){
+											_this.sendMessage(payload.sender.id, listTemplateFunc(listTemplate.createListTemplate(),setWhiteList), function(resp){
 												console.log(resp);
 											});
 										}else if (total.type == 'carousel'){
 												var carousel = new Carousel(total.text);
-												_this.sendMessage(payload.sender.id, carouselTemplateFunc(carousel.createListCarousel()), function(resp){
+												_this.sendMessage(payload.sender.id, carouselTemplateFunc(carousel.createListCarousel(),setWhiteList), function(resp){
 													console.log(resp);
 												});
 										}else if (total.type == 'quickReply'){
 												var quickReply = new QuickReply(total.text);
-												_this.sendMessage(payload.sender.id,quickReplyFunc(quickReply.createListQuickReply()), function(resp){
+												_this.sendMessage(payload.sender.id,quickReplyFunc(quickReply.createListQuickReply(),setWhiteList), function(resp){
 													console.log(resp);
 												});
 										}else if (total.type == 'genericButtons'){
 												var genericButtons = new GenericButtons(total.text);
-												_this.sendMessage(payload.sender.id,buttonGenericsFunc(genericButtons.createGenericButtons()), function(resp){
+												_this.sendMessage(payload.sender.id,buttonGenericsFunc(genericButtons.createGenericButtons(),setWhiteList), function(resp){
 													console.log(resp);
 												});
 										}else if (total.type == 'attachment'){
 												var attachment = new Attachment(total.text);
-												_this.sendMessage(payload.sender.id,attachmentFunc(attachment.createAttachment()), function(resp){
+												_this.sendMessage(payload.sender.id,attachmentFunc(attachment.createAttachment(),setWhiteList), function(resp){
 													console.log(resp);
 												});
 										}else{
@@ -658,7 +659,7 @@ var facebookclass = class FacebookBotClass {
 			};
 	}
 
-	quickReply(obj){
+	quickReply(obj,setWhiteList){
 		var quickReplyArray = [];
 		for(var i = 0; i < obj.quickReplyButtons.length; i++){
 				var mainObject = {content_type : obj.quickReplyButtons[i].contentType};
@@ -679,7 +680,7 @@ var facebookclass = class FacebookBotClass {
 	  };
 	}
 
-	attachment(obj){
+	attachment(obj,setWhiteList){
 		var url = '';
 		if(obj.elements[0] && obj.elements[0].buttons[0]){
       url = obj.elements[0].buttons[0].url;
@@ -717,7 +718,7 @@ var facebookclass = class FacebookBotClass {
 		}
 	}
 
-	buttonGenerics(obj){
+	buttonGenerics(obj,setWhiteList){
 		var elements = [];
 		for(var i = 0; i < obj.elements.length; i++){
 			var mainObject = {title : obj.elements[i].title};
@@ -752,7 +753,7 @@ var facebookclass = class FacebookBotClass {
 		};
 	}
 
-	carousel(obj){
+	carousel(obj,setWhiteList){
 		let elements = [];
 		for(var i = 0; i < obj.elements.length; i++){
 			setWhitelist(obj.elements[i].default_action.url);
@@ -798,7 +799,7 @@ var facebookclass = class FacebookBotClass {
 		};
 	}
 
-	listtemplate(obj){
+	listtemplate(obj,setWhiteList){
 		let elements = [];
 		let mainbutton = [];
 		for(var j = 0; j < obj.buttons.length; j++){
