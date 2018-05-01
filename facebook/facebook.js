@@ -211,13 +211,13 @@ var facebookclass = class FacebookBotClass {
 			});
 		});*/
 		var globals = _this.configuration[_this.webhook].global;
-		console.log("Globals " +globals);
+		console.log(globals[_this.authorization].defaultAuthorizationToken);
 		var wit = {
 			data : {
 				parameters : {}
 			},
 			headers : {
-				'Authorization' : 'Bearer ' + globals.defaultAuthorizationToken,
+				'Authorization' : 'Bearer ' + globals[_this.authorization].defaultAuthorizationToken,
 				'Content-Type' : 'application/json'
 			}
 		};
