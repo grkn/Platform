@@ -119,70 +119,72 @@ var facebookclass = class FacebookBotClass {
 		// });
 		// var privateKey = fs.readFileSync('private.pem', 'utf8');
 		// var certificate = fs.readFileSync('cert.pem', 'utf8');
-		// https.createServer({
-		//     key: privateKey,
-		//     cert: certificate,
-		// 		ca : [
-		// 			fs.readFileSync('bundle1.pem', 'utf8'),
-		// 			fs.readFileSync('bundle2.pem', 'utf8'),
-		// 			fs.readFileSync('bundle3.pem', 'utf8'),
-		// 		]
-		// }, this.bot.middleware()).listen(8081);
 		var botPrepareResponse = this.botPrepareResponse;
 		var _this = this;
-		http.createServer(function (req, res) {
-				res.writeHead(200, { 'Content-Type' : 'application/json' })
-				console.log(req.url)
-	      if (req.url === '/_status') return res.end(JSON.stringify({status : 'OK'}))
-	      if (_this.configuration[_this.webhook].verifyToken && req.method === 'GET') {
-					let query = qs.parse(url.parse(req.url).query);
+		https.createServer({
+		    key: privateKey,
+		    cert: certificate,
+				ca : [
+					fs.readFileSync('bundle1.pem', 'utf8'),
+					fs.readFileSync('bundle2.pem', 'utf8'),
+					fs.readFileSync('bundle3.pem', 'utf8'),
+				]
+		}, function(req,res){
+			res.writeHead(200, { 'Content-Type' : 'application/json' })
+			console.log(req.url)
+			if (req.url === '/_status') return res.end(JSON.stringify({status : 'OK'}))
+			if (_this.configuration[_this.webhook].verifyToken && req.method === 'GET') {
+				let query = qs.parse(url.parse(req.url).query);
 
-			    if (query['hub.verify_token'] === _this.configuration[_this.webhook].verifyToken) {
-			      res.end(query['hub.challenge']);
-			    }
-
-			    res.end('Error, wrong validation token');
+				if (query['hub.verify_token'] === _this.configuration[_this.webhook].verifyToken) {
+					res.end(query['hub.challenge']);
 				}
-				let path = req.path();
-				let body = '';
 
-	      req.on('data', (chunk) => {
-	        body += chunk
-	      })
+				res.end('Error, wrong validation token');
+			}
+			let path = req.path();
+			let body = '';
 
-	      req.on('end', () => {
-	        // check message integrity
-	        if (_this.appSecret) {
-	          let hmac = crypto.createHmac('sha1', _this.configuration[_this.webhook].appSecret);
-	          hmac.update(body);
+			req.on('data', (chunk) => {
+				body += chunk
+			})
 
-	          if (req.headers['x-hub-signature'] !== `sha1=${hmac.digest('hex')}`) {
-	            return res.end(JSON.stringify({status : 'not ok', error : 'Message integrity check failed'}))
-	          }
-	        }
+			req.on('end', () => {
+				// check message integrity
+				if (_this.appSecret) {
+					let hmac = crypto.createHmac('sha1', _this.configuration[_this.webhook].appSecret);
+					hmac.update(body);
 
-	        let entries = JSON.parse(body).entry;
+					if (req.headers['x-hub-signature'] !== `sha1=${hmac.digest('hex')}`) {
+						return res.end(JSON.stringify({status : 'not ok', error : 'Message integrity check failed'}))
+					}
+				}
 
-			    entries.forEach((entry) => {
-			      let events = entry.messaging;
-			      events.forEach((event) => {
-			        // handle inbound messages and echos
-			        if (event.message) {
-			          if (event.message.is_echo) {
-			          } else {
-			           botPrepareResponse(event, subjectArray, path, _this)
-			          }
-			        }
-			        // handle postbacks
-			        if (event.postback) {
-			           botPrepareResponse(event, subjectArray, path, _this)
-			        }
-			      })
-			    })
-	        res.end(JSON.stringify({status : 'OK'}))
-	      })
-			  res.end();
+				let entries = JSON.parse(body).entry;
+
+				entries.forEach((entry) => {
+					let events = entry.messaging;
+					events.forEach((event) => {
+						// handle inbound messages and echos
+						if (event.message) {
+							if (event.message.is_echo) {
+							} else {
+							 botPrepareResponse(event, subjectArray, path, _this)
+							}
+						}
+						// handle postbacks
+						if (event.postback) {
+							 botPrepareResponse(event, subjectArray, path, _this)
+						}
+					})
+				})
+				res.end(JSON.stringify({status : 'OK'}))
+			})
+			res.end();
+
 		}).listen(8081);
+
+
 	}
 
 	botPrepareResponse(payload, subjectArray, path, _this){
@@ -321,7 +323,7 @@ var facebookclass = class FacebookBotClass {
 																var text = total.text;
 																_this.sendMessage(payload.sender.id,{text}, function(err){
 																		console.log(err);
-																});  
+																});
 															}
 														}else{
 															var random = Math.floor(Math.random() * (globals.responseList.length - 1));
