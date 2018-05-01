@@ -27,7 +27,6 @@ var facebookclass = class FacebookBotClass {
 
 	setWebhook(webhook){
 		this.webhook = webhook;
-		this.configuration[this.webhook] = {};
 	}
 
 	setVerifyToken(verifyToken){
@@ -218,7 +217,7 @@ var facebookclass = class FacebookBotClass {
 				parameters : {}
 			},
 			headers : {
-				'Authorization' : 'Bearer ' + globals[_this.configuration[_this.webhook].authorization]  ? globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken : globals.defaultAuthorizationToken,
+				'Authorization' : 'Bearer ' + globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken,
 				'Content-Type' : 'application/json'
 			}
 		};
@@ -272,23 +271,23 @@ var facebookclass = class FacebookBotClass {
 													var transaction = new Date().getTime();
 													var objUser = {'transaction' : transaction, 'message' : {text : text}, 'user_id' : payload.sender.id, 'created_date' : new Date()};
 													var obj = {'transaction' : transaction, 'message' : {text : text}, 'user_id' : payload.sender.id + '_BOT', 'created_date' : new Date()};
-													instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization]  ? globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken : globals.defaultAuthorizationToken, 'facebook_messages', obj, function(resp, obj){});
-													instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization]  ? globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken : globals.defaultAuthorizationToken, 'facebook_messages', objUser, function(resp, obj){});
+													instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken, 'facebook_messages', obj, function(resp, obj){});
+													instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken, 'facebook_messages', objUser, function(resp, obj){});
 													objUser.confidenceLevel = maxFirst;
 													objUser.intentName = maxValueFirst;
-													instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization]  ? globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken : globals.defaultAuthorizationToken, 'training_messages', objUser, function(resp, obj){});
+													instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken, 'training_messages', objUser, function(resp, obj){});
 													_this.sendMessage(payload.sender.id,{text}, function(err){
 														 console.log(err);
 													});
 													return;
 												}
-												instanceMongoQueries.findByQuery(globals[_this.configuration[_this.webhook].authorization]  ? globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken : globals.defaultAuthorizationToken, 'answers', {'key' : maxValueFirst}, function(response){
+												instanceMongoQueries.findByQuery(globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken, 'answers', {'key' : maxValueFirst}, function(response){
 														if(response.length > 0){
 															var transaction = new Date().getTime();
 															var objUser = {'transaction' : transaction, 'message' : {text : response[0].value, type : response[0].type, intent : response[0].key}, 'user_id' : payload.sender.id, 'created_date' : new Date()};
 															var obj = {'transaction' : transaction, 'message' : {text : response[0].value, type : response[0].type, intent : response[0].key}, 'user_id' : payload.sender.id + '_BOT', 'created_date' : new Date()};
-															instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization]  ? globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken : globals.defaultAuthorizationToken, 'facebook_messages', obj, function(resp, obj){});
-															instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization]  ? globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken : globals.defaultAuthorizationToken, 'facebook_messages', objUser, function(resp, obj){});
+															instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken, 'facebook_messages', obj, function(resp, obj){});
+															instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken, 'facebook_messages', objUser, function(resp, obj){});
 															var total = {text : response[0].value, type : response[0].type, intent : response[0].key};
 															if(total.type == 'listTemplate'){
 																var listTemplate = new ListTemplate(total.text);
@@ -327,11 +326,11 @@ var facebookclass = class FacebookBotClass {
 															var transaction = new Date().getTime();
 															var objUser = {'transaction' : transaction, 'message' : {text : text}, 'user_id' : payload.sender.id, 'created_date' : new Date()};
 															var obj = {'transaction' : transaction, 'message' : {text : text}, 'user_id' : payload.sender.id + '_BOT', 'created_date' : new Date()};
-															instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization]  ? globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken : globals.defaultAuthorizationToken, 'facebook_messages', obj, function(resp, obj){});
-															instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization]  ? globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken : globals.defaultAuthorizationToken, 'facebook_messages', objUser, function(resp, obj){});
+															instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken, 'facebook_messages', obj, function(resp, obj){});
+															instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken, 'facebook_messages', objUser, function(resp, obj){});
 															objUser.confidenceLevel = maxFirst;
 															objUser.intentName = maxValueFirst;
-															instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization]  ? globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken : globals.defaultAuthorizationToken, 'training_messages', objUser, function(resp, obj){});
+															instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken, 'training_messages', objUser, function(resp, obj){});
 															_this.sendMessage(payload.sender.id,{text}, function(err){
 																 console.log(err);
 															});
@@ -343,11 +342,11 @@ var facebookclass = class FacebookBotClass {
 												var transaction = new Date().getTime();
 												var objUser = {'transaction' : transaction, 'message' : {text : text}, 'user_id' : payload.sender.id, 'created_date' : new Date()};
 												var obj = {'transaction' : transaction, 'message' : {text : text}, 'user_id' : payload.sender.id + '_BOT', 'created_date' : new Date()};
-												instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization]  ? globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken : globals.defaultAuthorizationToken, 'facebook_messages', obj, function(resp, obj){});
-												instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization]  ? globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken : globals.defaultAuthorizationToken, 'facebook_messages', objUser, function(resp, obj){});
+												instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken, 'facebook_messages', obj, function(resp, obj){});
+												instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken, 'facebook_messages', objUser, function(resp, obj){});
 												objUser.confidenceLevel = maxFirst;
 												objUser.intentName = maxValueFirst;
-												instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization]  ? globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken : globals.defaultAuthorizationToken, 'training_messages', objUser, function(resp, obj){});
+												instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken, 'training_messages', objUser, function(resp, obj){});
 												_this.sendMessage(payload.sender.id,{text}, function(err){
 													 console.log(err);
 												});
@@ -355,17 +354,17 @@ var facebookclass = class FacebookBotClass {
 									});
 								return;
 							}else{
-								instanceMongoQueries.findByQuery(globals[_this.configuration[_this.webhook].authorization]  ? globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken : globals.defaultAuthorizationToken, 'subject_intent_relation', {intent : maxValueFirst}, function(sResponse){
+								instanceMongoQueries.findByQuery(globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken, 'subject_intent_relation', {intent : maxValueFirst}, function(sResponse){
 									if(sResponse.length > 0){
 										subjectArray[payload.sender.id] = sResponse[0].subject;
 									}
-									instanceMongoQueries.findByQuery(globals[_this.configuration[_this.webhook].authorization]  ? globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken : globals.defaultAuthorizationToken, 'answers', {'key' :  maxValueFirst}, function(response){
+									instanceMongoQueries.findByQuery(globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken, 'answers', {'key' :  maxValueFirst}, function(response){
 										if(response.length > 0){
 												var transaction = new Date().getTime();
 												var objUser = {'transaction' : transaction, 'message' : {text : response[0].value, type : response[0].type, intent : response[0].key}, 'user_id' : payload.sender.id, 'created_date' : new Date()};
 												var obj = {'transaction' : transaction, 'message' : {text : response[0].value, type : response[0].type, intent : response[0].key}, 'user_id' :  payload.sender.id + '_BOT', 'created_date' : new Date()};
-												instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization]  ? globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken : globals.defaultAuthorizationToken, 'facebook_messages', obj, function(resp, obj){});
-												instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization]  ? globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken : globals.defaultAuthorizationToken, 'facebook_messages', objUser, function(resp, obj){});
+												instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken, 'facebook_messages', obj, function(resp, obj){});
+												instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken, 'facebook_messages', objUser, function(resp, obj){});
 												var total = {text : response[0].value, type : response[0].type, intent : response[0].key};
 												if(total.type == 'listTemplate'){
 													var listTemplate = new ListTemplate(total.text);
@@ -404,11 +403,11 @@ var facebookclass = class FacebookBotClass {
 												var transaction = new Date().getTime();
 												var objUser = {'transaction' : transaction, 'message' : {text : text}, 'user_id' : payload.sender.id, 'created_date' : new Date()};
 												var obj = {'transaction' : transaction, 'message' : {text : text}, 'user_id' : payload.sender.id + '_BOT', 'created_date' : new Date()};
-												instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization]  ? globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken : globals.defaultAuthorizationToken, 'facebook_messages', obj, function(resp, obj){});
-												instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization]  ? globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken : globals.defaultAuthorizationToken, 'facebook_messages', objUser, function(resp, obj){});
+												instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken, 'facebook_messages', obj, function(resp, obj){});
+												instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken, 'facebook_messages', objUser, function(resp, obj){});
 												objUser.confidenceLevel = maxFirst;
 												objUser.intentName = maxValueFirst;
-												instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization]  ? globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken : globals.defaultAuthorizationToken, globals[_this.configuration[_this.webhook].authorization]  ? globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken : globals.defaultAuthorizationToken, 'training_messages', objUser, function(resp, obj){});
+												instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken, globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken, 'training_messages', objUser, function(resp, obj){});
 												_this.sendMessage(payload.sender.id,{text}, function(err){
 													 console.log(err);
 												});
@@ -433,23 +432,23 @@ var facebookclass = class FacebookBotClass {
 										var transaction = new Date().getTime();
 										var objUser = {'transaction' : transaction, 'message' : {text : text}, 'user_id' : payload.sender.id, 'created_date' : new Date()};
 										var obj = {'transaction' : transaction, 'message' : {text : text}, 'user_id' : payload.sender.id + '_BOT', 'created_date' : new Date()};
-										instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization]  ? globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken : globals.defaultAuthorizationToken, 'facebook_messages', obj, function(resp, obj){});
-										instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization]  ? globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken : globals.defaultAuthorizationToken, 'facebook_messages', objUser, function(resp, obj){});
+										instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken, 'facebook_messages', obj, function(resp, obj){});
+										instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken, 'facebook_messages', objUser, function(resp, obj){});
 										objUser.confidenceLevel = maxFirst;
 										objUser.intentName = maxValueFirst;
-										instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization]  ? globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken : globals.defaultAuthorizationToken, 'training_messages', objUser, function(resp, obj){});
+										instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken, 'training_messages', objUser, function(resp, obj){});
 										_this.sendMessage(payload.sender.id,{text}, function(err){
 											 console.log(err);
 										});
 										return;
 									}
-									instanceMongoQueries.findByQuery(globals[_this.configuration[_this.webhook].authorization]  ? globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken : globals.defaultAuthorizationToken, 'answers', {'key' : maxValueFirst}, function(response){
+									instanceMongoQueries.findByQuery(globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken, 'answers', {'key' : maxValueFirst}, function(response){
 										if(response.length > 0){
 											var transaction = new Date().getTime();
 													var objUser = {'transaction' : transaction, 'message' : {text : response[0].value, type : response[0].type, intent : response[0].key}, 'user_id' : payload.sender.id, 'created_date' : new Date()};
 													var obj = {'transaction' : transaction, 'message' : {text : response[0].value, type : response[0].type, intent : response[0].key}, 'user_id' : payload.sender.id+'_BOT', 'created_date' : new Date()};
-													instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization]  ? globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken : globals.defaultAuthorizationToken, 'facebook_messages', obj, function(resp, obj){});
-													instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization]  ? globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken : globals.defaultAuthorizationToken, 'facebook_messages', objUser, function(resp, obj){});
+													instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken, 'facebook_messages', obj, function(resp, obj){});
+													instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken, 'facebook_messages', objUser, function(resp, obj){});
 													var total = {text : response[0].value, type : response[0].type, intent : response[0].key};
 													if(total.type == 'listTemplate'){
 														var listTemplate = new ListTemplate(total.text);
@@ -488,11 +487,11 @@ var facebookclass = class FacebookBotClass {
 												var transaction = new Date().getTime();
 												var objUser = {'transaction' : transaction, 'message' : {text : text}, 'user_id' : payload.sender.id, 'created_date' : new Date()};
 												var obj = {'transaction' : transaction, 'message' : {text : text}, 'user_id' : payload.sender.id + '_BOT', 'created_date' : new Date()};
-												instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization]  ? globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken : globals.defaultAuthorizationToken, 'facebook_messages', obj, function(resp, obj){});
-												instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization]  ? globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken : globals.defaultAuthorizationToken, 'facebook_messages', objUser, function(resp, obj){});
+												instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken, 'facebook_messages', obj, function(resp, obj){});
+												instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken, 'facebook_messages', objUser, function(resp, obj){});
 												objUser.confidenceLevel = maxFirst;
 												objUser.intentName = maxValueFirst;
-												instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization]  ? globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken : globals.defaultAuthorizationToken, 'training_messages', objUser, function(resp, obj){});
+												instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken, 'training_messages', objUser, function(resp, obj){});
 												_this.sendMessage(payload.sender.id,{text}, function(err){
 													 console.log(err);
 												});
@@ -504,11 +503,11 @@ var facebookclass = class FacebookBotClass {
 									var transaction = new Date().getTime();
 									var objUser = {'transaction' : transaction, 'message' : {text : text}, 'user_id' : payload.sender.id, 'created_date' : new Date()};
 									var obj = {'transaction' : transaction, 'message' : {text : text}, 'user_id' : payload.sender.id + '_BOT', 'created_date' : new Date()};
-									instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization]  ? globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken : globals.defaultAuthorizationToken, 'facebook_messages', obj, function(resp, obj){});
-									instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization]  ? globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken : globals.defaultAuthorizationToken, 'facebook_messages', objUser, function(resp, obj){});
+									instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken, 'facebook_messages', obj, function(resp, obj){});
+									instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken, 'facebook_messages', objUser, function(resp, obj){});
 									objUser.confidenceLevel = maxFirst;
 									objUser.intentName = maxValueFirst;
-									instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization]  ? globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken : globals.defaultAuthorizationToken, 'training_messages', objUser, function(resp, obj){});
+									instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken, 'training_messages', objUser, function(resp, obj){});
 									_this.sendMessage(payload.sender.id,{text}, function(err){
 										 console.log(err);
 									});
@@ -534,28 +533,28 @@ var facebookclass = class FacebookBotClass {
 							var transaction = new Date().getTime();
 							var objUser = {'transaction' : transaction, 'message' : {text : text}, 'user_id' : payload.sender.id, 'created_date' : new Date()};
 							var obj = {'transaction' : transaction, 'message' : {text : text}, 'user_id' : payload.sender.id + '_BOT', 'created_date' : new Date()};
-							instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization]  ? globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken : globals.defaultAuthorizationToken, 'facebook_messages', obj, function(resp, obj){});
-							instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization]  ? globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken : globals.defaultAuthorizationToken, 'facebook_messages', objUser, function(resp, obj){});
+							instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken, 'facebook_messages', obj, function(resp, obj){});
+							instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken, 'facebook_messages', objUser, function(resp, obj){});
 							objUser.confidenceLevel = maxFirst;
 							objUser.intentName = maxValueFirst;
-							instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization]  ? globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken : globals.defaultAuthorizationToken, 'training_messages', objUser, function(resp, obj){});
+							instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken, 'training_messages', objUser, function(resp, obj){});
 							_this.sendMessage(payload.sender.id,{text}, function(err){
 								 console.log(err);
 							});
 							return;
 						}
-						instanceMongoQueries.findByQuery(globals[_this.configuration[_this.webhook].authorization]  ? globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken : globals.defaultAuthorizationToken, 'subject_intent_relation', {intent : maxValueFirst}, function(sResponse){
+						instanceMongoQueries.findByQuery(globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken, 'subject_intent_relation', {intent : maxValueFirst}, function(sResponse){
 							console.log(sResponse);
 							if(sResponse.length > 0){
 								subjectArray[payload.sender.id] = sResponse[0].subject;
 							}
-							instanceMongoQueries.findByQuery(globals[_this.configuration[_this.webhook].authorization]  ? globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken : globals.defaultAuthorizationToken, 'answers', {'key' : maxValueFirst}, function(response){
+							instanceMongoQueries.findByQuery(globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken, 'answers', {'key' : maxValueFirst}, function(response){
 								if(response.length > 0){
 										var transaction = new Date().getTime();
 										var objUser = {'transaction' : transaction, 'message' : {text : response[0].value, type : response[0].type, intent : response[0].key}, 'user_id' : payload.sender.id, 'created_date' : new Date()};
 										var obj = {'transaction' : transaction, 'message' : {text : response[0].value, type : response[0].type, intent : response[0].key}, 'user_id' :  payload.sender.id + '_BOT', 'created_date' : new Date()};
-										instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization]  ? globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken : globals.defaultAuthorizationToken, 'facebook_messages', obj, function(resp, obj){});
-										instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization]  ? globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken : globals.defaultAuthorizationToken, 'facebook_messages', objUser, function(resp, obj){});
+										instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken, 'facebook_messages', obj, function(resp, obj){});
+										instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken, 'facebook_messages', objUser, function(resp, obj){});
 										var total = {text : response[0].value, type : response[0].type, intent : response[0].key};
 										if(total.type == 'listTemplate'){
 											var listTemplate = new ListTemplate(total.text);
@@ -594,11 +593,11 @@ var facebookclass = class FacebookBotClass {
 										var transaction = new Date().getTime();
 										var objUser = {'transaction' : transaction, 'message' : {text : text}, 'user_id' : payload.sender.id, 'created_date' : new Date()};
 										var obj = {'transaction' : transaction, 'message' : {text : text}, 'user_id' : payload.sender.id + '_BOT', 'created_date' : new Date()};
-										instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization]  ? globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken : globals.defaultAuthorizationToken, 'facebook_messages', obj, function(resp, obj){});
-										instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization]  ? globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken : globals.defaultAuthorizationToken, 'facebook_messages', objUser, function(resp, obj){});
+										instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken, 'facebook_messages', obj, function(resp, obj){});
+										instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken, 'facebook_messages', objUser, function(resp, obj){});
 										objUser.confidenceLevel = maxFirst;
 										objUser.intentName = maxValueFirst;
-										instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization]  ? globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken : globals.defaultAuthorizationToken, 'training_messages', objUser, function(resp, obj){});
+										instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken, 'training_messages', objUser, function(resp, obj){});
 										_this.sendMessage(payload.sender.id,{text}, function(err){
 											 console.log(err);
 										});
@@ -611,11 +610,11 @@ var facebookclass = class FacebookBotClass {
 						var transaction = new Date().getTime();
 						var objUser = {'transaction' : transaction, 'message' : {text : text}, 'user_id' : payload.sender.id, 'created_date' : new Date()};
 						var obj = {'transaction' : transaction, 'message' : {text : text}, 'user_id' : payload.sender.id + '_BOT', 'created_date' : new Date()};
-						instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization]  ? globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken : globals.defaultAuthorizationToken, 'facebook_messages', obj, function(resp, obj){});
-						instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization]  ? globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken : globals.defaultAuthorizationToken, 'facebook_messages', objUser, function(resp, obj){});
+						instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken, 'facebook_messages', obj, function(resp, obj){});
+						instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken, 'facebook_messages', objUser, function(resp, obj){});
 						objUser.confidenceLevel = maxFirst;
 						objUser.intentName = maxValueFirst;
-						instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization]  ? globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken : globals.defaultAuthorizationToken, 'training_messages', objUser, function(resp, obj){});
+						instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken, 'training_messages', objUser, function(resp, obj){});
 						_this.sendMessage(payload.sender.id,{text}, function(err){
 							 console.log(err);
 						});
