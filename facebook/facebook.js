@@ -211,6 +211,8 @@ var facebookclass = class FacebookBotClass {
 			});
 		});*/
 		var globals = _this.configuration[_this.webhook].global;
+		console.log("GLOBALS");
+		console.log(globals);
 		var wit = {
 			data : {
 				parameters : {}
