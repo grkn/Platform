@@ -963,7 +963,7 @@ app.post('/facebook/post', cors(), function (req, res) {
     facebookClass.setAppSecret(req.body.facebookDeployment.appSecret);
     facebookClass.setToken(req.body.facebookDeployment.accessToken);
     facebookClass.setInstanceMongoQueries(instanceMongoQueries);
-    facebookClass.setGlobal(global);
+    facebookClass.setGlobal(resp[0]);
     facebookClass.setAuthorization(req.headers.authorization.split(" ")[1]);
     res.send({data : 'OK'});
   });

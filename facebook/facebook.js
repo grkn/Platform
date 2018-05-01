@@ -27,6 +27,7 @@ var facebookclass = class FacebookBotClass {
 
 	setWebhook(webhook){
 		this.webhook = webhook;
+		this.configuration[this.webhook] = {};
 	}
 
 	setVerifyToken(verifyToken){
