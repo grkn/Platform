@@ -419,7 +419,7 @@ var facebookclass = class FacebookBotClass {
 												instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken, 'facebook_messages', objUser, function(resp, obj){});
 												objUser.confidenceLevel = maxFirst;
 												objUser.intentName = maxValueFirst;
-												instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken, globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken, 'training_messages', objUser, function(resp, obj){});
+												instanceMongoQueries.insertOne(globals[_this.configuration[_this.webhook].authorization].defaultAuthorizationToken, 'training_messages', objUser, function(resp, obj){});
 												_this.sendMessage(payload.sender.id,{text}, function(err){
 													 console.log(err);
 												});
