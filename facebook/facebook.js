@@ -105,7 +105,7 @@ var facebookclass = class FacebookBotClass {
 
 	botListen(){
 		var subjectArray = {};
-		
+
 		var privateKey = fs.readFileSync('private.pem', 'utf8');
 		var certificate = fs.readFileSync('cert.pem', 'utf8');
 		var botPrepareResponse = this.botPrepareResponse;
@@ -122,14 +122,20 @@ var facebookclass = class FacebookBotClass {
 			res.writeHead(200, { 'Content-Type' : 'application/json' })
 			console.log(req.url)
 			if (req.url === '/_status') return res.end(JSON.stringify({status : 'OK'}))
+			if(!_this.configuration[_this.webhook]){
+				res.end('Error, wrong validation token');
+				return;
+			}
 			if (_this.configuration[_this.webhook].verifyToken && req.method === 'GET') {
 				let query = qs.parse(url.parse(req.url).query);
 
 				if (query['hub.verify_token'] === _this.configuration[_this.webhook].verifyToken) {
 					res.end(query['hub.challenge']);
+					return;
 				}
 
 				res.end('Error, wrong validation token');
+				return;
 			}
 			let path = req.path();
 			let body = '';
