@@ -990,6 +990,7 @@ app.post('/witaiDeploy/post', cors(), function (req, res) {
       }
       instanceMongoQueries.updateOne('platform', 'configuration', {}, global, function(resp){});
       instanceMongoQueries.find(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'configuration', function(err, respp){
+          console.log("RESP "+respp);
           if(!respp || !respp[0]){
             instanceMongoQueries.insertOne(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'configuration', global, function(err, respp){});
           }
