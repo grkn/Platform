@@ -8,7 +8,7 @@ var carousel = class Carousel {
     for(var i = 0; i < array.length; i++){
       var aButton = {};
       if(array[i].url){
-        aButton = {'type' : 'web_url', 'url' : "http://l.facebook.com/l.php?u="+array[i].url, 'title' : array[i].name};
+        aButton = {'type' : 'url', 'url' : "http://l.facebook.com/l.php?u="+array[i].url, 'title' : array[i].name};
       }else{
         aButton = {'type' : 'postback', 'title' : array[i].name, 'payload' : array[i].text};
       }
@@ -18,7 +18,7 @@ var carousel = class Carousel {
   }
 
   createACarousel(imgUrl, title, subtitle, buttons){
-    return {'image_url' : imgUrl, 'title' : title, 'subtitle' : subtitle, default_action : {'type' : 'web_url', "url" : "https://www.google.com"}, 'buttons' : this.createButtons(buttons)};
+    return {'image_url' : imgUrl, 'title' : title, 'subtitle' : subtitle, default_action : {'type' : 'url', "url" : "https://www.google.com"}, 'buttons' : this.createButtons(buttons)};
   }
 
   createListCarousel(){
