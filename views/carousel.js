@@ -18,7 +18,7 @@ var carousel = class Carousel {
   }
 
   createACarousel(imgUrl, title, subtitle, buttons){
-    return {'image_url' : imgUrl, 'title' : title, 'subtitle' : subtitle, default_action : {'type' : 'url', "url" : "https://www.google.com"}, 'buttons' : this.createButtons(buttons)};
+    return {'image_url' : imgUrl, 'title' : title, 'subtitle' : subtitle, default_action : {'type' : 'web_url', "url" : "https://www.google.com"}, 'buttons' : this.createButtons(buttons)};
   }
 
   createListCarousel(){
