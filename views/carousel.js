@@ -8,7 +8,7 @@ var carousel = class Carousel {
     for(var i = 0; i < array.length; i++){
       var aButton = {};
       if(array[i].url){
-        aButton = {'type' : 'url', 'url' : "http://l.facebook.com/l.php?u="+array[i].url, 'title' : array[i].name};
+        aButton = {'type' : 'web_url', 'url' : array[i].url, 'title' : array[i].name};
       }else{
         aButton = {'type' : 'postback', 'title' : array[i].name, 'payload' : array[i].text};
       }

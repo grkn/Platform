@@ -775,8 +775,12 @@ var facebookclass = class FacebookBotClass {
 			for(var j = 0; j < obj.elements[i].buttons.length; j++){
 				var button = {'type' : obj.elements[i].buttons[j].type};
 				button['title']  = obj.elements[i].buttons[j].title;
-				if(obj.elements[i].buttons[j].type == 'url'){
+				if(obj.elements[i].buttons[j].type == 'web_url'){
 					button['url'] = obj.elements[i].buttons[j].url;
+					approve(obj.elements[i].buttons[j].url,_this);
+					button['webview_height_ratio'] = 'full';
+					button['messenger_extensions'] =  true;
+					button['fallback_url'] = obj.elements[i].buttons[j].url;
 					approve(obj.elements[i].buttons[j].url,_this);
 				}else{
 					button['payload'] = obj.elements[i].buttons[j].payload;
