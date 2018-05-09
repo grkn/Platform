@@ -449,8 +449,10 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                               var obj = {'transaction' : req.body.obj.transaction, 'message' : {text : text}, 'user_id' : req.body.obj.user_id + '_BOT', 'created_date' : new Date(req.body.obj.created_date.getTime() + 1)};
                               instanceMongoQueries.insertOne(queryString.parse(req.query()).accessToken, req.params.collectionName, obj, function(resp, obj){});
                               instanceMongoQueries.insertOne(queryString.parse(req.query()).accessToken, req.params.collectionName, req.body.obj, function(resp, obj){});
-                              var chatbase = new Chatbase(req.body.obj.message.text, req.cookies.user_id, 'user',  respp[0].chatbaseAppSecret, maxValueFirst, true);
-                              chatbase.sendMessage();
+                              if(respp && respp[0]){
+                                var chatbase = new Chatbase(req.body.obj.message.text, req.cookies.user_id, 'user',  respp[0].chatbaseAppSecret, maxValueFirst, true);
+                                chatbase.sendMessage();
+                              }
                               req.body.obj.confidenceLevel = maxFirst;
                               req.body.obj.intentName = maxValueFirst;
                               instanceMongoQueries.insertOne(queryString.parse(req.query()).accessToken, 'training_messages', req.body.obj, function(resp, obj){});
