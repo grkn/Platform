@@ -480,6 +480,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                                   instanceMongoQueries.insertOne(queryString.parse(req.query()).accessToken, req.params.collectionName, req.body.obj, function(resp, obj){});
                                   console.log(response[0].value);
                                   res.send({text : response[0].value, type : response[0].type, intent : response[0].key, subject : ''});
+                                  return;
                                 }
                               }else{
                                 instanceMongoQueries.find(global[authorization].defaultAuthorizationToken, 'configuration', function(respp){
@@ -505,6 +506,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                                   chatbase.sendMessage();
                                   console.log("Fallback basıldı");
                                   res.send({text : text});
+                                  return;
                                 });
                               }
                             });
@@ -532,6 +534,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                             chatbase.sendMessage();
                             console.log("Fallback basildi.");
                             res.send({text : text});
+                            return;
                         });
                       }
                     });
@@ -567,6 +570,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                             });
                             console.log(response[0].value);
                             res.send({text : response[0].value, type : response[0].type, intent : response[0].key, subject : ''});
+                            return;
                           }
                         }else{
                           console.log("Answer tablosunda cevap yok");
@@ -591,6 +595,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                             chatbase.sendMessage();
                             instanceMongoQueries.insertOne(queryString.parse(req.query()).accessToken, 'training_messages', req.body.obj, function(resp, obj){});
                             res.send({text : text});
+                            return;
                         });
                       }
                     });
@@ -661,6 +666,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
 
                             console.log(response[0].value);
                             res.send({text : response[0].value, type : response[0].type, intent : response[0].key, subject : ''});
+                            return;
                           }
                         }else{
                           instanceMongoQueries.find(global[authorization].defaultAuthorizationToken, 'configuration', function(respp){
@@ -684,6 +690,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                             var chatbase = new Chatbase(req.body.obj.message.text, req.cookies.user_id, 'user',  respp[0].chatbaseAppSecret, maxValueFirst, true);
                             chatbase.sendMessage();
                             res.send({text : text});
+                            return;
                           });
                         }
                     });
@@ -709,6 +716,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                       var chatbase = new Chatbase(req.body.obj.message.text, req.cookies.user_id, 'user',  respp[0].chatbaseAppSecret, maxValueFirst, true);
                       chatbase.sendMessage();
                       res.send({text : text});
+                      return;
                   });
                 }
               });
@@ -770,6 +778,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                         });
                         console.log(response[0].value);
                         res.send({text : response[0].value, type : response[0].type, intent : response[0].key, subject : ''});
+                        return;
                       }
                     }else{
                       instanceMongoQueries.find(global[authorization].defaultAuthorizationToken, 'configuration', function(respp){
@@ -793,6 +802,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                         var chatbase = new Chatbase(req.body.obj.message.text, req.cookies.user_id, 'user',  respp[0].chatbaseAppSecret, maxValueFirst, true);
                         chatbase.sendMessage();
                         res.send({text : text});
+                        return;
                     });
                   }
                 });
@@ -812,6 +822,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                 var chatbase = new Chatbase(req.body.obj.message.text, req.cookies.user_id, 'user',  respp[0].chatbaseAppSecret, maxValueFirst, true);
                 chatbase.sendMessage();
                 res.send({text : text});
+                return;
             });
             }
           });
