@@ -432,7 +432,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                             console.log("Witai threshold dusuk geldi. ai search with subject");
                             instanceMongoQueries.find(global[authorization].defaultAuthorizationToken, 'configuration', function(err, respp){
                               var text = "";
-                              if(req.session.subject[0].response){
+                              if(req.session.subject && req.session.subject[0] && req.session.subject[0].response){
                                 var random = Math.floor(Math.random() * (req.session.subject[0].response.length - 1));
                                 text = req.session.subject[0].response[random];
                                 var chatbase = new Chatbase(text, req.cookies.user_id, 'agent', respp[0].chatbaseAppSecret, req.session.subject[0].subject + '_fallback', false);
@@ -483,7 +483,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                                 instanceMongoQueries.find(global[authorization].defaultAuthorizationToken, 'configuration', function(respp){
                                   console.log("Answer tablosunda cevap yok");
                                   var text = "";
-                                  if(req.session.subject[0].response){
+                                  if(req.session.subject && req.session.subject[0] &&req.session.subject[0].response){
                                     var random = Math.floor(Math.random() * (req.session.subject[0].response.length - 1));
                                     text = req.session.subject[0].response[random];
                                     var chatbase = new Chatbase(text, req.cookies.user_id, 'agent',  respp[0].chatbaseAppSecret, req.session.subject[0].subject + '_fallback', false);
@@ -510,7 +510,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                           console.log("Wit ai intent bulamadi.");
                           instanceMongoQueries.find(global[authorization].defaultAuthorizationToken, 'configuration', function(respp){
                             var text = "";
-                            if(req.session.subject[0].response){
+                            if(req.session.subject && req.session.subject[0] && req.session.subject[0].response){
                               var random = Math.floor(Math.random() * (req.session.subject[0].response.length - 1));
                               text = req.session.subject[0].response[random];
                               var chatbase = new Chatbase(text, req.cookies.user_id, 'agent',  respp[0].chatbaseAppSecret, req.session.subject[0].subject + '_fallback', false);
@@ -570,7 +570,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                           console.log("Answer tablosunda cevap yok");
                           instanceMongoQueries.find(global[authorization].defaultAuthorizationToken, 'configuration', function(respp){
                             var text = "";
-                            if(req.session.subject[0] && req.session.subject[0].response){
+                            if(req.session.subject && req.session.subject[0] && req.session.subject[0].response){
                               var random = Math.floor(Math.random() * (req.session.subject[0].response.length - 1));
                               text = req.session.subject[0].response[random];
                               var chatbase = new Chatbase(text, req.cookies.user_id, 'agent',  respp[0].chatbaseAppSecret, req.session.subject[0].subject + '_fallback', false);
@@ -617,7 +617,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                     if(maxFirst < global.threshold){
                       instanceMongoQueries.find(global[authorization].defaultAuthorizationToken, 'configuration', function(respp){
                         var text = "";
-                        if(req.session.subject[0] && req.session.subject[0].response){
+                        if(req.session.subject && req.session.subject[0] && req.session.subject[0].response){
                           var random = Math.floor(Math.random() * (req.session.subject[0].response.length - 1));
                           text = req.session.subject[0].response[random];
                           var chatbase = new Chatbase(text, req.cookies.user_id, 'agent',  respp[0].chatbaseAppSecret, req.session.subject[0].subject + '_fallback', false);
@@ -663,7 +663,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                         }else{
                           instanceMongoQueries.find(global[authorization].defaultAuthorizationToken, 'configuration', function(respp){
                             var text = "";
-                            if(req.session.subject[0] && req.session.subject[0].response){
+                            if(req.session.subject && req.session.subject[0] && req.session.subject[0].response){
                               var random = Math.floor(Math.random() * (req.session.subject[0].response.length - 1));
                               text = req.session.subject[0].response[random];
                               var chatbase = new Chatbase(text, req.cookies.user_id, 'agent',  respp[0].chatbaseAppSecret, req.session.subject[0].subject + '_fallback', false);
@@ -688,7 +688,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                   }else{
                     instanceMongoQueries.find(global[authorization].defaultAuthorizationToken, 'configuration', function(respp){
                       var text = "";
-                      if(req.session.subject[0] && req.session.subject[0].response){
+                      if(req.session.subject && req.session.subject[0] && req.session.subject[0].response){
                         var random = Math.floor(Math.random() * (req.session.subject[0].response.length - 1));
                         text = req.session.subject[0].response[random];
                         var chatbase = new Chatbase(text, req.cookies.user_id, 'agent',  respp[0].chatbaseAppSecret, req.session.subject[0].subject + '_fallback', false);
