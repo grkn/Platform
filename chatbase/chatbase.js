@@ -8,6 +8,7 @@ var chatbase = class Chatbase {
     this.type = type;
     this.intent = intent;
     this.handled = handled;
+    this.secret = secret;
     this.body = {
       data : {
         "api_key" : secret,
@@ -26,9 +27,11 @@ var chatbase = class Chatbase {
   }
 
   sendMessage(){
-    client.post('https://chatbase-area120.appspot.com/api/message', this.body, function(response){
-      console.log(response);
-    });
+    if(this.secret){
+      client.post('https://chatbase-area120.appspot.com/api/message', this.body, function(response){
+        console.log(response);
+      });
+    }
   }
 }
 
