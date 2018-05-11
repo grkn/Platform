@@ -138,23 +138,6 @@ app.get('/mongo/delete/:collectionName', function(req, res){
   res.send({resp : 'OK'});
 });
 
-// wit e intent olusturyor
-app.delete('/delete/intent', cors(), function(req, res){
-  var wit = {
-    data : {},
-    headers : {
-      'Authorization' : 'Bearer ' + (req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken),
-      'Content-Type' : 'application/json'
-    }
-  }
-  client.delete('https://api.wit.ai/entities/intent/values/' + encodeURIComponent(req.body.value), wit, function(response){
-    instanceMongoQueries.deleteOne(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'subject_intent_relation', {intent : req.body.value}, function(resp){});
-    instanceMongoQueries.deleteOne(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'answers', {'key' :  req.body.value}, function(resp){
-      res.send({resp : 'OK'});
-    });
-  });
-});
-
 app.post('/mongo/post/subjectRelation', cors(), function(req, res){
   instanceMongoQueries.findByQuery(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'subject_intent_relation', {intent : req.body.intent}, function(response){
     if(response.length == 0){
@@ -186,7 +169,6 @@ app.post('/mongo/get/subject', cors(), function(req, res){
     res.send(resp);
   });
 });
-
 
 app.delete('/mongo/delete/subject', cors(), function(req, res){
   if(req.body.fallback && req.body.fallback.subject){
@@ -224,7 +206,7 @@ app.post('/mongo/post/subject', cors(), function(req, res){
   }
 });
 
-// wit den intent siliyor
+// wit e intent olusturuyor
 app.post('/create/intent', cors(), function(req, res){
   var wit = {
     data : {
@@ -258,7 +240,24 @@ app.get('/get/witai/entities', function(req, res){
   });
 });
 
-// wit intent ine cümle kaydediyor
+// wit den intent siliyor
+app.delete('/delete/intent', cors(), function(req, res){
+  var wit = {
+    data : {},
+    headers : {
+      'Authorization' : 'Bearer ' + (req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken),
+      'Content-Type' : 'application/json'
+    }
+  }
+  client.delete('https://api.wit.ai/entities/intent/values/' + encodeURIComponent(req.body.value), wit, function(response){
+    instanceMongoQueries.deleteOne(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'subject_intent_relation', {intent : req.body.value}, function(resp){});
+    instanceMongoQueries.deleteOne(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'answers', {'key' :  req.body.value}, function(resp){
+      res.send({resp : 'OK'});
+    });
+  });
+});
+
+// wit intent e cümle kaydediyor
 app.post('/post/intent/expressions', function(req,   res){
   console.log(req.body);
   var wit = {
@@ -276,7 +275,7 @@ app.post('/post/intent/expressions', function(req,   res){
   });
 });
 
-// wit intent inden cümle siliyor
+// wit intent den cümle siliyor
 app.delete('/delete/intent/expressions', function(req, res){
   console.log(req.body.expression);
 	var wit = {
@@ -398,6 +397,10 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
           console.log("Subject var");
           console.log("Wit ai istek atıyor... obj : " + encodeURIComponent(searchedItem));
           client.get('https://api.wit.ai/message?q=' + encodeURIComponent(searchedItem), wit, function(response){
+            if(response.entities.month && response.entities.month.length > 0){
+                  console.log("Month bulundu.");
+            }
+
             if(response.entities && response.entities.intent && response.entities.intent.length > 0){
               console.log("Wit ai intent buldu.");
                 var maxFirst = -1;
