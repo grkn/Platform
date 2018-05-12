@@ -572,6 +572,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                           if(req.body.obj){
                             console.log("maxFirst : " + maxFirst);
                             console.log("maxValueFirst : " + maxValueFirst);
+                            console.log("global.threshold : " + global.threshold);
                             req.body.obj.created_date = new Date();
                             req.body.obj.confidenceLevel = maxFirst;
                             req.body.obj.intentName = maxValueFirst;
@@ -1080,8 +1081,8 @@ app.get('/change/threshold/:threshold', function(req, res){
     instanceMongoQueries.find(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'configuration', function(resp){
       console.log("Bu change threshold icindeki resp[0] : " + resp[0]);
       if(resp && resp[0]){
-        global.threshold = req.params.threshold;
         instanceMongoQueries.updateOne(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'configuration', {}, {$set : {'threshold' : req.params.threshold}}, function(err, respp){
+          global.threshold = req.params.threshold;
           console.log("req.params.threshold : " + req.params.threshold);
           res.send(respp);
         });
