@@ -47,7 +47,7 @@ mongo.connect(url, function(err, db) {
   if (err) throw err;
   instanceMongoQueries = new MongoQueries(db);
   instanceMongoQueries.find('platform', 'configuration', function(resp){
-    console.log(resp);
+    console.log("resp : " + resp);
     if(resp && resp.length > 0){
       global= resp[0];
     }else{
@@ -186,7 +186,7 @@ app.delete('/mongo/delete/subject', cors(), function(req, res){
 });
 
 app.post('/mongo/post/subject', cors(), function(req, res){
-  console.log(req.body.fallback);
+  console.log("req.body.fallback : " + req.body.fallback);
   if(req.body.fallback && req.body.fallback.subject){
     instanceMongoQueries.findByQuery(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'subject', {subject : req.body.fallback.subject.toLowerCase()}, function(resp){
       if(resp.length == 0){
@@ -261,7 +261,7 @@ app.delete('/delete/intent', cors(), function(req, res){
 
 // wit intent e cümle kaydediyor
 app.post('/post/intent/expressions', function(req,   res){
-  console.log(req.body);
+  console.log("req.body : " + req.body);
   var wit = {
     data : {
   		value : req.body.value,
@@ -279,7 +279,7 @@ app.post('/post/intent/expressions', function(req,   res){
 
 // wit intent den cümle siliyor
 app.delete('/delete/intent/expressions', function(req, res){
-  console.log(req.body.expression);
+  console.log("req.body.expression : "+ req.body.expression);
 	var wit = {
 		data : {},
 		headers : {
@@ -295,7 +295,7 @@ app.delete('/delete/intent/expressions', function(req, res){
 // intent icin cevap ekleme
 app.post('/send/meaningful/sentence', cors(), function (req, res) {
   instanceMongoQueries.findByQuery(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'answers', {'key' :  req.body.intent}, function(resp){
-    console.log(resp);
+    console.log("resp : " + resp);
     if(resp.length > 0){
       instanceMongoQueries.updateOne(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'answers', {'key' : req.body.intent}, {$set : {'key' : req.body.intent, 'value' : req.body.message, 'type' : 'text'}}, function(resp){});
     }else{
@@ -341,7 +341,7 @@ app.get('/api/getMessage/dialogFlow', cors(), function(req, res){
 
 // WEB API create app
 app.post('/witaiCreateApp/post', cors(), function(req, res){
-    console.log(req.body.application);
+    console.log("req.body.application : " + req.body.application);
     var wit = {
       data : {
         'name' : req.body.application.name,
@@ -362,7 +362,7 @@ app.post('/witaiCreateApp/post', cors(), function(req, res){
 // WEB API for wit.ai
 app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
   var authorization = queryString.parse(req.query()).authorization;
-  console.log(authorization);
+  console.log("authorization : " + authorization);
   try{
     var wit = {
       data : {
@@ -391,12 +391,12 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
         instanceMongoQueries.insertOne(queryString.parse(req.query()).accessToken, req.params.collectionName, obj, function(resp, obj){});
       }else{
         //Emoji yok
-        console.log(req.session.subject);
+        console.log("req.session.subject : " + req.session.subject);
         //subject var mı ?
         console.log("Subject var mı?");
         if(req.session.subject){
           //Subject varsa
-          console.log("Subject var: " + req.session.subject);
+          console.log("Subject var : " + req.session.subject);
           console.log("Wit ai istek atıyor... obj : " + encodeURIComponent(searchedItem));
           client.get('https://api.wit.ai/message?q=' + encodeURIComponent(searchedItem), wit, function(response){
             var subjectLocal = req.session.subject;
@@ -405,10 +405,9 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
             }else{
               subjectLocal = req.session.subject.subject;
             }
-            console.log("subjectLocal : " + subjectLocal);
-
             if(subjectLocal == "izintarih" && response.entities.day && response.entities.month && response.entities.year){
               console.log("Tarih bilgisi tam ");
+              console.log("subjectLocal : " + subjectLocal);
               res.send({text :  'İzin başlangıç tarihiniz ' + response.entities.day[0].value + '.' + response.entities.month[0].value + '.' + response.entities.year[0].value + ' olarak alınmıştır.'});
             }
             else if(response.entities && response.entities.intent && response.entities.intent.length > 0){
@@ -421,7 +420,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                     maxFirst = response.entities.intent[i].confidence;
                   }
                 }
-                console.log("Max confidence threshold geçiyor mu?");
+                console.log("Max confidence threshold u geçiyor mu?");
                 if(maxFirst < global.threshold){
                   var subjectLocal = req.session.subject;
                   if(req.session.subject[0]){
@@ -429,7 +428,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                   }else{
                     subjectLocal = req.session.subject.subject;
                   }
-                    console.log(global.threshold + "Witai threshold dusuk geldi. ai search with subject  obj : " + encodeURIComponent(subjectLocal + ' ' + searchedItem));
+                    console.log(global.threshold + " Witai threshold dusuk geldi. ai search with subject  obj : " + encodeURIComponent(subjectLocal + ' ' + searchedItem));
                     client.get('https://api.wit.ai/message?q=' + encodeURIComponent(subjectLocal + ' ' + searchedItem), wit, function(response){
                         if(response.entities && response.entities.intent && response.entities.intent.length > 0){
                           console.log("Wit ai intent buldu.");
@@ -442,7 +441,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                             }
                           }
                           if(maxFirst < global.threshold){
-                            console.log(global.threshold + "Witai threshold dusuk geldi. ai search with subject");
+                            console.log(global.threshold + " Witai threshold dusuk geldi. ai search with subject");
                             instanceMongoQueries.find(global[authorization].defaultAuthorizationToken, 'configuration', function(err, respp){
                               var text = "";
                               if(req.session.subject && req.session.subject[0] && req.session.subject[0].response){
@@ -491,7 +490,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                                   var obj = {'transaction' : req.body.obj.transaction, 'message' : {text : response[0].value, type : response[0].type, intent : response[0].key}, 'user_id' : req.body.obj.user_id + '_BOT', 'created_date' : new Date(req.body.obj.created_date.getTime() + 1)};
                                   instanceMongoQueries.insertOne(queryString.parse(req.query()).accessToken, req.params.collectionName, obj, function(resp, obj){});
                                   instanceMongoQueries.insertOne(queryString.parse(req.query()).accessToken, req.params.collectionName, req.body.obj, function(resp, obj){});
-                                  console.log(response[0].value);
+                                  console.log("response[0].value : " + response[0].value);
                                   res.send({text : response[0].value, type : response[0].type, intent : response[0].key, subject : ''});
                                   return;
                                 }
@@ -736,6 +735,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
             }
           });
         }else{
+          //Subject yoksa
           client.get('https://api.wit.ai/message?q=' + encodeURIComponent(searchedItem), wit, function(response){
             if(response.entities && response.entities.intent && response.entities.intent.length > 0){
               var maxFirst = -1;
@@ -767,11 +767,11 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                 console.log("maxFirst < global.threshold : " + global.threshold);
               }
               instanceMongoQueries.findByQuery(queryString.parse(req.query()).accessToken, 'subject_intent_relation', {intent : maxValueFirst}, function(sResponse){
-                console.log(sResponse);
+                console.log("sResponse : " + sResponse);
                 if(sResponse.length > 0){
                   req.session.subject = sResponse[0];
                   instanceMongoQueries.findByQuery(queryString.parse(req.query()).accessToken, 'subject', {subject : req.session.subject.subject}, function(r){
-                    console.log(r);
+                    console.log("r : " + r);
                     req.session.subject = r;
                   });
                 }
@@ -790,7 +790,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                           var chatbase = new Chatbase('' + response[0].value, req.cookies.user_id, 'agent',  respp[0].chatbaseAppSecret, maxValueFirst, false);
                           chatbase.sendMessage();
                         });
-                        console.log(response[0].value);
+                        console.log("response[0].value : "+ response[0].value);
                         res.send({text : response[0].value, type : response[0].type, intent : response[0].key, subject : ''});
                         return;
                       }
@@ -822,7 +822,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                 });
               });
             }else{
-              console.log(global[authorization].defaultAuthorizationToken);
+              console.log("global[authorization].defaultAuthorizationToken : " + global[authorization].defaultAuthorizationToken);
               instanceMongoQueries.find(global[authorization].defaultAuthorizationToken, 'configuration', function(respp){
                 var random = Math.floor(Math.random() * (respp[0].responseList.length));
                 var text = respp[0].responseList[random];
@@ -979,11 +979,10 @@ app.get('/facebook/get', cors(), function (req, res) {
 
 // angular facebook deploy post
 app.post('/facebook/post', cors(), function (req, res) {
-  console.log(req.body.facebookDeployment);
+  console.log("req.body.facebookDeployment : " + req.body.facebookDeployment);
   instanceMongoQueries.updateOne(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'configuration', {}, {$set : {facebookDeployment : req.body.facebookDeployment}}, function(err, resp){
     global.facebookDeployment = req.body.facebookDeployment;
   });
-
   instanceMongoQueries.find(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'configuration', function(resp){
     facebookClass.setWebhook(req.body.facebookDeployment.guid);
     facebookClass.setVerifyToken(req.body.facebookDeployment.verifyToken);
@@ -1005,7 +1004,7 @@ app.post('/witaiDeploy/post', cors(), function (req, res) {
       global[req.headers.authorization.split(" ")[1]] = resp[0];
       instanceMongoQueries.updateOne('platform', 'configuration', {}, global, function(resp){});
       instanceMongoQueries.find(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'configuration', function(err, respp){
-        console.log("RESPP2 "+respp);
+        console.log("RESPP2 : " + respp);
           if(!respp || !respp[0]){
             instanceMongoQueries.insertOne(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'configuration', global, function(err, respp){});
           }
@@ -1036,9 +1035,9 @@ app.post('/witaiDeploy/post', cors(), function (req, res) {
 });
 
 app.get('/witaiDeploy/get', cors(), function (req, res) {
-  console.log(req.headers.authorization);
+  console.log("req.headers.authorization : " + req.headers.authorization);
   instanceMongoQueries.find('platform', 'configuration', function(resp){
-    console.log(resp);
+    console.log("resp : " + resp);
     if(resp && resp[0] && resp[0][req.headers.authorization.split(" ")[1]]){
       res.send(resp[0][req.headers.authorization.split(" ")[1]]);
     }else
@@ -1075,7 +1074,7 @@ app.get('/change/threshold/:threshold', function(req, res){
   console.log(req.headers.authorization);
   if(req.headers.authorization && global[req.headers.authorization.split(" ")[1]]){
     instanceMongoQueries.find(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'configuration', function(resp){
-      console.log("Bu change threshold icindeki resp0: " + resp[0]);
+      console.log("Bu change threshold icindeki resp[0] : " + resp[0]);
       if(resp && resp[0]){
         instanceMongoQueries.updateOne(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'configuration', {}, {$set :{'threshold' : req.params.threshold}}, function(err, respp){
           console.log("req.params.threshold : " + req.params.threshold);
