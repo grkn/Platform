@@ -19,10 +19,7 @@ var url = 'mongodb://localhost:27017/platform';
 
 let instanceMongoQueries;
 
-let global = {defaultAuthorizationToken : 'DSWRM5DAQVXBGOH7BQWO455ERSGWRNR6'};
-
-let vacationFlag = 0;
-let fullvacationdate = [];
+let global = {defaultAuthorizationToken : 'DSWRM5DAQVXBGOH7BQWO455ERSGWRNR6', vacationFlag : 0, fullvacationdate : []};
 
 app.use(CookieParser());
 
@@ -61,6 +58,8 @@ mongo.connect(url, function(err, db) {
         defaultAuthorizationToken : global.defaultAuthorizationToken,
         facebookDeployment : {},
         chatbaseAppSecret : '',
+        vacationFlag : 0,
+        fullvacationdate : [],
         createdDate : new Date()
       }
       instanceMongoQueries.insertOne('platform', 'configuration', global, function(resp){});
@@ -400,29 +399,29 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
           console.log("Subject var");
           console.log("Wit ai istek atıyor... obj : " + encodeURIComponent(searchedItem));
           client.get('https://api.wit.ai/message?q=' + encodeURIComponent(searchedItem), wit, function(response){
-            console.log("FLAG: "+vacationFlag);
-            if(vacationFlag==0 && response.entities.intent=='izintalebibaslat'){
-               vacationFlag = 1;
+            console.log("FLAG: " + global.vacationFlag);
+            if(global.vacationFlag==0 && response.entities.intent=='izintalebibaslat'){
+               global.vacationFlag = 1;
               if(response.entities && response.entities.day && response.entities.day.length > 0){
                 console.log("Day bulundu");
                 console.log(response.entities.day);
-                fullvacationdate[0] = response.entities.day;
+                global.fullvacationdate[0] = response.entities.day;
               }
               if(response.entities && response.entities.month && response.entities.month.length > 0){
                 console.log("Month bulundu");
                 console.log(response.entities.month);
-                fullvacationdate[1] = response.entities.month;
+                global.fullvacationdate[1] = response.entities.month;
               }
               if(response.entities && response.entities.year && response.entities.year.length > 0){
                 console.log("Year bulundu");
                 console.log(response.entities.year);
-                fullvacationdate[2] = response.entities.year;
+                global.fullvacationdate[2] = response.entities.year;
               }
             }
-            else if(vacationFlag==1 && (response.entities.day.length < 1 || response.entities.month.length < 1 || response.entities.year.length < 1)){
+            else if(global.vacationFlag==1 && (response.entities.day.length < 1 || response.entities.month.length < 1 || response.entities.year.length < 1)){
               res.send("Tarih bilgisi eksik görünüyor. Lütfen gün.ay.yıl olarak tekrar giriş yapınız. ");
             }
-            
+
             else if(response.entities && response.entities.intent && response.entities.intent.length > 0){
               console.log("Wit ai intent buldu.");
                 var maxFirst = -1;
@@ -1030,6 +1029,8 @@ app.post('/witaiDeploy/post', cors(), function (req, res) {
         defaultAuthorizationToken : req.body.witDeployment,
         facebookDeployment : {},
         chatbaseAppSecret : '',
+        vacationFlag : 0,
+        fullvacationdate : [],
         createdDate : new Date()
       }
       instanceMongoQueries.updateOne('platform', 'configuration', {}, global, function(resp){});
