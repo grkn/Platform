@@ -418,7 +418,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                 global.fullvacationdate[2] = response.entities.year;
               }
             }
-            else if(response.entities.day.length < 1 || response.entities.month.length < 1 || response.entities.year.length < 1){
+            else if(response.entities.day && response.entities.month && response.entities.year){
               res.send("Tarih bilgisi eksik görünüyor. Lütfen gün.ay.yıl olarak tekrar giriş yapınız. ");
             }
 
