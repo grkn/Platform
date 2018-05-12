@@ -1081,7 +1081,7 @@ app.get('/change/threshold/:threshold', function(req, res){
           res.send(respp);
         });
       }else{
-        instanceMongoQueries.insertOne(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'configuration', global, function(err, respp){
+        instanceMongoQueries.insertOne(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'configuration', {$set : {'threshold' : req.params.threshold}}, function(err, respp){
           res.send(respp);
         });
       }
