@@ -1088,7 +1088,7 @@ app.get('/change/threshold/:threshold', function(req, res){
     });
   }else{
     global.threshold = req.params.threshold;
-    instanceMongoQueries.updateOne('platform', 'configuration', {}, {$push : {"threshold" : req.params.threshold}}, function(err, resp){
+    instanceMongoQueries.updateOne('platform', 'configuration', {}, {$set : {"threshold" : req.params.threshold}}, function(err, resp){
       res.send(resp);
     });
   }
