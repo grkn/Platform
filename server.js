@@ -52,7 +52,7 @@ mongo.connect(url, function(err, db) {
       global= resp[0];
     }else{
       global = {
-        threshold : 1.1,
+        threshold : 0.7,
         responseList : [],
         persistentMenu : [],
         defaultAuthorizationToken : global.defaultAuthorizationToken,
@@ -1001,7 +1001,17 @@ app.post('/witaiDeploy/post', cors(), function (req, res) {
   value.then(function(resp){
     if(resp && resp[0]){
       resp[0].defaultAuthorizationToken = req.body.witDeployment;
-      global[req.headers.authorization.split(" ")[1]] = resp[0];
+      global[req.headers.authorization.split(" ")[1]] = {
+        threshold : 0.7,
+        responseList : [],
+        persistentMenu : [],
+        defaultAuthorizationToken : req.body.witDeployment,
+        facebookDeployment : {},
+        chatbaseAppSecret : '',
+        vacationFlag : 0,
+        fullvacationdate : [],
+        createdDate : new Date()
+      }
       instanceMongoQueries.updateOne('platform', 'configuration', {}, global, function(resp){});
       instanceMongoQueries.find(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'configuration', function(err, respp){
         console.log("RESPP2 : " + respp);
@@ -1012,7 +1022,7 @@ app.post('/witaiDeploy/post', cors(), function (req, res) {
       res.send({data : req.body.witDeployment});
     }else{
       global[req.headers.authorization.split(" ")[1]] = {
-        threshold : 1.1,
+        threshold : 0.7,
         responseList : [],
         persistentMenu : [],
         defaultAuthorizationToken : req.body.witDeployment,
