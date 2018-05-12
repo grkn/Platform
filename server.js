@@ -401,7 +401,10 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
           client.get('https://api.wit.ai/message?q=' + encodeURIComponent(searchedItem), wit, function(response){
             if(response.entities.day && response.entities.month && response.entities.year){
               console.log("Tarih bilgisi tam ");
-              res.send({text :  'İzin başlangıç tarihiniz ' + JSON.stringify(response.entities.day.value) + '.' + JSON.stringify(response.entities.month.value) + '.' + JSON.stringify(response.entities.year.value) + 'olarak alınmıştır.'});
+              var day = JSON.stringify(response.entities.day.value);
+              var month = JSON.stringify(response.entities.month.value);
+              var year = JSON.stringify(response.entities.year.value);
+              res.send({text :  'İzin başlangıç tarihiniz ' + day + '.' + month + '.' + year + 'olarak alınmıştır.'});
             }
 
             else if(response.entities && response.entities.intent && response.entities.intent.length > 0){
@@ -414,7 +417,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                     maxFirst = response.entities.intent[i].confidence;
                   }
                 }
-                console.log("Max cofidence threshold geçiyor mu?");
+                console.log("Max confidence threshold geçiyor mu?");
                 if(maxFirst < global.threshold){
                   var subjectLocal = req.session.subject;
                   if(req.session.subject[0]){
