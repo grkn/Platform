@@ -1028,6 +1028,8 @@ app.post('/witaiDeploy/post', cors(), function (req, res) {
         defaultAuthorizationToken : req.body.witDeployment,
         facebookDeployment : {},
         chatbaseAppSecret : '',
+        vacationFlag : 0,
+        fullvacationdate : [],
         createdDate : new Date()
       }
       instanceMongoQueries.updateOne('platform', 'configuration', {}, global, function(resp){});
