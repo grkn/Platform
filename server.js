@@ -478,6 +478,8 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                             if(response.length > 0){
                                 if(req.body.obj){
                                   console.log("Answer tablosunda cevap var");
+                                  console.log("maxFirst : " + maxFirst);
+                                  console.log("maxValueFirst : " + maxFirst);
                                   req.body.obj.created_date = new Date();
                                   req.body.obj.confidenceLevel = maxFirst;
                                   req.body.obj.intentName = maxValueFirst;
@@ -566,8 +568,10 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                     console.log("Answer tablosunda cevap var mı ?");
                     instanceMongoQueries.findByQuery(queryString.parse(req.query()).accessToken, 'answers', {'key' : maxValueFirst}, function(response){
                       if(response.length > 0){
-                        console.log("Answer tablosunda cevap var");
+                        console.log("Answer tablosunda cevap var - ");
                           if(req.body.obj){
+                            console.log("maxFirst : " + maxFirst);
+                            console.log("maxValueFirst : " + maxValueFirst);
                             req.body.obj.created_date = new Date();
                             req.body.obj.confidenceLevel = maxFirst;
                             req.body.obj.intentName = maxValueFirst;
