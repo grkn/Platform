@@ -19,7 +19,8 @@ var url = 'mongodb://localhost:27017/platform';
 
 let instanceMongoQueries;
 
-let global = {defaultAuthorizationToken : 'DSWRM5DAQVXBGOH7BQWO455ERSGWRNR6'};
+let global = {defaultAuthorizationToken : 'DSWRM5DAQVXBGOH7BQWO455ERSGWRNR6', vacationFlag : 0, fullvacationdate : []};
+
 
 app.use(CookieParser());
 
@@ -58,8 +59,6 @@ mongo.connect(url, function(err, db) {
         defaultAuthorizationToken : global.defaultAuthorizationToken,
         facebookDeployment : {},
         chatbaseAppSecret : '',
-        vacationFlag : 0,
-        fullvacationdate : [],
         createdDate : new Date()
       }
       instanceMongoQueries.insertOne('platform', 'configuration', global, function(resp){});
@@ -1028,8 +1027,6 @@ app.post('/witaiDeploy/post', cors(), function (req, res) {
         defaultAuthorizationToken : req.body.witDeployment,
         facebookDeployment : {},
         chatbaseAppSecret : '',
-        vacationFlag : 0,
-        fullvacationdate : [],
         createdDate : new Date()
       }
       instanceMongoQueries.updateOne('platform', 'configuration', {}, global, function(resp){});
