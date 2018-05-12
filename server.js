@@ -429,7 +429,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                   }else{
                     subjectLocal = req.session.subject.subject;
                   }
-                    console.log("Witai threshold dusuk geldi. ai search with subject  obj : " + encodeURIComponent(subjectLocal + ' ' + searchedItem));
+                    console.log(global.threshold + "Witai threshold dusuk geldi. ai search with subject  obj : " + encodeURIComponent(subjectLocal + ' ' + searchedItem));
                     client.get('https://api.wit.ai/message?q=' + encodeURIComponent(subjectLocal + ' ' + searchedItem), wit, function(response){
                         if(response.entities && response.entities.intent && response.entities.intent.length > 0){
                           console.log("Wit ai intent buldu.");
@@ -442,7 +442,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                             }
                           }
                           if(maxFirst < global.threshold){
-                            console.log("Witai threshold dusuk geldi. ai search with subject");
+                            console.log(global.threshold + "Witai threshold dusuk geldi. ai search with subject");
                             instanceMongoQueries.find(global[authorization].defaultAuthorizationToken, 'configuration', function(err, respp){
                               var text = "";
                               if(req.session.subject && req.session.subject[0] && req.session.subject[0].response){
@@ -633,7 +633,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                         maxFirst = response.entities.intent[i].confidence;
                       }
                     }
-                    console.log("Max Confidence : " + maxFirst);
+                    console.log("Max Confidence : " + maxFirst + " threshold: " + global.threshold);
                     if(maxFirst < global.threshold){
                       instanceMongoQueries.find(global[authorization].defaultAuthorizationToken, 'configuration', function(respp){
                         var text = "";
@@ -764,6 +764,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                   res.send({text : text});
                   return;
                 });
+                console.log("maxFirst < global.threshold : " + global.threshold);
               }
               instanceMongoQueries.findByQuery(queryString.parse(req.query()).accessToken, 'subject_intent_relation', {intent : maxValueFirst}, function(sResponse){
                 console.log(sResponse);
@@ -1125,7 +1126,6 @@ app.delete('/delete/responseList/:response', function(req, res){
 
 app.post('/add/persistentMenu', cors(), function(req, res){
   if(req.headers.authorization && global[req.headers.authorization.split(" ")[1]]){
-
     instanceMongoQueries.updateOne(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'configuration', {}, {$set : {'persistentMenu' : req.body.persistentMenuList}}, function(err, respp){
       res.send(respp);
     });
