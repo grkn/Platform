@@ -1075,9 +1075,10 @@ app.get('/change/threshold/:threshold', function(req, res){
   console.log(req.headers.authorization);
   if(req.headers.authorization && global[req.headers.authorization.split(" ")[1]]){
     instanceMongoQueries.find(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'configuration', function(resp){
-      console.log(resp);
+      console.log("Bu change threshold icindeki resp: " + resp);
       if(resp && resp[0]){
         instanceMongoQueries.updateOne(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'configuration', {}, {$set :{'threshold' : req.params.threshold}}, function(err, respp){
+          console.log("req.params.threshold : " + req.params.threshold);
           res.send(respp);
         });
       }else{
@@ -1097,6 +1098,7 @@ app.get('/change/threshold/:threshold', function(req, res){
 app.get('/get/threshold/', function(req, res){
   if(req.headers.authorization && global[req.headers.authorization.split(" ")[1]]){
     instanceMongoQueries.find(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'configuration', function(resp){
+        console.log("Bu get threshold icindeki resp : " + resp);
       res.send(resp);
     });
   }else{
