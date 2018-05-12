@@ -407,7 +407,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
             }
             console.log("Subject bilgisi lazım" + subjectLocal);
 
-            if(req.session.subject[0] == "izintarih" && response.entities.day && response.entities.month && response.entities.year){
+            if(subjectLocal == "izintarih" && response.entities.day && response.entities.month && response.entities.year){
               console.log("Tarih bilgisi tam ");
               res.send({text :  'İzin başlangıç tarihiniz ' + response.entities.day[0].value + '.' + response.entities.month[0].value + '.' + response.entities.year[0].value + ' olarak alınmıştır.'});
             }
