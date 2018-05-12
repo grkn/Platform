@@ -47,7 +47,7 @@ mongo.connect(url, function(err, db) {
   if (err) throw err;
   instanceMongoQueries = new MongoQueries(db);
   instanceMongoQueries.find('platform', 'configuration', function(resp){
-    console.log("resp : " + resp);
+    console.log(resp);
     if(resp && resp.length > 0){
       global= resp[0];
     }else{
