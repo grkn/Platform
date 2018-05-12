@@ -419,7 +419,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
               }
             }
             else if(vacationFlag==1 && (response.entities.day.length < 1 || response.entities.month.length < 1 || response.entities.year.length < 1)){
-              res.send({"Tarih bilgisi eksik görünüyor. Lütfen gün.ay.yıl olarak tekrar giriş yapınız. "});
+              res.send("Tarih bilgisi eksik görünüyor. Lütfen gün.ay.yıl olarak tekrar giriş yapınız. ");
             }
             else if(response.entities && response.entities.intent && response.entities.intent.length > 0){
               console.log("Wit ai intent buldu.");
