@@ -399,7 +399,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
           console.log("Subject var");
           console.log("Wit ai istek atıyor... obj : " + encodeURIComponent(searchedItem));
           client.get('https://api.wit.ai/message?q=' + encodeURIComponent(searchedItem), wit, function(response){
-
+            console.log(global.vacationFlag);
             if(global.vacationFlag==0 && response.entities.intent=='izintalebibaslat'){
                global.vacationFlag = 1;
               if(response.entities && response.entities.day && response.entities.day.length > 0){
