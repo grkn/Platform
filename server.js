@@ -401,11 +401,11 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
           client.get('https://api.wit.ai/message?q=' + encodeURIComponent(searchedItem), wit, function(response){
             if(response.entities.day && response.entities.month && response.entities.year){
               console.log("Tarih bilgisi tam ");
-              var obj = JSON.stringify(response.entities.day);
-              var day = JSON.parse(obj.value);
+              
+              var day = JSON.stringify(response.entities.day);
               var month = JSON.stringify(response.entities.month);
               var year = JSON.stringify(response.entities.year);
-              res.send({text :  'İzin başlangıç tarihiniz ' + day + '.' + month + '.' + year + 'olarak alınmıştır.'});
+              res.send({text :  'İzin başlangıç tarihiniz ' + day.value + '.' + month + '.' + year + 'olarak alınmıştır.'});
             }
 
             else if(response.entities && response.entities.intent && response.entities.intent.length > 0){
