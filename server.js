@@ -401,7 +401,6 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
           client.get('https://api.wit.ai/message?q=' + encodeURIComponent(searchedItem), wit, function(response){
             console.log("Subject bilgisi lazım");
             console.log(req.session.subject[0]);
-            console.log(req.session.subject[0].subject);
 
             if(req.session.subject[0] == "izintarih" && response.entities.day && response.entities.month && response.entities.year){
               console.log("Tarih bilgisi tam ");
