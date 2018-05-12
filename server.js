@@ -52,7 +52,7 @@ mongo.connect(url, function(err, db) {
       global= resp[0];
     }else{
       global = {
-        threshold : 0.7,
+        threshold : 1.1,
         responseList : [],
         persistentMenu : [],
         defaultAuthorizationToken : global.defaultAuthorizationToken,
@@ -1002,7 +1002,7 @@ app.post('/witaiDeploy/post', cors(), function (req, res) {
     if(resp && resp[0]){
       resp[0].defaultAuthorizationToken = req.body.witDeployment;
       global[req.headers.authorization.split(" ")[1]] = {
-        threshold : 0.7,
+        threshold : 1.1,
         responseList : [],
         persistentMenu : [],
         defaultAuthorizationToken : req.body.witDeployment,
@@ -1022,7 +1022,7 @@ app.post('/witaiDeploy/post', cors(), function (req, res) {
       res.send({data : req.body.witDeployment});
     }else{
       global[req.headers.authorization.split(" ")[1]] = {
-        threshold : 0.7,
+        threshold : 1.1,
         responseList : [],
         persistentMenu : [],
         defaultAuthorizationToken : req.body.witDeployment,
