@@ -400,8 +400,8 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
           console.log("Wit ai istek atıyor... obj : " + encodeURIComponent(searchedItem));
           client.get('https://api.wit.ai/message?q=' + encodeURIComponent(searchedItem), wit, function(response){
 
-            if(vacationFlag==0 && response.entities.intent=='izintalebibaslat'){
-              vacationFlag = 1;
+            if(global.vacationFlag==0 && response.entities.intent=='izintalebibaslat'){
+               global.vacationFlag = 1;
               if(response.entities && response.entities.day && response.entities.day.length > 0){
                 console.log("Day bulundu");
                 console.log(response.entities.day);
@@ -418,7 +418,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                 fullvacationdate[2] = response.entities.year;
               }
             }
-            else if(vacationFlag==1 && (response.entities.day.length < 1 || response.entities.month.length < 1 || response.entities.year.length < 1)){
+            else if(global.vacationFlag==1 && (response.entities.day.length < 1 || response.entities.month.length < 1 || response.entities.year.length < 1)){
               res.send("Tarih bilgisi eksik görünüyor. Lütfen gün.ay.yıl olarak tekrar giriş yapınız. ");
             }
             else if(response.entities && response.entities.intent && response.entities.intent.length > 0){
