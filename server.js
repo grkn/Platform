@@ -403,7 +403,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
               console.log("Tarih bilgisi tam ");
               var xxx = JSON.stringify(response);
               console.log(xxx);
-              res.send({text :  'İzin başlangıç tarihiniz ' + xxx.entities.day[0].value + '.' + xxx.entities.month[0].value + '.' + xxx.entities.year[0].value + 'olarak alınmıştır.'});
+              res.send({text :  'İzin başlangıç tarihiniz ' + xxx.entities.day.value + '.' + xxx.entities.month.value + '.' + xxx.entities.year.value + 'olarak alınmıştır.'});
             }
 
             else if(response.entities && response.entities.intent && response.entities.intent.length > 0){
