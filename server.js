@@ -399,7 +399,11 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
           console.log("Subject var");
           console.log("Wit ai istek atıyor... obj : " + encodeURIComponent(searchedItem));
           client.get('https://api.wit.ai/message?q=' + encodeURIComponent(searchedItem), wit, function(response){
-            if(req.session.subject == "izintarih" && response.entities.day && response.entities.month && response.entities.year){
+            console.log("Subject bilgisi lazım");
+            console.log(req.session.subject[0]);
+            console.log(req.session.subject[0].subject);
+
+            if(req.session.subject[0] == "izintarih" && response.entities.day && response.entities.month && response.entities.year){
               console.log("Tarih bilgisi tam ");
               res.send({text :  'İzin başlangıç tarihiniz ' + response.entities.day[0].value + '.' + response.entities.month[0].value + '.' + response.entities.year[0].value + ' olarak alınmıştır.'});
             }
@@ -437,7 +441,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                             console.log("Witai threshold dusuk geldi. ai search with subject");
                             instanceMongoQueries.find(global[authorization].defaultAuthorizationToken, 'configuration', function(err, respp){
                               var text = "";
-                              if(req.session.subject[0] && req.session.subject[0] && req.session.subject[0].response){
+                              if(req.session.subject && req.session.subject[0] && req.session.subject[0].response){
                                 var random = Math.floor(Math.random() * (req.session.subject[0].response.length - 1));
                                 text = req.session.subject[0].response[random];
                                 var chatbase = new Chatbase(text, req.cookies.user_id, 'agent', respp[0].chatbaseAppSecret, req.session.subject[0].subject + '_fallback', false);
