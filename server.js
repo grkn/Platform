@@ -399,8 +399,13 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
           console.log("Subject var");
           console.log("Wit ai istek atıyor... obj : " + encodeURIComponent(searchedItem));
           client.get('https://api.wit.ai/message?q=' + encodeURIComponent(searchedItem), wit, function(response){
-            
-            console.log("Subject bilgisi lazım" + req.session.subject[0]);
+            var subjectLocal = req.session.subject;
+            if(req.session.subject[0]){
+              subjectLocal = req.session.subject[0].subject;
+            }else{
+              subjectLocal = req.session.subject.subject;
+            }
+            console.log("Subject bilgisi lazım" + subjectLocal);
 
             if(req.session.subject[0] == "izintarih" && response.entities.day && response.entities.month && response.entities.year){
               console.log("Tarih bilgisi tam ");
