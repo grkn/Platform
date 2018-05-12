@@ -404,7 +404,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
               var day = JSON.stringify(response.entities.day);
               var month = JSON.stringify(response.entities.month);
               var year = JSON.stringify(response.entities.year);
-              res.send({text :  'İzin başlangıç tarihiniz ' + day[value] + '.' + month[value] + '.' + year[value] + 'olarak alınmıştır.'});
+              res.send({text :  'İzin başlangıç tarihiniz ' + day[1].value + '.' + month[1].value + '.' + year[1].value + 'olarak alınmıştır.'});
             }
 
             else if(response.entities && response.entities.intent && response.entities.intent.length > 0){
