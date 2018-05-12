@@ -401,8 +401,8 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
           client.get('https://api.wit.ai/message?q=' + encodeURIComponent(searchedItem), wit, function(response){
             if(response.entities.day && response.entities.month && response.entities.year){
               console.log("Tarih bilgisi tam ");
-              var obj = JSON.parse(response.entities.day);
-              var day = JSON.stringify(obj.value);
+              var obj = JSON.parse(response);
+              var day = JSON.stringify(obj.entities.day.value);
               var month = JSON.stringify(response.entities.month);
               var year = JSON.stringify(response.entities.year);
               res.send({text :  'İzin başlangıç tarihiniz ' + day + '.' + month + '.' + year + 'olarak alınmıştır.'});
