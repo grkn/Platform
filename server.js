@@ -397,11 +397,18 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
           console.log("Subject var");
           console.log("Wit ai istek atıyor... obj : " + encodeURIComponent(searchedItem));
           client.get('https://api.wit.ai/message?q=' + encodeURIComponent(searchedItem), wit, function(response){
+            if(response.entities && response.entities.day && response.entities.day.length > 0){
+              console.log("Day bulundu");
+              console.log(response.entities.day);
+            }
             if(response.entities && response.entities.month && response.entities.month.length > 0){
               console.log("Month bulundu");
               console.log(response.entities.month);
             }
-
+            if(response.entities && response.entities.year && response.entities.year.length > 0){
+              console.log("Year bulundu");
+              console.log(response.entities.year);
+            }
             if(response.entities && response.entities.intent && response.entities.intent.length > 0){
               console.log("Wit ai intent buldu.");
                 var maxFirst = -1;
