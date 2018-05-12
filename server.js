@@ -478,8 +478,6 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                             if(response.length > 0){
                                 if(req.body.obj){
                                   console.log("Answer tablosunda cevap var");
-                                  console.log("maxFirst : " + maxFirst);
-                                  console.log("maxValueFirst : " + maxFirst);
                                   req.body.obj.created_date = new Date();
                                   req.body.obj.confidenceLevel = maxFirst;
                                   req.body.obj.intentName = maxValueFirst;
@@ -568,11 +566,8 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                     console.log("Answer tablosunda cevap var mı ?");
                     instanceMongoQueries.findByQuery(queryString.parse(req.query()).accessToken, 'answers', {'key' : maxValueFirst}, function(response){
                       if(response.length > 0){
-                        console.log("Answer tablosunda cevap var - ");
+                        console.log("Answer tablosunda cevap var");
                           if(req.body.obj){
-                            console.log("maxFirst : " + maxFirst);
-                            console.log("maxValueFirst : " + maxValueFirst);
-                            console.log("global.threshold : " + global.threshold);
                             req.body.obj.created_date = new Date();
                             req.body.obj.confidenceLevel = maxFirst;
                             req.body.obj.intentName = maxValueFirst;
@@ -1082,7 +1077,6 @@ app.get('/change/threshold/:threshold', function(req, res){
       console.log("Bu change threshold icindeki resp[0] : " + resp[0]);
       if(resp && resp[0]){
         instanceMongoQueries.updateOne(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'configuration', {}, {$set : {'threshold' : req.params.threshold}}, function(err, respp){
-          global.threshold = req.params.threshold;
           console.log("req.params.threshold : " + req.params.threshold);
           res.send(respp);
         });
