@@ -401,7 +401,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
           client.get('https://api.wit.ai/message?q=' + encodeURIComponent(searchedItem), wit, function(response){
             if(response.entities.day && response.entities.month && response.entities.year){
               console.log("Tarih bilgisi tam ");
-              res.send("Tarih bilgisi eksik görünüyor. Lütfen gün.ay.yıl olarak tekrar giriş yapınız.");
+              res.send({text : "Tarih bilgisi eksik görünüyor. Lütfen gün.ay.yıl olarak tekrar giriş yapınız."});
             }
 
             else if(response.entities && response.entities.intent && response.entities.intent.length > 0){
