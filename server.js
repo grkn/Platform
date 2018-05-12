@@ -572,6 +572,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                           if(req.body.obj){
                             console.log("maxFirst : " + maxFirst);
                             console.log("maxValueFirst : " + maxValueFirst);
+                            consol.log("global.threshold : " + global.threshold);
                             req.body.obj.created_date = new Date();
                             req.body.obj.confidenceLevel = maxFirst;
                             req.body.obj.intentName = maxValueFirst;
