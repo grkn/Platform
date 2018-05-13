@@ -414,12 +414,12 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
               console.log("Tarih bilgisi tam ");
               console.log("subjectLocal : " + subjectLocal);
               res.send({text :  'İzin başlangıç tarihiniz ' + response.entities.day[0].value + '.' + response.entities.month[0].value + '.' + response.entities.year[0].value + ' olarak alınmıştır.'});
-            }
+
             instanceMongoQueries.find(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'configuration', function(resp){
                   console.log("Mongo vacationFlag : " + resp);
                 res.send(resp);
               });
-
+  }
             else if(response.entities && response.entities.intent && response.entities.intent.length > 0){
               console.log("Wit ai intent buldu.");
                 var maxFirst = -1;
