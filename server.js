@@ -419,7 +419,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                   console.log("Mongo vacationFlag : " + resp);
                 res.send(resp);
               });
-            }
+
             else if(response.entities && response.entities.intent && response.entities.intent.length > 0){
               console.log("Wit ai intent buldu.");
                 var maxFirst = -1;
