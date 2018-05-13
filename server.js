@@ -362,7 +362,7 @@ app.post('/witaiCreateApp/post', cors(), function(req, res){
 // WEB API for wit.ai
 app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
   var authorization = queryString.parse(req.query()).authorization;
-  console.log("authorization : " + authorization);
+  console.log("Authorization : " + authorization);
   try{
     var wit = {
       data : {
@@ -577,13 +577,6 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                         req.session.subject = r;
                       });
                     }
-                    var subjectLocal = req.session.subject;
-                    if(req.session.subject[0]){
-                      subjectLocal = req.session.subject[0].subject;
-                    }else{
-                      subjectLocal = req.session.subject.subject;
-                    }
-                    console.log("SUBJECT LOCAL 2 : " + subjectLocal);
                     console.log("Answer tablosunda cevap var mı ?");
                     instanceMongoQueries.findByQuery(queryString.parse(req.query()).accessToken, 'answers', {'key' : maxValueFirst}, function(response){
                       if(response.length > 0){
@@ -758,6 +751,8 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
           });
         }else{
           //Subject yoksa
+
+          else{
           client.get('https://api.wit.ai/message?q=' + encodeURIComponent(searchedItem), wit, function(response){
             if(response.entities && response.entities.intent && response.entities.intent.length > 0){
               var maxFirst = -1;
@@ -862,6 +857,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
             });
             }
           });
+          }
         }
       }
   });
