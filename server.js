@@ -634,6 +634,12 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                     }
                     console.log("Max Confidence : " + maxFirst + " threshold: " + global.threshold);
                     if(maxFirst < global.threshold){
+                      var subjectLocal = req.session.subject;
+                      if(req.session.subject[0]){
+                        subjectLocal = req.session.subject[0].subject;
+                      }else{
+                        subjectLocal = req.session.subject.subject;
+                      }
                       instanceMongoQueries.find(global[authorization].defaultAuthorizationToken, 'configuration', function(respp){
                         var text = "";
                         if(req.session.subject && req.session.subject[0] && req.session.subject[0].response){
@@ -1081,7 +1087,7 @@ app.get('/change/threshold/:threshold', function(req, res){
           res.send(respp);
         });
       }else{
-        instanceMongoQueries.insertOne(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'configuration', {$set : {'threshold' : req.params.threshold}}, function(err, respp){
+        instanceMongoQueries.insertOne(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'configuration', global, function(err, respp){
           res.send(respp);
         });
       }
