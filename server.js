@@ -567,16 +567,6 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                   return;
                 }else{
                   console.log("Find subject . Subject intent relation tablosunda subject var mı ?");
-
-
-                      var subjectLocal = req.session.subject;
-                      if(req.session.subject[0]){
-                        subjectLocal = req.session.subject[0].subject;
-                      }else{
-                        subjectLocal = req.session.subject.subject;
-                      }
-                      console.log("SUBJECT LOCAL 2 : " + subjectLocal);
-
                   instanceMongoQueries.findByQuery(queryString.parse(req.query()).accessToken, 'subject_intent_relation', {intent : maxValueFirst}, function(sResponse){
                     console.log(sResponse);
                     if(sResponse.length > 0){
@@ -587,6 +577,13 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                         req.session.subject = r;
                       });
                     }
+                    var subjectLocal = req.session.subject;
+                    if(req.session.subject[0]){
+                      subjectLocal = req.session.subject[0].subject;
+                    }else{
+                      subjectLocal = req.session.subject.subject;
+                    }
+                    console.log("SUBJECT LOCAL 2 : " + subjectLocal);
                     console.log("Answer tablosunda cevap var mı ?");
                     instanceMongoQueries.findByQuery(queryString.parse(req.query()).accessToken, 'answers', {'key' : maxValueFirst}, function(response){
                       if(response.length > 0){
