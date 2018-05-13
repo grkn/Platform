@@ -391,17 +391,8 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
         instanceMongoQueries.insertOne(queryString.parse(req.query()).accessToken, req.params.collectionName, obj, function(resp, obj){});
       }else{
         //Emoji yok
-        console.log("req.session.subject : " + req.session.subject);
-        //subject var mı ?
-        console.log("Subject var mı?");
+        //Subject var mı ?
         if(req.session.subject){
-          var subjectLocal = req.session.subject;
-          if(req.session.subject[0]){
-            subjectLocal = req.session.subject[0].subject;
-          }else{
-            subjectLocal = req.session.subject.subject;
-          }
-          console.log("SUBJECT LOCAL 3: " + subjectLocal);
           //Subject varsa
           console.log("Subject var : " + req.session.subject);
           console.log("Wit ai istek atıyor... obj : " + encodeURIComponent(searchedItem));
@@ -749,10 +740,9 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
               });
             }
           });
-        }else{
+        }
+        else{
           //Subject yoksa
-
-          else{
           client.get('https://api.wit.ai/message?q=' + encodeURIComponent(searchedItem), wit, function(response){
             if(response.entities && response.entities.intent && response.entities.intent.length > 0){
               var maxFirst = -1;
@@ -857,7 +847,6 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
             });
             }
           });
-          }
         }
       }
   });
