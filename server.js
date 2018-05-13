@@ -555,13 +555,24 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                         });
                       }
                     });
+                    instanceMongoQueries.findByQuery(queryString.parse(req.query()).accessToken, 'subject_intent_relation', {intent : maxValueFirst}, function(sResponse){
+                      console.log(sResponse);
+                      if(sResponse.length > 0){
+                        console.log("Subject intent relation tablosunda subject var. Subject güncelle");
+                        req.session.subject = sResponse[0];
+                        instanceMongoQueries.findByQuery(queryString.parse(req.query()).accessToken, 'subject', {subject : req.session.subject.subject}, function(r){
+                          console.log(r);
+                          req.session.subject = r;
+                        });
+                      }
+                    });
                   return;
                 }else{
                   console.log("Find subject . Subject intent relation tablosunda subject var mı ?");
                   instanceMongoQueries.findByQuery(queryString.parse(req.query()).accessToken, 'subject_intent_relation', {intent : maxValueFirst}, function(sResponse){
                     console.log(sResponse);
                     if(sResponse.length > 0){
-                      console.log("Subject intent relation tablosunda subject var.Subject güncelle");
+                      console.log("Subject intent relation tablosunda subject var. Subject güncelle");
                       req.session.subject = sResponse[0];
                       instanceMongoQueries.findByQuery(queryString.parse(req.query()).accessToken, 'subject', {subject : req.session.subject.subject}, function(r){
                         console.log(r);
