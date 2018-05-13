@@ -640,7 +640,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                       }else{
                         subjectLocal = req.session.subject.subject;
                       }
-                      console.log("subjectLocal : " + subjectLocal);
+                      console.log("subjectLocalYeni : " + subjectLocal);
                       instanceMongoQueries.find(global[authorization].defaultAuthorizationToken, 'configuration', function(respp){
                         var text = "";
                         if(req.session.subject && req.session.subject[0] && req.session.subject[0].response){
