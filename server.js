@@ -393,7 +393,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
         //Emoji yok
         console.log("req.session.subject : " + req.session.subject);
         //subject var mı ?
-        console.log("Subject var mı? " + req.session.subject[0].subject);
+        console.log("Subject var mı?");
         if(req.session.subject){
           var subjectLocal = req.session.subject;
           if(req.session.subject[0]){
@@ -401,7 +401,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
           }else{
             subjectLocal = req.session.subject.subject;
           }
-          console.log("SUBJECT LOCAL DEGISTI 3: " + subjectLocal);
+          console.log("SUBJECT LOCAL 3: " + subjectLocal);
           //Subject varsa
           console.log("Subject var : " + req.session.subject);
           console.log("Wit ai istek atıyor... obj : " + encodeURIComponent(searchedItem));
@@ -447,6 +447,13 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                               maxFirst = response.entities.intent[i].confidence;
                             }
                           }
+                          var subjectLocal = req.session.subject;
+                          if(req.session.subject[0]){
+                            subjectLocal = req.session.subject[0].subject;
+                          }else{
+                            subjectLocal = req.session.subject.subject;
+                          }
+                          console.log("SUBJECT LOCAL 1 : " + subjectLocal);
                           if(maxFirst < global.threshold){
                             console.log(global.threshold + " Witai threshold dusuk geldi. ai search with subject");
                             instanceMongoQueries.find(global[authorization].defaultAuthorizationToken, 'configuration', function(err, respp){
@@ -480,13 +487,6 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                               return;
                             });
                           }
-                          var subjectLocal = req.session.subject;
-                          if(req.session.subject[0]){
-                            subjectLocal = req.session.subject[0].subject;
-                          }else{
-                            subjectLocal = req.session.subject.subject;
-                          }
-                          console.log("SUBJECT LOCAL DEGISTI 1 : " + subjectLocal);
                           console.log("Answer tablosunda cevap var mı ?");
                           instanceMongoQueries.findByQuery(queryString.parse(req.query()).accessToken, 'answers', {'key' : maxValueFirst}, function(response){
                             if(response.length > 0){
@@ -567,6 +567,16 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                   return;
                 }else{
                   console.log("Find subject . Subject intent relation tablosunda subject var mı ?");
+
+
+                      var subjectLocal = req.session.subject;
+                      if(req.session.subject[0]){
+                        subjectLocal = req.session.subject[0].subject;
+                      }else{
+                        subjectLocal = req.session.subject.subject;
+                      }
+                      console.log("SUBJECT LOCAL 2 : " + subjectLocal);
+
                   instanceMongoQueries.findByQuery(queryString.parse(req.query()).accessToken, 'subject_intent_relation', {intent : maxValueFirst}, function(sResponse){
                     console.log(sResponse);
                     if(sResponse.length > 0){
@@ -648,13 +658,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                     }
                     console.log("Max Confidence : " + maxFirst + " threshold: " + global.threshold);
                     if(maxFirst < global.threshold){
-                      var subjectLocal = req.session.subject;
-                      if(req.session.subject[0]){
-                        subjectLocal = req.session.subject[0].subject;
-                      }else{
-                        subjectLocal = req.session.subject.subject;
-                      }
-                      console.log("SUBJECT LOCAL DEGISTI 2 : " + subjectLocal);
+
                       instanceMongoQueries.find(global[authorization].defaultAuthorizationToken, 'configuration', function(respp){
                         var text = "";
                         if(req.session.subject && req.session.subject[0] && req.session.subject[0].response){
