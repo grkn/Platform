@@ -393,8 +393,15 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
         //Emoji yok
         console.log("req.session.subject : " + req.session.subject);
         //subject var mı ?
-        console.log("Subject var mı?");
+        console.log("Subject var mı? " + req.session.subject);
         if(req.session.subject){
+          var subjectLocal = req.session.subject;
+          if(req.session.subject[0]){
+            subjectLocal = req.session.subject[0].subject;
+          }else{
+            subjectLocal = req.session.subject.subject;
+          }
+          console.log("SUBJECT LOCAL DEGISTI 3: " + subjectLocal);
           //Subject varsa
           console.log("Subject var : " + req.session.subject);
           console.log("Wit ai istek atıyor... obj : " + encodeURIComponent(searchedItem));
