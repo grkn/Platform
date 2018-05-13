@@ -441,13 +441,6 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                             }
                           }
                           if(maxFirst < global.threshold){
-                            var subjectLocal = req.session.subject;
-                            if(req.session.subject[0]){
-                              subjectLocal = req.session.subject[0].subject;
-                            }else{
-                              subjectLocal = req.session.subject.subject;
-                            }
-                            console.log("subjectLocalYeni : " + subjectLocal);
                             console.log(global.threshold + " Witai threshold dusuk geldi. ai search with subject");
                             instanceMongoQueries.find(global[authorization].defaultAuthorizationToken, 'configuration', function(err, respp){
                               var text = "";
@@ -480,6 +473,13 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                               return;
                             });
                           }
+                          var subjectLocal = req.session.subject;
+                          if(req.session.subject[0]){
+                            subjectLocal = req.session.subject[0].subject;
+                          }else{
+                            subjectLocal = req.session.subject.subject;
+                          }
+                          console.log("subjectLocal : " + subjectLocal);
                           console.log("Answer tablosunda cevap var mı ?");
                           instanceMongoQueries.findByQuery(queryString.parse(req.query()).accessToken, 'answers', {'key' : maxValueFirst}, function(response){
                             if(response.length > 0){
