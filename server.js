@@ -406,7 +406,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
             if(subjectLocal == "izintarih" && response.entities.day && response.entities.month && response.entities.year){
               console.log("Tarih bilgisi tam ");
               console.log("subjectLocal : " + subjectLocal);
-              res.send({text :  'İzin başlangıç tarihiniz ' + response.entities.day[0].value + '.' + response.entities.month[0].value + '.' + response.entities.year[0].value + ' olarak alınmıştır.'});
+              res.send({text :  'İzin başlangıç tarihiniz ' + response.entities.day[0].value + '.' + response.entities.month[0].value + '.' + response.entities.year[0].value + ' olarak alınmıştır. Başlangıç tarihi doğru mu? (Evet / Hayır)'});
             }
             else if(response.entities && response.entities.intent && response.entities.intent.length > 0){
                 console.log("Subject var Intent varsa.");
@@ -771,8 +771,10 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
         }
         else{
           //Subject yoksa
+          console.log("Subject yok" );
           client.get('https://api.wit.ai/message?q=' + encodeURIComponent(searchedItem), wit, function(response){
             if(response.entities && response.entities.intent && response.entities.intent.length > 0){
+              console.log("Subject yok Intent var" );
               var maxFirst = -1;
               var maxValueFirst = '';
               for(var i = 0; i < response.entities.intent.length; i++){
@@ -810,6 +812,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                     req.session.subject = r;
                   });
                 }
+                console.log("Answer tablosunda cevap var mı ?");
                 instanceMongoQueries.findByQuery(queryString.parse(req.query()).accessToken, 'answers', {'key' : maxValueFirst}, function(response){
                   if(response.length > 0){
                       if(req.body.obj){
@@ -856,7 +859,9 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                   }
                 });
               });
-            }else{
+            }
+            else{
+              console.log("Subject yok Intent yok" );
               console.log("global[authorization].defaultAuthorizationToken : " + global[authorization].defaultAuthorizationToken);
               instanceMongoQueries.find(global[authorization].defaultAuthorizationToken, 'configuration', function(respp){
                 var random = Math.floor(Math.random() * (respp[0].responseList.length));
