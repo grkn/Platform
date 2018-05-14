@@ -787,7 +787,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                 }
               }
               if(maxFirst < global.threshold){
-                instanceMongoQueries.find(global[authorization].defaultAuthorizationToken, 'configuration', function(respp){
+                instanceMongoQueries.find(global[authorization].defaultAuthorizationToken, 'configuration', function(err, respp){
                   var random = Math.floor(Math.random() * (respp[0].responseList.length));
                   var text = respp[0].responseList[random];
                   req.body.obj.created_date = new Date();
