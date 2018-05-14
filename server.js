@@ -656,7 +656,6 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                     }
                     console.log("Max Confidence : " + maxFirst + " threshold: " + global.threshold);
                     if(maxFirst < global.threshold){
-
                       instanceMongoQueries.find(global[authorization].defaultAuthorizationToken, 'configuration', function(respp){
                         var text = "";
                         if(req.session.subject && req.session.subject[0] && req.session.subject[0].response){
@@ -683,6 +682,17 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                         return;
                       });
                     }
+                    instanceMongoQueries.findByQuery(queryString.parse(req.query()).accessToken, 'subject_intent_relation', {intent : maxValueFirst}, function(sResponse){
+                      console.log(sResponse);
+                      if(sResponse.length > 0){
+                        console.log("Subject intent relation tablosunda subject var. Subject güncelle");
+                        req.session.subject = sResponse[0];
+                        instanceMongoQueries.findByQuery(queryString.parse(req.query()).accessToken, 'subject', {subject : req.session.subject.subject}, function(r){
+                          console.log(r);
+                          req.session.subject = r;
+                        });
+                      }
+                    console.log("Answer tablosunda cevap var mı ?");
                     instanceMongoQueries.findByQuery(queryString.parse(req.query()).accessToken, 'answers', {'key' : maxValueFirst}, function(response){
                       if(response.length > 0){
                           if(req.body.obj){
@@ -729,6 +739,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                           });
                         }
                     });
+                  });
                   }else{
                     instanceMongoQueries.find(global[authorization].defaultAuthorizationToken, 'configuration', function(respp){
                       var text = "";
