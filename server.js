@@ -441,13 +441,13 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                               maxFirst = response.entities.intent[i].confidence;
                             }
                           }
-                          var subjectLocal = req.session.subject;
-                          if(req.session.subject[0]){
-                            subjectLocal = req.session.subject[0].subject;
-                          }else{
-                            subjectLocal = req.session.subject.subject;
-                          }
-                          console.log("SUBJECT LOCAL 1 : " + subjectLocal);
+
+
+
+
+
+
+
                           if(maxFirst < global.threshold){
                             console.log(global.threshold + " Witai maxFirst threshold dan dusuk geldi. ai search with subject");
                             instanceMongoQueries.find(global[authorization].defaultAuthorizationToken, 'configuration', function(err, respp){
@@ -787,7 +787,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                 }
               }
               if(maxFirst < global.threshold){
-                instanceMongoQueries.find(global[authorization].defaultAuthorizationToken, 'configuration', function(err, respp){
+                instanceMongoQueries.find(global[authorization].defaultAuthorizationToken, 'configuration', function(respp){
                   var random = Math.floor(Math.random() * (respp[0].responseList.length));
                   var text = respp[0].responseList[random];
                   req.body.obj.created_date = new Date();
