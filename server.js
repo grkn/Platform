@@ -389,20 +389,19 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
         var chatbase = new Chatbase('' +  resppp[0].source, req.cookies.user_id, 'agent', global, 'emoji');
         chatbase.sendMessage();
         instanceMongoQueries.insertOne(queryString.parse(req.query()).accessToken, req.params.collectionName, obj, function(resp, obj){});
-      }else{
-        //Emoji yok
-        //Subject var mı ?
+      }
+      else{
+        //Emoji yok Subject var mı ?
         if(req.session.subject){
           //Subject varsa
           console.log("Subject var : " + req.session.subject);
           console.log("Wit ai istek atıyor... obj : " + encodeURIComponent(searchedItem));
           client.get('https://api.wit.ai/message?q=' + encodeURIComponent(searchedItem), wit, function(response){
-            var subjectLocal = req.session.subject;
-            if(req.session.subject[0]){
-              subjectLocal = req.session.subject[0].subject;
-            }else{
-              subjectLocal = req.session.subject.subject;
-            }
+
+
+
+
+
             if(subjectLocal == "izintarih" && response.entities.day && response.entities.month && response.entities.year){
               console.log("subjectLocal : " + subjectLocal);
               res.send({text :  'İzin başlangıç tarihiniz ' + response.entities.day[0].value + ' ' + response.entities.month[0].value + ' ' + response.entities.year[0].value + ' olarak alınmıştır. Başlangıç tarihi doğru mu? (Evet / Hayır)'});
