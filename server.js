@@ -397,11 +397,6 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
           console.log("Subject var : " + req.session.subject);
           console.log("Wit ai istek atıyor... obj : " + encodeURIComponent(searchedItem));
           client.get('https://api.wit.ai/message?q=' + encodeURIComponent(searchedItem), wit, function(response){
-
-
-
-
-
             if(subjectLocal == "izintarih" && response.entities.day && response.entities.month && response.entities.year){
               console.log("subjectLocal : " + subjectLocal);
               res.send({text :  'İzin başlangıç tarihiniz ' + response.entities.day[0].value + ' ' + response.entities.month[0].value + ' ' + response.entities.year[0].value + ' olarak alınmıştır. Başlangıç tarihi doğru mu? (Evet / Hayır)'});
@@ -440,13 +435,6 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                               maxFirst = response.entities.intent[i].confidence;
                             }
                           }
-
-
-
-
-
-
-
                           if(maxFirst < global.threshold){
                             console.log(global.threshold + " Witai maxFirst threshold dan dusuk geldi. ai search with subject");
                             instanceMongoQueries.find(global[authorization].defaultAuthorizationToken, 'configuration', function(err, respp){
