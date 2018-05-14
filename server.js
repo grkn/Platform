@@ -407,7 +407,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
               console.log("subjectLocal : " + subjectLocal);
               res.send({text :  'İzin başlangıç tarihiniz ' + response.entities.day[0].value + '.' + response.entities.month[0].value + '.' + response.entities.year[0].value + ' olarak alınmıştır. Başlangıç tarihi doğru mu? (Evet / Hayır)'});
             }
-            elseif(subjectLocal == "izinbaslangiconay" && response.entities.day && response.entities.month && response.entities.year){
+            else if(subjectLocal == "izinbaslangiconay" && response.entities.day && response.entities.month && response.entities.year){
               console.log("subjectLocal : " + subjectLocal);
               res.send({text :  'İzin bitiş tarihiniz ' + response.entities.day[0].value + '.' + response.entities.month[0].value + '.' + response.entities.year[0].value + ' olarak alınmıştır. Bitiş tarihi doğru mu? (Evet / Hayır)'});
             }
