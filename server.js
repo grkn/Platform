@@ -409,7 +409,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
               res.send({text :  'İzin başlangıç tarihiniz ' + response.entities.day[0].value + '.' + response.entities.month[0].value + '.' + response.entities.year[0].value + ' olarak alınmıştır.'});
             }
             else if(response.entities && response.entities.intent && response.entities.intent.length > 0){
-              console.log("Wit ai intent buldu.");
+                console.log("Subject var Intent varsa.");
                 var maxFirst = -1;
                 var maxValueFirst = '';
                 for(var i = 0; i < response.entities.intent.length; i++){
@@ -418,15 +418,15 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                     maxFirst = response.entities.intent[i].confidence;
                   }
                 }
-                console.log("Max confidence threshold u geçiyor mu?");
                 if(maxFirst < global.threshold){
+                  console.log("maxfirst threshold dan dusuk geldi");
                   var subjectLocal = req.session.subject;
                   if(req.session.subject[0]){
                     subjectLocal = req.session.subject[0].subject;
                   }else{
                     subjectLocal = req.session.subject.subject;
                   }
-                    console.log(global.threshold + " Witai threshold dusuk geldi. ai search with subject  obj : " + encodeURIComponent(subjectLocal + ' ' + searchedItem));
+                    console.log(global.threshold + " Witai maxfirst threshold dan dusuk geldi. ai search with subject  obj : " + encodeURIComponent(subjectLocal + ' ' + searchedItem));
                     client.get('https://api.wit.ai/message?q=' + encodeURIComponent(subjectLocal + ' ' + searchedItem), wit, function(response){
                         if(response.entities && response.entities.intent && response.entities.intent.length > 0){
                           console.log("Wit ai intent buldu.");
@@ -446,7 +446,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                           }
                           console.log("SUBJECT LOCAL 1 : " + subjectLocal);
                           if(maxFirst < global.threshold){
-                            console.log(global.threshold + " Witai threshold dusuk geldi. ai search with subject");
+                            console.log(global.threshold + " Witai maxFirst threshold dan dusuk geldi. ai search with subject");
                             instanceMongoQueries.find(global[authorization].defaultAuthorizationToken, 'configuration', function(err, respp){
                               var text = "";
                               if(req.session.subject && req.session.subject[0] && req.session.subject[0].response){
@@ -478,6 +478,16 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                               return;
                             });
                           }
+                          instanceMongoQueries.findByQuery(queryString.parse(req.query()).accessToken, 'subject_intent_relation', {intent : maxValueFirst}, function(sResponse){
+                            console.log(sResponse);
+                            if(sResponse.length > 0){
+                              console.log("Subject intent relation tablosunda subject var. Subject güncelle");
+                              req.session.subject = sResponse[0];
+                              instanceMongoQueries.findByQuery(queryString.parse(req.query()).accessToken, 'subject', {subject : req.session.subject.subject}, function(r){
+                                console.log(r);
+                                req.session.subject = r;
+                              });
+                            }
                           console.log("Answer tablosunda cevap var mı ?");
                           instanceMongoQueries.findByQuery(queryString.parse(req.query()).accessToken, 'answers', {'key' : maxValueFirst}, function(response){
                             if(response.length > 0){
@@ -499,7 +509,8 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                                   res.send({text : response[0].value, type : response[0].type, intent : response[0].key, subject : ''});
                                   return;
                                 }
-                              }else{
+                              }
+                              else{
                                 instanceMongoQueries.find(global[authorization].defaultAuthorizationToken, 'configuration', function(respp){
                                   console.log("Answer tablosunda cevap yok");
                                   var text = "";
@@ -527,6 +538,8 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                                 });
                               }
                             });
+                          });
+
                         }else{
                           console.log("Wit ai intent bulamadi.");
                           instanceMongoQueries.find(global[authorization].defaultAuthorizationToken, 'configuration', function(respp){
@@ -556,8 +569,10 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                       }
                     });
                   return;
-                }else{
-                  console.log("Find subject . Subject intent relation tablosunda subject var mı ?");
+                }
+                else{
+                  console.log("maxfirst threshold dan buyuk geldi");
+                  console.log("Find subject. Subject intent relation tablosunda subject var mı ?");
                   instanceMongoQueries.findByQuery(queryString.parse(req.query()).accessToken, 'subject_intent_relation', {intent : maxValueFirst}, function(sResponse){
                     console.log(sResponse);
                     if(sResponse.length > 0){
@@ -618,7 +633,9 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                     });
                   });
                 }
-            }else{
+            }
+            else{
+              console.log("Subject var Intent yoksa.");
               console.log(req.session);
               var subjectLocal = req.session.subject;
               if(req.session.subject[0]){
@@ -735,17 +752,6 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
                       chatbase.sendMessage();
                       res.send({text : text});
                       return;
-                  });
-                }
-              });
-              instanceMongoQueries.findByQuery(queryString.parse(req.query()).accessToken, 'subject_intent_relation', {intent : maxValueFirst}, function(sResponse){
-                console.log(sResponse);
-                if(sResponse.length > 0){
-                  console.log("Türkan Subject intent relation tablosunda subject var. Subject güncelle");
-                  req.session.subject = sResponse[0];
-                  instanceMongoQueries.findByQuery(queryString.parse(req.query()).accessToken, 'subject', {subject : req.session.subject.subject}, function(r){
-                    console.log(r);
-                    req.session.subject = r;
                   });
                 }
               });
