@@ -923,45 +923,6 @@ app.post('/view/get/quickReply', cors(), function(req, res){
   });
 });
 
-app.post('/view/get/emoji', cors(), function(req, res){
-  instanceMongoQueries.findByQuery(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'answers', {'key' : req.body.intent}, function(resp){
-    res.send(resp[0]);
-  });
-});
-
-app.get('/mongo/emojiRelation/get', cors(), function(req, res){
-  instanceMongoQueries.findByQuery(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'emoji_relation', {}, function(resp){
-    res.send(resp);
-  });
-});
-
-app.get('/mongo/emoji/get', cors(), function(req, res){
-  instanceMongoQueries.findByQuery(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'emoji', {}, function(resp){
-    res.send(resp);
-  });
-});
-
-app.delete('/delete/emoji/relation', cors(), function(req, res){
-  instanceMongoQueries.deleteOne(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'emoji_relation', {'source.text' : req.body.text}, function(resp){
-    res.send({resp : 'OK'});
-  });
-});
-
-app.post('/save/emoji/relation', cors(), function(req, res){
-  //req.body.emoji , req.body.intent
-  instanceMongoQueries.findByQuery(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'emoji_relation', {source : req.body.source}, function(resp){
-      if(resp.length > 0 ){
-        instanceMongoQueries.updateOne(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'emoji_relation', {source : req.body.source}, {source : req.body.source, target : req.body.target, updatedDate : new Date()}, function(resp){
-          res.send(resp);
-        });
-      }else{
-        instanceMongoQueries.insertOne(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'emoji_relation', {source : req.body.source, target : req.body.target, createdDate : new Date()}, function(resp){
-          res.send(resp);
-        });
-      }
-  });
-});
-
 app.post('/view/create/listTemplate', cors(), function(req, res){
   instanceMongoQueries.findByQuery(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'answers', {'key' : req.body.intent}, function(resp){
       if(resp.length > 0){
@@ -1010,6 +971,45 @@ app.post('/view/create/attachment', cors(), function(req, res){
 app.post('/view/get/attachment', cors(), function(req, res){
   instanceMongoQueries.findByQuery(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'answers', {'key' : req.body.intent}, function(resp){
     res.send(resp[0]);
+  });
+});
+
+app.post('/view/get/emoji', cors(), function(req, res){
+  instanceMongoQueries.findByQuery(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'answers', {'key' : req.body.intent}, function(resp){
+    res.send(resp[0]);
+  });
+});
+
+app.get('/mongo/emojiRelation/get', cors(), function(req, res){
+  instanceMongoQueries.findByQuery(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'emoji_relation', {}, function(resp){
+    res.send(resp);
+  });
+});
+
+app.get('/mongo/emoji/get', cors(), function(req, res){
+  instanceMongoQueries.findByQuery(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'emoji', {}, function(resp){
+    res.send(resp);
+  });
+});
+
+app.delete('/delete/emoji/relation', cors(), function(req, res){
+  instanceMongoQueries.deleteOne(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'emoji_relation', {'source.text' : req.body.text}, function(resp){
+    res.send({resp : 'OK'});
+  });
+});
+
+app.post('/save/emoji/relation', cors(), function(req, res){
+  //req.body.emoji , req.body.intent
+  instanceMongoQueries.findByQuery(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'emoji_relation', {source : req.body.source}, function(resp){
+      if(resp.length > 0 ){
+        instanceMongoQueries.updateOne(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'emoji_relation', {source : req.body.source}, {source : req.body.source, target : req.body.target, updatedDate : new Date()}, function(resp){
+          res.send(resp);
+        });
+      }else{
+        instanceMongoQueries.insertOne(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, 'emoji_relation', {source : req.body.source, target : req.body.target, createdDate : new Date()}, function(resp){
+          res.send(resp);
+        });
+      }
   });
 });
 
