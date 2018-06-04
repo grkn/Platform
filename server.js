@@ -419,7 +419,8 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
             else if(subjectLocal == "şifre-kontrol" && response.entities.iptal){
               console.log("subjectLocal : " + subjectLocal);
               subjectLocal = " ";
-              console.log("subjectLocal after: " + subjectLocal);
+              req.session.subject[0].subject="";
+              console.log("req.session.subject[0].subject after: " + req.session.subject[0].subject);
               res.send({text :  'İptal yapıldı. Başka birşey var mı?'});
             }
             else if(subjectLocal == "şifre-kontrol" && !response.entities.password){
