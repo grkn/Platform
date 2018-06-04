@@ -413,10 +413,12 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
             }
             else if(subjectLocal == "şifre-kontrol" && response.entities.password){
               console.log("subjectLocal : " + subjectLocal);
-              res.send({text :  'Kimlik doğrulaması yapılmııştır. Hangi tarihte izne çıkmak istediğini gün/ay/yıl olarak girer misin? İptal için Vazgeç yazabilirsin.'});
+              console.log("password : " + response.entities.password);
+              res.send({text :  'Kimlik doğrulaması yapılmıştır. Hangi tarihte izne çıkmak istediğini gün/ay/yıl olarak girer misin? İptal için Vazgeç yazabilirsin.'});
             }
             else if(subjectLocal == "şifre-kontrol" && !response.entities.password){
               console.log("subjectLocal : " + subjectLocal);
+              console.log("password : " + response.entities.password);
               res.send({text :  'Kimlik doğrulaması gerçekleşmedi. Lütfen şifreni tekrar girer misin? İptal için Vazgeç yazabilirsin.'});
             }
             else if(response.entities && response.entities.intent && response.entities.intent.length > 0){
