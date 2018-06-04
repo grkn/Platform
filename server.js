@@ -416,7 +416,7 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
               console.log("password : " + response.entities.password);
               res.send({text :  'Kimlik doğrulaması yapılmıştır. Hangi tarihte izne çıkmak istediğini gün/ay/yıl olarak girer misin? İptal için Vazgeç yazabilirsin.'});
             }
-            else if(subjectLocal == "şifre-kontrol" && response.entities.password != "1234"){
+            else if(subjectLocal == "şifre-kontrol" && response.entities.intent.length <= 0){
               console.log("subjectLocal : " + subjectLocal);
               console.log("password : " + response.entities.password);
               res.send({text :  'Kimlik doğrulaması gerçekleşmedi. Lütfen şifreni tekrar girer misin? İptal için Vazgeç yazabilirsin.'});
