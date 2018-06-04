@@ -433,8 +433,8 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
               res.send({text : req.body.obj.message.text + ' Onaylıyor musun? (Evet / Hayır)'});
             }
             else if(subjectLocal == "mazeret izin çeşitleri" && response.entities.mazarettip){
-              console.log("subjectLocal : " + subjectLocal);
-              res.send({text :  "Mazeret tipini " + response.entities.mazarettip[0].value + ' olarak anluyorum. Onaylıyor musun? (Evet / Hayır)'});
+              console.log("mazeret izin çeşitleri subjectLocal : " + subjectLocal);
+              res.send({text :  "Mazeret tipini " + response.entities.mazarettip[0].value + ' olarak anlıyorum. Onaylıyor musun? (Evet / Hayır)'});
             }
             else if(response.entities && response.entities.intent && response.entities.intent.length > 0){
                 console.log("Subject var Intent varsa.");
