@@ -411,12 +411,12 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
               console.log("subjectLocal : " + subjectLocal);
               res.send({text :  'İzin bitiş tarihiniz ' + response.entities.day[0].value + ' ' + response.entities.month[0].value + ' ' + response.entities.year[0].value + ' olarak alınmıştır. Bitiş tarihi doğru mu? (Evet / Hayır)'});
             }
-            else if(subjectLocal == "şifre-kontrol" && response.entities.password){
+            else if(subjectLocal == "şifre-kontrol" && response.entities.password && response.entities.intent != "vazgeç"){
               console.log("subjectLocal : " + subjectLocal);
               console.log("password : " + response.entities.password);
               res.send({text :  'Kimlik doğrulaması yapılmıştır. Hangi tarihte izne çıkmak istediğini gün/ay/yıl olarak girer misin? İptal için Vazgeç yazabilirsin.'});
             }
-            else if(subjectLocal == "şifre-kontrol" && response.entities.password !="1234"){
+            else if(subjectLocal == "şifre-kontrol" && response.entities.password !="1234" && response.entities.intent != "vazgeç"){
               console.log("subjectLocal : " + subjectLocal);
               console.log("password : " + response.entities.password);
               res.send({text :  'Kimlik doğrulaması gerçekleşmedi. Lütfen şifreni tekrar girer misin? İptal için Vazgeç yazabilirsin.'});
