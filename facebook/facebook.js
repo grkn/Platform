@@ -257,46 +257,7 @@ var facebookclass = class FacebookBotClass {
 			console.log(subjectArray[payload.sender.id]);
 			if(subjectArray[payload.sender.id]){
 				client.get('https://api.wit.ai/message?q=' + encodeURIComponent(searchedItem), wit, function(response){
-					var subjectLocal = req.session.subject;
-
-					var str = req.body.obj.message.text;
-					var zero = str.includes("0");
-
-					if(req.session.subject[0]){
-						subjectLocal = req.session.subject[0].subject;
-					}else{
-						subjectLocal = req.session.subject.subject;
-					}
-					if(subjectLocal == "izintarih" && response.entities.day && response.entities.month && response.entities.year){
-						console.log("subjectLocal : " + subjectLocal);
-						res.send({text :  'İzin başlangıç tarihiniz ' + response.entities.day[0].value + ' ' + response.entities.month[0].value + ' ' + response.entities.year[0].value + ' olarak alınmıştır. Başlangıç tarihi doğru mu? (Evet / Hayır)'});
-					}
-					else if(subjectLocal == "izinbaslangiconay" && response.entities.day && response.entities.month && response.entities.year){
-						console.log("subjectLocal : " + subjectLocal);
-						res.send({text :  'İzin bitiş tarihiniz ' + response.entities.day[0].value + ' ' + response.entities.month[0].value + ' ' + response.entities.year[0].value + ' olarak alınmıştır. Bitiş tarihi doğru mu? (Evet / Hayır)'});
-					}
-					else if(subjectLocal == "şifre-kontrol" && response.entities.password){
-						console.log("subjectLocal : " + subjectLocal);
-						console.log("password : " + response.entities.password);
-						res.send({text :  'Kimlik doğrulaması yapılmıştır. Hangi tarihte izne çıkmak istediğini gün/ay/yıl olarak girer misin? İptal için Vazgeç yazabilirsin.'});
-					}
-					else if(subjectLocal == "şifre-kontrol" && response.entities.day && response.entities.month && response.entities.year){
-						console.log("subjectLocal : " + subjectLocal);
-						res.send({text :  'İzin başlangıç tarihi ' + response.entities.day[0].value + ' ' + response.entities.month[0].value + ' ' + response.entities.year[0].value + ' olarak alınmıştır. Başlangıç tarihi doğru mu? (Evet / Hayır)'});
-					}
-					else if(subjectLocal == "izin başlangıç onay" && response.entities.day && response.entities.month && response.entities.year){
-						console.log("subjectLocal : " + subjectLocal);
-						res.send({text :  'İzin bitiş tarihi ' + response.entities.day[0].value + ' ' + response.entities.month[0].value + ' ' + response.entities.year[0].value + ' olarak alınmıştır. Bitiş tarihi doğru mu? (Evet / Hayır)'});
-					}
-					else if(subjectLocal == "izin bitiş onay" && zero){
-						console.log("subjectLocal : " + subjectLocal);
-						res.send({text : req.body.obj.message.text + ' Onaylıyor musun? (Evet / Hayır)'});
-					}
-					else if(subjectLocal == "mazeret izin çeşitleri" && response.entities.mazerettip){
-						console.log("mazeret izin çeşitleri subjectLocal : " + subjectLocal);
-						res.send({text :  'Mazeret tipini ' + response.entities.mazerettip[0].value + ' olarak anlıyorum. Onaylıyor musun? (Evet / Hayır)'});
-					}
-					else if(response.entities && response.entities.intent && response.entities.intent.length > 0){
+					if(response.entities && response.entities.intent && response.entities.intent.length > 0){
 							var maxFirst = -1;
 							var maxValueFirst = '';
 							for(var i = 0; i < response.entities.intent.length; i++){
