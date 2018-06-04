@@ -424,10 +424,11 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
               console.log("subjectLocal : " + subjectLocal);
               res.send({text :  'İzin bitiş tarihi ' + response.entities.day[0].value + ' ' + response.entities.month[0].value + ' ' + response.entities.year[0].value + ' olarak alınmıştır. Bitiş tarihi doğru mu? (Evet / Hayır)'});
             }
-            else if(subjectLocal == "izin bitiş onay"){
+            else if(subjectLocal == "izin bitiş onay" && response.entities.phone){
               console.log("subjectLocal : " + subjectLocal);
-              res.send({text :  req.body.obj.message.text + 'Onaylıyor musun? (Evet / Hayır)'});
+              res.send({text :  req.body.obj.message.text + ' Onaylıyor musun? (Evet / Hayır)'});
             }
+            
             else if(response.entities && response.entities.intent && response.entities.intent.length > 0){
                 console.log("Subject var Intent varsa.");
                 var maxFirst = -1;
