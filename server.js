@@ -411,6 +411,14 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
               console.log("subjectLocal : " + subjectLocal);
               res.send({text :  'İzin bitiş tarihiniz ' + response.entities.day[0].value + ' ' + response.entities.month[0].value + ' ' + response.entities.year[0].value + ' olarak alınmıştır. Bitiş tarihi doğru mu? (Evet / Hayır)'});
             }
+            else if(subjectLocal == "şifre-kontrol" && response.entities.password){
+              console.log("subjectLocal : " + subjectLocal);
+              res.send({text :  'Kimlik doğrulaması yapılmııştır. Hangi tarihte izne çıkmak istediğini gün/ay/yıl olarak girer misin? İptal için Vazgeç yazabilirsin.'});
+            }
+            else if(subjectLocal == "şifre-kontrol" && !response.entities.password){
+              console.log("subjectLocal : " + subjectLocal);
+              res.send({text :  'Kimlik doğrulaması gerçekleşmedi. Lütfen şifreni tekrar girer misin? İptal için Vazgeç yazabilirsin.'});
+            }
             else if(response.entities && response.entities.intent && response.entities.intent.length > 0){
                 console.log("Subject var Intent varsa.");
                 var maxFirst = -1;
