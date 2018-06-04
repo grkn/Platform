@@ -416,17 +416,6 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
               console.log("password : " + response.entities.password);
               res.send({text :  'Kimlik doğrulaması yapılmıştır. Hangi tarihte izne çıkmak istediğini gün/ay/yıl olarak girer misin? İptal için Vazgeç yazabilirsin.'});
             }
-            else if(subjectLocal == "şifre-kontrol" && response.entities.iptal){
-              console.log("subjectLocal : " + subjectLocal);
-              subjectLocal = " ";
-              req.session.subject[0].subject="";
-              console.log("req.session.subject[0].subject after: " + req.session.subject[0].subject);
-              res.send({text :  'İptal yapıldı. Başka birşey var mı?'});
-            }
-            else if(subjectLocal == "şifre-kontrol" && !response.entities.password){
-              console.log("subjectLocal : " + subjectLocal);
-              res.send({text :  'Kimlik doğrulaması gerçekleşmedi. Lütfen şifreni tekrar girer misin? İptal için Vazgeç yazabilirsin.'});
-            }
             else if(response.entities && response.entities.intent && response.entities.intent.length > 0){
                 console.log("Subject var Intent varsa.");
                 var maxFirst = -1;
