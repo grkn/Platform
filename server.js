@@ -398,6 +398,10 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
           console.log("Wit ai istek atıyor... obj : " + encodeURIComponent(searchedItem));
           client.get('https://api.wit.ai/message?q=' + encodeURIComponent(searchedItem), wit, function(response){
             var subjectLocal = req.session.subject;
+
+            var str = req.body.obj.message.text;
+            var zero = str.includes("0");
+
             if(req.session.subject[0]){
               subjectLocal = req.session.subject[0].subject;
             }else{
@@ -424,11 +428,10 @@ app.post('/api/getMessage/witai/:collectionName', cors(), function(req, res){
               console.log("subjectLocal : " + subjectLocal);
               res.send({text :  'İzin bitiş tarihi ' + response.entities.day[0].value + ' ' + response.entities.month[0].value + ' ' + response.entities.year[0].value + ' olarak alınmıştır. Bitiş tarihi doğru mu? (Evet / Hayır)'});
             }
-            else if(subjectLocal == "izin bitiş onay" && response.entities.phone){
+            else if(subjectLocal == "izin bitiş onay" && zero){
               console.log("subjectLocal : " + subjectLocal);
               res.send({text :  req.body.obj.message.text + ' Onaylıyor musun? (Evet / Hayır)'});
             }
-            
             else if(response.entities && response.entities.intent && response.entities.intent.length > 0){
                 console.log("Subject var Intent varsa.");
                 var maxFirst = -1;
