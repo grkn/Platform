@@ -18,12 +18,12 @@
 		<script src = "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity = "sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin = "anonymous"></script>
 
 		<script type = "text/javascript">
-		var index = window.location.href.indexOf("accessToken=");
+		var index = document.location.href.indexOf("accessToken=");
 		var beginIndex = index + 12;
 
-		var endIndex = window.location.href.indexOf("&");
-		var accessToken = window.location.href.substring(beginIndex, endIndex);
-		var authorization = window.location.href.substring(endIndex + 15,window.location.href.length);
+		var endIndex = document.location.href.indexOf("&");
+		var accessToken = document.location.href.substring(beginIndex, endIndex);
+		var authorization = document.location.href.substring(endIndex + 15,document.location.href.length);
 			function getCookie(cname) {
 			  var name = cname + "=";
 			  var decodedCookie = decodeURIComponent(document.cookie);
@@ -334,12 +334,12 @@
 	  <script src="lib/js/jquery.emojiarea.js"></script>
 	  <script src="lib/js/emoji-picker.js"></script>
 		<script>
-		var index = window.location.href.indexOf("accessToken=");
+		var index = document.location.href.indexOf("accessToken=");
 		var beginIndex = index + 12;
 
-		var endIndex = window.location.href.indexOf("&");
-		var accessToken = window.location.href.substring(beginIndex, endIndex);
-		var authorization = window.location.href.substring(endIndex + 15,window.location.href.length);
+		var endIndex = document.location.href.indexOf("&");
+		var accessToken = document.location.href.substring(beginIndex, endIndex);
+		var authorization = document.location.href.substring(endIndex + 15,document.location.href.length);
 			function get(name){
 				 if(name=(new RegExp('[?&]'+encodeURIComponent(name)+'=([^&]*)')).exec(location.search))
 						return decodeURIComponent(name[1]);
