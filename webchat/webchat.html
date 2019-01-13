@@ -251,7 +251,7 @@
 					var endIndex = location.href ?  location.href.indexOf("&") : location.indexOf("&") ;
 					var accessToken =location.href ?  location.href.substring(beginIndex, endIndex) :  location.substring(beginIndex, endIndex) ;
 					var authorization =location.href ?  location.href.substring(endIndex + 15,location.href.length) : location.substring(endIndex + 15,location.href.length);
-
+					alert(authorization);
 					if(!authorization) {
 						alert("This browser does not support. Please try other browsers");
 						return;
