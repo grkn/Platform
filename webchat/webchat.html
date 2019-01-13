@@ -241,6 +241,12 @@
 			//load function for messages from Mongo db
 			var load = {
 				load : function(){
+					var index = location.href.indexOf("accessToken=");
+					var beginIndex = index + 12;
+
+					var endIndex = location.href.indexOf("&");
+					var accessToken = location.href.substring(beginIndex, endIndex);
+					var authorization = location.href.substring(endIndex + 15,location.href.length);
 					var request = $.ajax({
 						url : "/mongo/findByQueryForMessages?authorization="+authorization,
 						method : "POST",
