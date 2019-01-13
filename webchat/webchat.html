@@ -54,12 +54,12 @@
 
 
 				load : function(){
-					var index = location.indexOf("accessToken=");
+					var index = location.href ? location.href.indexOf("accessToken=") : location.indexOf("accessToken=");
 					var beginIndex = index + 12;
 
-					var endIndex = location.indexOf("&");
-					var accessToken = location.substring(beginIndex, endIndex);
-					var authorization = location.substring(endIndex + 15,location.length);
+					var endIndex = location.href ?  location.href.indexOf("&") : location.indexOf("&") ;
+					var accessToken =location.href ?  location.href.substring(beginIndex, endIndex) :  location.substring(beginIndex, endIndex) ;
+					var authorization =location.href ?  location.href.substring(endIndex + 15,location.href.length) : location.substring(endIndex + 15,location.href.length);
 					var request = $.ajax({
 						url : "/get/threshold?authorization="+authorization,
 						method : "GET",
@@ -241,12 +241,12 @@
 			//load function for messages from Mongo db
 			var load = {
 				load : function(){
-					var index = location.indexOf("accessToken=");
+					var index = location.href ? location.href.indexOf("accessToken=") : location.indexOf("accessToken=");
 					var beginIndex = index + 12;
 
-					var endIndex = location.indexOf("&");
-					var accessToken = location.substring(beginIndex, endIndex);
-					var authorization = location.substring(endIndex + 15,location.length);
+					var endIndex = location.href ?  location.href.indexOf("&") : location.indexOf("&") ;
+					var accessToken =location.href ?  location.href.substring(beginIndex, endIndex) :  location.substring(beginIndex, endIndex) ;
+					var authorization =location.href ?  location.href.substring(endIndex + 15,location.href.length) : location.substring(endIndex + 15,location.href.length);
 					var request = $.ajax({
 						url : "/mongo/findByQueryForMessages?authorization="+authorization,
 						method : "POST",
@@ -376,12 +376,12 @@
 								}else{
 									text = el;
 								}
-								var index = location.indexOf("accessToken=");
+								var index = location.href ? location.href.indexOf("accessToken=") : location.indexOf("accessToken=");
 								var beginIndex = index + 12;
 
-								var endIndex = location.indexOf("&");
-								var accessToken = location.substring(beginIndex, endIndex);
-								var authorization = location.substring(endIndex + 15,location.length);
+								var endIndex = location.href ?  location.href.indexOf("&") : location.indexOf("&") ;
+								var accessToken =location.href ?  location.href.substring(beginIndex, endIndex) :  location.substring(beginIndex, endIndex) ;
+								var authorization =location.href ?  location.href.substring(endIndex + 15,location.href.length) : location.substring(endIndex + 15,location.href.length);
 								var request = $.ajax({
 								  url : "/api/getMessage/witai/messages?accessToken="+accessToken+"&authorization="+authorization,
 								  method : "POST",
