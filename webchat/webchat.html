@@ -9,8 +9,12 @@
 		  integrity = "sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60="
 		  crossorigin = "anonymous">
 
-			var accessToken = window.location.href.match('(accessToken=)(.*)(&)')[1];
-			var authorization = window.location.href.match('(authorization=)(.*)')[1];
+			var index = window.location.href.indexOf("accessToken=");
+			var beginIndex = index + 12;
+			
+			var endIndex = window.location.href.indexOf("&");
+			var accessToken = window.location.href.substring(beginIndex, endIndex);
+			var authorization = window.location.href.substring(endIndex + 15,window.location.href.length);
 		</script>
 
 		<link rel = "stylesheet" href = "https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css"/>
