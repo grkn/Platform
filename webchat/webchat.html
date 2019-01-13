@@ -8,6 +8,9 @@
 		  src = "https://code.jquery.com/jquery-3.3.1.js"
 		  integrity = "sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60="
 		  crossorigin = "anonymous">
+
+			var accessToken = window.location.href.match('(accessToken=)(.*)(&)')[1];
+			var authorization = window.location.href.match('(authorization=)(.*)')[1];
 		</script>
 
 		<link rel = "stylesheet" href = "https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css"/>
@@ -48,9 +51,12 @@
 						persistentMenu.toggle($('.custom-drop-down'));
 					});
 				},
+
+
+
 				load : function(){
 					var request = $.ajax({
-						url : "/get/threshold?authorization="+get("authorization"),
+						url : "/get/threshold?authorization="+authorization,
 						method : "GET",
 						data : {},
 						dataType : "json"
@@ -231,7 +237,7 @@
 			var load = {
 				load : function(){
 					var request = $.ajax({
-						url : "/mongo/findByQueryForMessages?authorization="+get("authorization"),
+						url : "/mongo/findByQueryForMessages?authorization="+authorization,
 						method : "POST",
 						data : {
 							query : {user_id : {$regex: getCookie("user_id")}}
@@ -359,7 +365,7 @@
 								}
 
 								var request = $.ajax({
-								  url : "/api/getMessage/witai/messages?accessToken="+get("accessToken")+"&authorization="+get("authorization"),
+								  url : "/api/getMessage/witai/messages?accessToken="+accessToken+"&authorization="+authorization,
 								  method : "POST",
 								  data : {
 										"obj" :
