@@ -60,6 +60,10 @@
 					var endIndex = location.href ?  location.href.indexOf("&") : location.indexOf("&") ;
 					var accessToken =location.href ?  location.href.substring(beginIndex, endIndex) :  location.substring(beginIndex, endIndex) ;
 					var authorization =location.href ?  location.href.substring(endIndex + 15,location.href.length) : location.substring(endIndex + 15,location.href.length);
+					if(!authorization) {
+						alert("This browser does not support. Please try other browsers");
+						return;
+					}
 					var request = $.ajax({
 						url : "/get/threshold?authorization="+authorization,
 						method : "GET",
@@ -247,6 +251,11 @@
 					var endIndex = location.href ?  location.href.indexOf("&") : location.indexOf("&") ;
 					var accessToken =location.href ?  location.href.substring(beginIndex, endIndex) :  location.substring(beginIndex, endIndex) ;
 					var authorization =location.href ?  location.href.substring(endIndex + 15,location.href.length) : location.substring(endIndex + 15,location.href.length);
+
+					if(!authorization) {
+						alert("This browser does not support. Please try other browsers");
+						return;
+					}
 					var request = $.ajax({
 						url : "/mongo/findByQueryForMessages?authorization="+authorization,
 						method : "POST",
@@ -382,6 +391,10 @@
 								var endIndex = location.href ?  location.href.indexOf("&") : location.indexOf("&") ;
 								var accessToken =location.href ?  location.href.substring(beginIndex, endIndex) :  location.substring(beginIndex, endIndex) ;
 								var authorization =location.href ?  location.href.substring(endIndex + 15,location.href.length) : location.substring(endIndex + 15,location.href.length);
+								if(!authorization) {
+									alert("This browser does not support. Please try other browsers");
+									return;
+								}
 								var request = $.ajax({
 								  url : "/api/getMessage/witai/messages?accessToken="+accessToken+"&authorization="+authorization,
 								  method : "POST",
