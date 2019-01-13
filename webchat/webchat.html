@@ -18,12 +18,7 @@
 		<script src = "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity = "sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin = "anonymous"></script>
 
 		<script type = "text/javascript">
-		var index = location.href.indexOf("accessToken=");
-		var beginIndex = index + 12;
 
-		var endIndex = location.href.indexOf("&");
-		var accessToken = location.href.substring(beginIndex, endIndex);
-		var authorization = location.href.substring(endIndex + 15,location.href.length);
 			function getCookie(cname) {
 			  var name = cname + "=";
 			  var decodedCookie = decodeURIComponent(document.cookie);
@@ -59,6 +54,12 @@
 
 
 				load : function(){
+					var index = location.href.indexOf("accessToken=");
+					var beginIndex = index + 12;
+
+					var endIndex = location.href.indexOf("&");
+					var accessToken = location.href.substring(beginIndex, endIndex);
+					var authorization = location.href.substring(endIndex + 15,location.href.length);
 					var request = $.ajax({
 						url : "/get/threshold?authorization="+authorization,
 						method : "GET",
@@ -334,18 +335,15 @@
 	  <script src="lib/js/jquery.emojiarea.js"></script>
 	  <script src="lib/js/emoji-picker.js"></script>
 		<script>
-		var index = location.href.indexOf("accessToken=");
-		var beginIndex = index + 12;
 
-		var endIndex = location.href.indexOf("&");
-		var accessToken = location.href.substring(beginIndex, endIndex);
-		var authorization = location.href.substring(endIndex + 15,location.href.length);
+
 			function get(name){
 				 if(name=(new RegExp('[?&]'+encodeURIComponent(name)+'=([^&]*)')).exec(location.search))
 						return decodeURIComponent(name[1]);
 			}
 
       $(function() {
+
         // Initializes and creates emoji set from sprite sheet
         window.emojiPicker = new EmojiPicker({
           emojiable_selector : '[data-emojiable=true]',
@@ -372,7 +370,12 @@
 								}else{
 									text = el;
 								}
+								var index = location.href.indexOf("accessToken=");
+								var beginIndex = index + 12;
 
+								var endIndex = location.href.indexOf("&");
+								var accessToken = location.href.substring(beginIndex, endIndex);
+								var authorization = location.href.substring(endIndex + 15,location.href.length);
 								var request = $.ajax({
 								  url : "/api/getMessage/witai/messages?accessToken="+accessToken+"&authorization="+authorization,
 								  method : "POST",
