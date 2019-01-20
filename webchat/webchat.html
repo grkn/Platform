@@ -25,8 +25,11 @@
 
 					var el = event.target.innerHTML;
 					if(type === 'click'){
-						el = document.getElementsByClassName("emoji-wysiwyg-editor")[0];
-						if(el.textContent)
+						el = document.getElementsByClassName("emoji-wysiwyg-editor");
+						if(el[0] && el[0].innerHTML) {
+							el = el.innerHTML;
+						}
+						else if(el.textContent)
 						  el = el.textContent;
 						else
 						  el = el.innerText;
@@ -62,8 +65,11 @@
 					});
 					request.done(function( msg ) {
 								if(type === 'click'){
-									el = document.getElementsByClassName("emoji-wysiwyg-editor")[0];
-									if(el.textContent)
+									el = document.getElementsByClassName("emoji-wysiwyg-editor");
+									if(el[0] && el[0].innerHTML) {
+										el.innerHTML = "";
+									}
+									else if(el.textContent)
 										el.textContent = "";
 									else
 										 el.innerText = "";
