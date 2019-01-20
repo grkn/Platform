@@ -25,7 +25,11 @@
 
 					var el = event.target.innerHTML;
 					if(type === 'click'){
-						el = document.getElementsByClassName("emoji-wysiwyg-editor")[0].innerHTML;
+						el = document.getElementsByClassName("emoji-wysiwyg-editor")[0];
+						if(el.textContent)
+						  el = el.textContent;
+						else
+						  el = el.innerText;
 					}
 
 					$('#container .main-ul').append('<li class="user"><div class="text"><span>' + el + '</span></div><br/></li>');
@@ -58,7 +62,13 @@
 					});
 					request.done(function( msg ) {
 								if(type === 'click'){
-									el = document.getElementsByClassName("emoji-wysiwyg-editor")[0].innerHTML;
+									el = document.getElementsByClassName("emoji-wysiwyg-editor")[0];
+									if(el.textContent)
+										el.textContent = "";
+									else
+										 el.innerText = "";
+								}else {
+									event.target.innerHTML = "";
 								}
 								if(msg.type && msg.type == "carousel"){
 									var timeInMilis = new Date().getTime();
