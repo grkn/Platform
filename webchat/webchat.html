@@ -9,8 +9,6 @@
 		  integrity = "sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60="
 		  crossorigin = "anonymous">
 
-			var accessToken = window.location.href.match('(accessToken=)(.*)(&)')[1];
-			var authorization = window.location.href.match('(authorization=)(.*)')[1];
 		</script>
 
 		<link rel = "stylesheet" href = "https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css"/>
@@ -20,6 +18,79 @@
 		<script src = "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity = "sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin = "anonymous"></script>
 
 		<script type = "text/javascript">
+		function sendMessageToBot(event, parameter, type) {
+			if(type=='click' || event.which == 13 || parameter){
+					//user write
+
+					var el = event.target.innerHTML;
+					if(type === 'click'){
+						el = $(".emoji-wysiwyg-editor").html();
+					}
+
+					$('#container .main-ul').append('<li class="user"><div class="text"><span>' + el + '</span></div><br/></li>');
+					$('html, body').animate({ scrollTop: $('html, body').height()});
+					var text = "";
+
+					if(el.match(/(<img\s[^>]*?src\s*=\s*['\"]([^'\"]*?)['\"][^>]*?>)/g) && el.match(/(<img\s[^>]*?src\s*=\s*['\"]([^'\"]*?)['\"][^>]*?>)/g).length <= 1){
+						try{
+							text = $(el).attr("alt") ? $(el).attr("alt") : el;
+						}catch(err){
+								text = el;
+						}
+					}else{
+						text = el;
+					}
+					var index = location.href ? location.href.indexOf("accessToken=") : location.indexOf("accessToken=");
+					var beginIndex = index + 12;
+
+					var endIndex = location.href ?  location.href.indexOf("&") : location.indexOf("&") ;
+					var accessToken =location.href ?  location.href.substring(beginIndex, endIndex) :  location.substring(beginIndex, endIndex) ;
+					var authorization =location.href ?  location.href.substring(endIndex + 15,location.href.length) : location.substring(endIndex + 15,location.href.length);
+					var request = $.ajax({
+						url : "/api/getMessage/witai/messages?accessToken="+accessToken+"&authorization="+authorization,
+						method : "POST",
+						data : {
+							"obj" :
+							{"transaction" : new Date().getTime(), "message" : {"text" : text}, "user_id" : getCookie("user_id"), "created_date" : new Date()}
+						},
+						dataType: "json"
+					});
+					request.done(function( msg ) {
+								if(type === 'click'){
+									el = $(".emoji-wysiwyg-editor").html("");
+								}
+								if(msg.type && msg.type == "carousel"){
+									var timeInMilis = new Date().getTime();
+									$('#container .main-ul').append('<li class="bot">' + views.carousel(msg, timeInMilis) + '</li>');
+									slider.createSlider($(".slider_" + msg.intent + "_" + timeInMilis));
+								}
+								else if(msg.type && msg.type == "listTemplate"){
+									$('#container .main-ul').append('<li class="bot">' + views.listTemplate(msg) + '</li>');
+								}
+								else if(msg.type && msg.type == "quickReply"){
+									$('#container .main-ul').append('<li class="bot">' + views.quickReply(msg) + '</li>');
+								}
+								else if(msg.type && msg.type == "genericButtons"){
+									$('#container .main-ul').append('<li class="bot">' + views.genericButtons(msg) + '</li>');
+								}
+								else if (msg.type && msg.type == "attachment"){
+									$('#container .main-ul').append('<li class="bot">' + views.attachment(msg) + '</li>');
+								}
+								else if(msg.type && msg.type == "emoji"){
+									$('#container .main-ul').append('<li class="bot"><div class="text"><span>' + msg.text.image + '</span></div><br/></li>');
+								}
+								else{
+									$('#container .main-ul').append('<li class="bot"><div class="text"><span>' + msg.text + '</span></div><br/></li>');
+								}
+								$('html, body').animate({ scrollTop: $('html, body').height()});
+					});
+					request.fail(function( jqXHR, textStatus) {
+						alert("Request failed : " + textStatus);
+					});
+			}
+		}
+
+
 			function getCookie(cname) {
 			  var name = cname + "=";
 			  var decodedCookie = decodeURIComponent(document.cookie);
@@ -55,6 +126,12 @@
 
 
 				load : function(){
+					var index = location.href ? location.href.indexOf("accessToken=") : location.indexOf("accessToken=");
+					var beginIndex = index + 12;
+
+					var endIndex = location.href ?  location.href.indexOf("&") : location.indexOf("&") ;
+					var accessToken =location.href ?  location.href.substring(beginIndex, endIndex) :  location.substring(beginIndex, endIndex) ;
+					var authorization =location.href ?  location.href.substring(endIndex + 15,location.href.length) : location.substring(endIndex + 15,location.href.length);
 					var request = $.ajax({
 						url : "/get/threshold?authorization="+authorization,
 						method : "GET",
@@ -236,6 +313,12 @@
 			//load function for messages from Mongo db
 			var load = {
 				load : function(){
+					var index = location.href ? location.href.indexOf("accessToken=") : location.indexOf("accessToken=");
+					var beginIndex = index + 12;
+
+					var endIndex = location.href ?  location.href.indexOf("&") : location.indexOf("&") ;
+					var accessToken =location.href ?  location.href.substring(beginIndex, endIndex) :  location.substring(beginIndex, endIndex) ;
+					var authorization =location.href ?  location.href.substring(endIndex + 15,location.href.length) : location.substring(endIndex + 15,location.href.length);
 					var request = $.ajax({
 						url : "/mongo/findByQueryForMessages?authorization="+authorization,
 						method : "POST",
@@ -323,7 +406,9 @@
 					<p class="lead emoji-picker-container">
 						<input style="border:none" type="text" class="form-control" name="input"  data-emojiable="true">
 					</p>
+					<div><input style="width: 100%;padding:0px !important" type="button" class="btn btn-primary" name="Enter" value="Enter" onclick="sendMessageToBot(event,null,'click')"/></div>
 			 </div>
+
 		</div>
 		<script src="lib/js/config.js"></script>
 	  <script src="lib/js/util.js"></script>
@@ -331,12 +416,16 @@
 	  <script src="lib/js/emoji-picker.js"></script>
 		<script>
 
+
 			function get(name){
 				 if(name=(new RegExp('[?&]'+encodeURIComponent(name)+'=([^&]*)')).exec(location.search))
 						return decodeURIComponent(name[1]);
 			}
 
+
+
       $(function() {
+
         // Initializes and creates emoji set from sprite sheet
         window.emojiPicker = new EmojiPicker({
           emojiable_selector : '[data-emojiable=true]',
@@ -346,65 +435,10 @@
         window.emojiPicker.discover();
 
 				$(".input .emoji-wysiwyg-editor").on('keypress', function(event, parameter){
-
-						if(event.which == 13 || parameter){
-								//user write
-								var el = event.target.innerHTML;
-								$('#container .main-ul').append('<li class="user"><div class="text"><span>' + el + '</span></div><br/></li>');
-								$('html, body').animate({ scrollTop: $('html, body').height()});
-								var text = "";
-
-								if(el.match(/(<img\s[^>]*?src\s*=\s*['\"]([^'\"]*?)['\"][^>]*?>)/g) && el.match(/(<img\s[^>]*?src\s*=\s*['\"]([^'\"]*?)['\"][^>]*?>)/g).length <= 1){
-									try{
-										text = $(el).attr("alt") ? $(el).attr("alt") : el;
-									}catch(err){
-											text = el;
-									}
-								}else{
-									text = el;
-								}
-
-								var request = $.ajax({
-								  url : "/api/getMessage/witai/messages?accessToken="+accessToken+"&authorization="+authorization,
-								  method : "POST",
-								  data : {
-										"obj" :
-										{"transaction" : new Date().getTime(), "message" : {"text" : text}, "user_id" : getCookie("user_id"), "created_date" : new Date()}
-									},
-								  dataType: "json"
-								});
-								request.done(function( msg ) {
-											event.target.innerHTML = "";
-											if(msg.type && msg.type == "carousel"){
-												var timeInMilis = new Date().getTime();
-												$('#container .main-ul').append('<li class="bot">' + views.carousel(msg, timeInMilis) + '</li>');
-												slider.createSlider($(".slider_" + msg.intent + "_" + timeInMilis));
-											}
-											else if(msg.type && msg.type == "listTemplate"){
-												$('#container .main-ul').append('<li class="bot">' + views.listTemplate(msg) + '</li>');
-											}
-											else if(msg.type && msg.type == "quickReply"){
-												$('#container .main-ul').append('<li class="bot">' + views.quickReply(msg) + '</li>');
-											}
-											else if(msg.type && msg.type == "genericButtons"){
-												$('#container .main-ul').append('<li class="bot">' + views.genericButtons(msg) + '</li>');
-											}
-											else if (msg.type && msg.type == "attachment"){
-												$('#container .main-ul').append('<li class="bot">' + views.attachment(msg) + '</li>');
-											}
-											else if(msg.type && msg.type == "emoji"){
-												$('#container .main-ul').append('<li class="bot"><div class="text"><span>' + msg.text.image + '</span></div><br/></li>');
-											}
-											else{
-												$('#container .main-ul').append('<li class="bot"><div class="text"><span>' + msg.text + '</span></div><br/></li>');
-											}
-											$('html, body').animate({ scrollTop: $('html, body').height()});
-								});
-								request.fail(function( jqXHR, textStatus) {
-								  alert("Request failed : " + textStatus);
-								});
-						}
+						sendMessageToBot(event,parameter,'keypress');
 				});
+
+
       });
     </script>
 	</body>
