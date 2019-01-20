@@ -27,7 +27,10 @@
 					if(type === 'click'){
 						el = document.getElementsByClassName("emoji-wysiwyg-editor");
 						if(el[0] && el[0].innerHTML) {
-							el = el.innerHTML;
+							el = el[0].innerHTML;
+						}
+						else if(el.innerHTML) {
+							 el = el.innerHTML;
 						}
 						else if(el.textContent)
 						  el = el.textContent;
@@ -67,7 +70,10 @@
 								if(type === 'click'){
 									el = document.getElementsByClassName("emoji-wysiwyg-editor");
 									if(el[0] && el[0].innerHTML) {
-										el.innerHTML = "";
+										el[0].innerHTML = "";
+									}
+									else if(el.innerHTML) {
+										 el.innerHTML = "";
 									}
 									else if(el.textContent)
 										el.textContent = "";
