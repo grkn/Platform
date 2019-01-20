@@ -29,6 +29,12 @@
 						if(el[0] && el[0].innerHTML) {
 							el = el[0].innerHTML;
 						}
+						if(el[0] && el[0].textContent) {
+							el = el[0].textContent;
+						}
+						if(el[0] && el[0].innerText) {
+							el = el[0].innerText;
+						}
 						else if(el.innerHTML) {
 							 el = el.innerHTML;
 						}
@@ -71,6 +77,12 @@
 									el = document.getElementsByClassName("emoji-wysiwyg-editor");
 									if(el[0] && el[0].innerHTML) {
 										el[0].innerHTML = "";
+									}
+									if(el[0] && el[0].textContent) {
+										el[0].textContent = "";
+									}
+									if(el[0] && el[0].innerText) {
+										el[0].innerText = "";
 									}
 									else if(el.innerHTML) {
 										 el.innerHTML = "";
