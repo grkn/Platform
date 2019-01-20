@@ -20,12 +20,12 @@
 		<script type = "text/javascript">
 
 		function sendMessageToBot(event, parameter, type) {
-			if(type=='click' || event.which == 13 || parameter){
+			if(type =='click' || event.which == 13 || parameter){
 					//user write
 
 					var el = event.target.innerHTML;
 					if(type === 'click'){
-						el = $(".emoji-wysiwyg-editor").html();
+						el = document.getElementsByClassName("emoji-wysiwyg-editor")[0].innerHTML;
 					}
 
 					$('#container .main-ul').append('<li class="user"><div class="text"><span>' + el + '</span></div><br/></li>');
@@ -58,7 +58,7 @@
 					});
 					request.done(function( msg ) {
 								if(type === 'click'){
-									el = $(".emoji-wysiwyg-editor").html("");
+									el = document.getElementsByClassName("emoji-wysiwyg-editor")[0].innerHTML;
 								}
 								if(msg.type && msg.type == "carousel"){
 									var timeInMilis = new Date().getTime();
@@ -407,7 +407,7 @@
 					<p class="lead emoji-picker-container">
 						<input style="border:none" type="text" class="form-control" name="input"  data-emojiable="true">
 					</p>
-					<div><input style="width: 100%;padding:0px !important" type="button" class="btn btn-primary" name="Enter" value="Enter" onclick="sendMessageToBot(event,null,'click')"/></div>
+					<div><input style="width: 100%;padding:0px !important" type="button" class="btn btn-primary" name="Enter" value="Send" onclick="sendMessageToBot(event,null,'click')"/></div>
 			 </div>
 
 		</div>
