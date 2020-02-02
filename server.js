@@ -112,8 +112,8 @@ app.post('/mongo/insert/:collectionName', function(req, res){
   }
 });
 
-app.get('/mongo/find/:collectionName', function(req, res){
-  instanceMongoQueries.find('platform', req.params.collectionName, function(result){
+app.get('/mongo/find/:db/:collectionName/', function(req, res){
+  instanceMongoQueries.find(req.params.db, req.params.collectionName, function(result){
     res.send(result);
   });
 });
@@ -238,7 +238,11 @@ app.get('/get/witai/entities', function(req, res){
       'Content-Type' : 'application/json'
     }
   };
+
   client.get('https://api.wit.ai/entities/intent', wit, function(response){
+    instanceMongoQueries.deleteCollection(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken,
+      (req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken));
+    instanceMongoQueries.insertOne(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, (req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken) , {'entity' : response, "insert_date" : new Date()} , function(resp){});
     res.send(response);
   });
 });
@@ -264,16 +268,21 @@ app.delete('/delete/intent', cors(), function(req, res){
 app.post('/post/intent/expressions', function(req,   res){
   console.log("req.body : " + req.body);
   var wit = {
-    data : {
-  		value : req.body.value,
-  		expressions : req.body.expressions
-    },
+    data : [{
+        "text": req.body.expression,
+        "entities": [
+          {
+            "entity": "intent",
+            "value": req.body.value
+          }
+        ]
+      }],
     headers : {
       'Authorization' : 'Bearer ' + (req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken),
       'Content-Type' : 'application/json'
     }
   };
-  client.post('https://api.wit.ai/entities/intent/values', wit, function(response){
+  client.post('https://api.wit.ai/samples', wit, function(response){
     res.send(response);
   });
 });
@@ -1131,21 +1140,28 @@ app.post('/witai/delete', function(req, res){
 });
 
 app.post('/witai/validate', function(req, res){
+
   var wit = {
-    data : {
-  		value : req.body.intent,
-  		expressions : [req.body.message]
-    },
+    data : [{
+        "text": req.body.message,
+        "entities": [
+          {
+            "entity": "intent",
+            "value": req.body.intent
+          }
+        ]
+      }],
     headers : {
       'Authorization' : 'Bearer ' + (req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken),
       'Content-Type' : 'application/json'
     }
   };
-  client.post('https://api.wit.ai/entities/intent/values', wit, function(response){
+  client.post('https://api.wit.ai/samples', wit, function(response){
     instanceMongoQueries.deleteFromTrainingMessage(req.headers.authorization && global[req.headers.authorization.split(" ")[1]] ? global[req.headers.authorization.split(" ")[1]].defaultAuthorizationToken : global.defaultAuthorizationToken, req.body.message, function(resp){
       res.send(resp);
     });
   });
+
 });
 
 app.get('/change/threshold/:threshold', function(req, res){
