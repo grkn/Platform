@@ -15,7 +15,7 @@
     "facebook-bot-messenger": "^1.0.7",
     "firebase": "^4.9.0",
     "messenger-bot": "^2.4.0",
-    "mongodb": "^3.0.2",
+    "mongodb": "^3.1.13",
     "node-rest-client": "^3.1.0",
     "nodemon": "^1.14.11",
     "query-string": "^5.1.0",
