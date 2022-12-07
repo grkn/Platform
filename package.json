@@ -11,7 +11,7 @@
     "cookie-parser": "^1.4.3",
     "cookie-session": "^2.0.0-beta.3",
     "cors": "^2.8.4",
-    "express": "^4.13.3",
+    "express": "^4.18.2",
     "facebook-bot-messenger": "^1.0.7",
     "firebase": "^4.9.0",
     "messenger-bot": "^2.4.0",
